@@ -2,6 +2,9 @@
 
 namespace UmbCheckout.Shared.Models
 {
+    /// <summary>
+    /// The Line Item model
+    /// </summary>
     public class LineItem
     {
         private string _currencyCode = string.Empty;

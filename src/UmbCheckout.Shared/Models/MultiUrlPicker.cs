@@ -2,6 +2,9 @@
 
 namespace UmbCheckout.Shared.Models
 {
+    /// <summary>
+    /// Model for the Success / Cancel page picker in the backoffice
+    /// </summary>
     public class MultiUrlPicker
     {
         [JsonPropertyName("name")]

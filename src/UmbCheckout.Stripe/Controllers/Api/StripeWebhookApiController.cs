@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stripe;
+using UmbCheckout.Shared;
 using UmbCheckout.Stripe.Models;
 using UmbCheckout.Stripe.Notifications.Webhooks;
 using Umbraco.Cms.Core.Scoping;
@@ -10,7 +11,7 @@ using Umbraco.Cms.Web.Common.Controllers;
 
 namespace UmbCheckout.Stripe.Controllers.Api
 {
-    [PluginController("UmbCheckout")]
+    [PluginController(Consts.PackageName)]
     public class StripeWebhookApiController : UmbracoApiController
     {
         private readonly ILogger<StripeWebhookApiController> _logger;

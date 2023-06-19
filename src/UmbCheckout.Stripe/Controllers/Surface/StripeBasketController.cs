@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using UmbCheckout.Core;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.Models;
+using UmbCheckout.Shared;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Stripe.Interfaces;
 using Umbraco.Cms.Core.Cache;
@@ -16,7 +17,7 @@ using Umbraco.Cms.Web.Website.Controllers;
 
 namespace UmbCheckout.Stripe.Controllers.Surface
 {
-    [PluginController("UmbCheckout")]
+    [PluginController(Consts.PackageName)]
     public class StripeBasketController : SurfaceController
     {
         private readonly IBasketService _basketService;

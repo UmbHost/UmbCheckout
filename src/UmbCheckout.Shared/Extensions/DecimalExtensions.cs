@@ -2,6 +2,9 @@
 
 namespace UmbCheckout.Shared.Extensions
 {
+    /// <summary>
+    /// Extension which formats a decimal as currency with currency symbol
+    /// </summary>
     public static class DecimalExtension
     {
         private static readonly Dictionary<string, CultureInfo> ISOCurrenciesToACultureMap =

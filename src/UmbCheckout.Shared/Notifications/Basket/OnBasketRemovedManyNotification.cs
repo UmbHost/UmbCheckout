@@ -3,6 +3,9 @@ using Umbraco.Cms.Core.Notifications;
 
 namespace UmbCheckout.Shared.Notifications.Basket
 {
+    /// <summary>
+    /// Notification which is triggered after multiple line items are removed from the Basket
+    /// </summary>
     public class OnBasketRemovedManyNotification : INotification
     {
         public IEnumerable<Guid> Keys { get; }

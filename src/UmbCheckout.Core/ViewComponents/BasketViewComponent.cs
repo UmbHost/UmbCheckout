@@ -4,6 +4,9 @@ using UmbCheckout.Core.ViewModels;
 
 namespace UmbCheckout.Core.ViewComponents
 {
+    /// <summary>
+    /// View component for the basket
+    /// </summary>
     [ViewComponent(Name = "Basket")]
     public class BasketViewComponent : ViewComponent
     {

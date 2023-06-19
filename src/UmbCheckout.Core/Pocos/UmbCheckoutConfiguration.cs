@@ -3,6 +3,9 @@ using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
 
 namespace UmbCheckout.Core.Pocos
 {
+    /// <summary>
+    /// Poco for the configuration table
+    /// </summary>
     [TableName("UmbCheckoutConfiguration")]
     [PrimaryKey("Id", AutoIncrement = true)]
     [ExplicitColumns]

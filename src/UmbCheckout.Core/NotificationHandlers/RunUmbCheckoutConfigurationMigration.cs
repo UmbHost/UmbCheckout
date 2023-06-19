@@ -10,6 +10,9 @@ using Umbraco.Cms.Infrastructure.Migrations.Upgrade;
 
 namespace UmbCheckout.Core.NotificationHandlers
 {
+    /// <summary>
+    /// Handles the migration of the Configuration table
+    /// </summary>
     internal class RunUmbCheckoutConfigurationMigration : INotificationHandler<UmbracoApplicationStartingNotification>
     {
         private readonly IMigrationPlanExecutor _migrationPlanExecutor;

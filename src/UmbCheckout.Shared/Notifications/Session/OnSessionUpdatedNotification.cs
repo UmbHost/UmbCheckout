@@ -4,6 +4,9 @@ using Umbraco.Cms.Core.Notifications;
 
 namespace UmbCheckout.Shared.Notifications.Session
 {
+    /// <summary>
+    /// Notification which is triggered after the UmbCheckout session is updated
+    /// </summary>
     public class OnSessionUpdatedNotification : INotification
     {
         public HttpContext HttpContext { get; }

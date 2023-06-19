@@ -1,7 +1,12 @@
-﻿namespace UmbCheckout.Core
+﻿namespace UmbCheckout.Shared
 {
+    /// <summary>
+    /// UmbCheckout Constants
+    /// </summary>
     public static class Consts
     {
+        public const string PackageName = "UmbCheckout";
+        
         public const string SessionKey = "umbCheckoutBasketSessionId";
 
         public const string SessionMode = "payment";

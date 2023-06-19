@@ -2,6 +2,9 @@
 
 namespace UmbCheckout.Shared.Notifications.Basket
 {
+    /// <summary>
+    /// Notification which is triggered before multiple line items are removed from the Basket
+    /// </summary>
     public class OnBasketRemoveManyStartedNotification : INotification
     {
         public Models.Basket Basket { get; }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Backoffice.Models;
 using UmbCheckout.Core.Interfaces;
+using UmbCheckout.Shared;
 using UmbCheckout.Shared.Extensions;
 using UmbHost.Licensing;
 using Umbraco.Cms.Web.BackOffice.Controllers;
@@ -14,7 +15,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
     /// <summary>
     /// UmbracoAuthorizedApiController to retrieve the configuration settings for the backoffice
     /// </summary>
-    [PluginController("UmbCheckout")]
+    [PluginController(Consts.PackageName)]
     [LicenseProvider(typeof(UmbLicensingProvider))]
     public class ConfigurationApiController : UmbracoAuthorizedApiController
     {

@@ -1,5 +1,8 @@
 ﻿namespace UmbCheckout.Shared.Models
 {
+    /// <summary>
+    /// The Basket model
+    /// </summary>
     public class Basket
     {
         public string Id { get; set; } = string.Empty;

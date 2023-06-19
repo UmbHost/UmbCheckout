@@ -1,8 +1,10 @@
-﻿using UmbCheckout.Shared.Models;
-using Umbraco.Cms.Core.Notifications;
+﻿using Umbraco.Cms.Core.Notifications;
 
 namespace UmbCheckout.Shared.Notifications.Basket
 {
+    /// <summary>
+    /// Notification which is triggered after a line items is reduced in the Basket
+    /// </summary>
     public class OnBasketReducedNotification : INotification
     {
         public Guid Key { get; }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
+using UmbCheckout.Shared;
 using UmbHost.Licensing;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Actions;
@@ -17,8 +18,8 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
     /// <summary>
     /// Umbraco TreeController which adds the group and root menu link
     /// </summary>
-    [Tree("settings", "umbCheckout", TreeTitle = "UmbCheckout", TreeGroup = "umbCheckout", IsSingleNodeTree = true, SortOrder = 35)]
-    [PluginController("UmbCheckout")]
+    [Tree("settings", "umbCheckout", TreeTitle = Consts.PackageName, TreeGroup = "umbCheckout", IsSingleNodeTree = true, SortOrder = 35)]
+    [PluginController(Consts.PackageName)]
     [LicenseProvider(typeof(UmbLicensingProvider))]
     public class UmbCheckoutTreeController : TreeController
     {

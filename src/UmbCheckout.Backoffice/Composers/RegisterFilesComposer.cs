@@ -4,6 +4,9 @@ using Umbraco.Cms.Core.DependencyInjection;
 
 namespace UmbCheckout.Backoffice.Composers
 {
+    /// <summary>
+    /// Registers static files used by the backoffice
+    /// </summary>
     public class RegisterFilesComposer : IComposer
     {
         public void Compose(IUmbracoBuilder builder)

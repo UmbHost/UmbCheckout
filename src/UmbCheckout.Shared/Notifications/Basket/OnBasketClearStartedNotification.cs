@@ -1,17 +1,16 @@
-﻿using UmbCheckout.Shared.Models;
-using Umbraco.Cms.Core.Notifications;
+﻿using Umbraco.Cms.Core.Notifications;
 
-namespace UmbCheckout.Shared.Notifications.Basket
+namespace UmbCheckout.Shared.Notifications.Basket;
+
+/// <summary>
+/// Notification which is triggered before the Basket is cleared
+/// </summary>
+public class OnBasketClearStartedNotification : INotification
 {
-    public class OnBasketAddedNotification : INotification
-    {
-        public LineItem LineItem { get; }
-        public Models.Basket Basket { get; set; }
+    public Models.Basket Basket { get; set; }
 
-        public OnBasketAddedNotification(LineItem lineItem, Models.Basket basket)
-        {
-            LineItem = lineItem;
-            Basket = basket;
-        }
+    public OnBasketClearStartedNotification(Models.Basket basket)
+    {
+        Basket = basket;
     }
 }

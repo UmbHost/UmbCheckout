@@ -3,6 +3,9 @@ using Umbraco.Cms.Core.Notifications;
 
 namespace UmbCheckout.Shared.Notifications.Basket
 {
+    /// <summary>
+    /// Notification which is triggered after multiple line items are added to the Basket
+    /// </summary>
     public class OnBasketAddedManyNotification : INotification
     {
         public IEnumerable<LineItem> LineItems { get; }

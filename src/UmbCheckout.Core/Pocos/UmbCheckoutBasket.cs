@@ -3,7 +3,9 @@ using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
 
 namespace UmbCheckout.Core.Pocos
 {
-
+    /// <summary>
+    /// Poco for the Basket table
+    /// </summary>
     [TableName("UmbCheckoutBaskets")]
     [PrimaryKey("Id", AutoIncrement = true)]
     [ExplicitColumns]

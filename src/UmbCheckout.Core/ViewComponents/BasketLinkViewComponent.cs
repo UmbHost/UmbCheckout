@@ -7,6 +7,9 @@ using Umbraco.Extensions;
 
 namespace UmbCheckout.Core.ViewComponents
 {
+    /// <summary>
+    /// A view component for the Basket link with total item count
+    /// </summary>
     [ViewComponent(Name = "BasketLink")]
     public class BasketLinkViewComponent : ViewComponent
     {

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Helpers;
 using UmbCheckout.Core.Interfaces;
+using UmbCheckout.Shared;
 using UmbCheckout.Shared.Helpers;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Session;

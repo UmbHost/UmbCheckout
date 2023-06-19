@@ -1,5 +1,8 @@
 ﻿namespace UmbCheckout.Shared.Models
 {
+    /// <summary>
+    /// Configuration model
+    /// </summary>
     public class UmbCheckoutConfiguration
     {
         public int Id { get; set; }

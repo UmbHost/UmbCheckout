@@ -10,7 +10,7 @@ namespace UmbCheckout.Stripe.Composers
     {
         public void Compose(IUmbracoBuilder builder)
         {
-            builder.Services.Configure<StripeSettings>(builder.Config.GetSection(SharedConsts.PackageName).GetSection("Stripe"));
+            builder.Services.Configure<StripeSettings>(builder.Config.GetSection(Consts.PackageName).GetSection("Stripe"));
         }
     }
 }
