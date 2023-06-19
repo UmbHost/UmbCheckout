@@ -12,6 +12,10 @@ The documentation can be found on the docs site:
 
 [https://docs.umbcheckout.net](https://docs.umbcheckout.net)
 
+## Getting started with the TestSite
+
+Install the test site, discard any Git Changes and then Import Everything using uSync
+
 ### Contribution guidelines
 
 To raise a new bug, create an issue on the GitHub repository. To fix a bug or add new features, fork the repository and send a pull request with your changes. Feel free to add ideas to the repository's issues list if you would to discuss anything related to the package.
