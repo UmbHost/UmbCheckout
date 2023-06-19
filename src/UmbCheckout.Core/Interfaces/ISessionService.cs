@@ -1,0 +1,29 @@
+﻿using UmbCheckout.Shared.Models;
+
+namespace UmbCheckout.Core.Interfaces
+{
+    /// <summary>
+    /// A service to handle the Get, Update and Clearing of the Session
+    /// </summary>
+    internal interface ISessionService
+    {
+        /// <summary>
+        /// Gets the current UmbCheckout Session
+        /// </summary>
+        /// <returns>The current UmbCheckout Session</returns>
+        Task<UmbCheckoutSession> Get();
+
+        /// <summary>
+        /// Updates the current UmbCheckout Session
+        /// </summary>
+        /// <param name="basket">The Basket</param>
+        /// <returns>The current UmbCheckout Session</returns>
+        Task<UmbCheckoutSession> Update(Basket basket);
+
+        /// <summary>
+        /// Clears the current UmbCheckout Session
+        /// </summary>
+        /// <returns></returns>
+        Task Clear();
+    }
+}

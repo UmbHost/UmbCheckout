@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<language>
+	<area alias="dashboardTabs">
+		<key alias="umbCheckout">UmbCheckout</key>
+	</area>
+	<area alias="dashboard">
+		<key alias="umbCheckout">UmbCheckout</key>
+	</area>
+</language>

@@ -1,0 +1,48 @@
+﻿<div ng-controller="UmbCheckout.Settings.Controller as vm" class="umbcheckout">
+    <form></form>
+    <form name="configurationForm" novalidate val-form-manager ng-submit="vm.saveConfiguration()">
+        <umb-editor-view header="false" class="form-horizontal">
+            <umb-editor-container class="dashboard">
+                <umb-box>
+                    <umb-box-content>
+                        <h1>UmbCheckout</h1>
+
+                        <p class="muted">
+                            Please report any issues in the bug tracker found on the <a href="https://github.com/UmbHost/UmbCheckout/issues">GitHub Repo here</a><br />
+                        </p>
+
+                        <p class="red bold" ng-if="!vm.LicenseState.Valid" ng-bind-html="vm.LicenseState.Message">
+                        </p>
+
+                    </umb-box-content>
+                </umb-box>
+                <umb-box>
+                    <umb-box-header title="Configuration"></umb-box-header>
+                    <umb-box-content>
+                        <umb-property property="property" ng-repeat="property in vm.properties">
+                            <umb-property-editor model="property"></umb-property-editor>
+                        </umb-property>
+                    </umb-box-content>
+                </umb-box>
+            </umb-editor-container>
+
+            <umb-editor-footer>
+                <umb-editor-footer-content-left>
+                    <a href="https://umbhost.net" class="btn umb-button__button btn-link umb-button-- umb-outline" ng-if="!vm.LicenseState.Valid">
+                        Made with <span class="color-pink icon icon-hearts"></span> by UmbHost Limited
+                    </a>
+                </umb-editor-footer-content-left>
+
+                <umb-editor-footer-content-right>
+                    <umb-button type="submit"
+                                button-style="success"
+                                state="vm.saveButtonState"
+                                label-key="buttons_save"
+                                shortcut="ctrl+s"
+                                disabled="vm.saveButtonState === 'busy'">
+                    </umb-button>
+                </umb-editor-footer-content-right>
+            </umb-editor-footer>
+        </umb-editor-view>
+    </form>
+</div>

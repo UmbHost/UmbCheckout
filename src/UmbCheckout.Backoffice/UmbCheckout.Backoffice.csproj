@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+	  <StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Company>UmbHost Limited</Company>
+    <Copyright>(c) 2023 UmbHost Limited</Copyright>
+    <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UmbHost/UmbCheckout</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Description>An eCommerce solution for Umbraco</Description>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.16" />
+    <PackageReference Include="Umbraco.Cms.Core" Version="10.5.1" />
+    <PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UmbCheckout.Core\UmbCheckout.Core.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
