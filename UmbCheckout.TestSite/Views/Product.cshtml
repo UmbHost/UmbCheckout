@@ -9,6 +9,8 @@
     var defaultCurrency = Model.Parent<Products>().DefaultCurrency;
 
     var text = Model.Value("metaData");
+
+    var isoCurrencyCode = new RegionInfo(CultureInfo.CurrentCulture.Name).ISOCurrencySymbol;
 }
 <!-- for the section we want to show the shop header -->
 @Html.Partial("~/Views/Partials/SectionHeader.cshtml", Model.Parent)
@@ -41,7 +43,7 @@
                         <label for="quantity">Quantity:</label>
                         <input class="form-control" type="number" name="quantity" value="1" min="1" /> <br />
                         <input type="hidden" name="id" value="@Model.Key" />
-                        <input type="hidden" name="currencyCode" value="@RegionInfo.CurrentRegion.ISOCurrencySymbol" />
+                        <input type="hidden" name="currencyCode" value="@isoCurrencyCode" />
                         <button class="button button--border--solid" type="submit">Buy</button>
                     }
                 </div>
