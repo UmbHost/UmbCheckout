@@ -243,7 +243,7 @@ namespace UmbCheckout.Stripe.Services
                                     {
                                         Name = product.Name
                                     },
-                                    UnitAmountDecimal = lineItem.Price
+                                    UnitAmountDecimal = lineItem.Price * 100
                                 },
                                 Quantity = lineItem.Quantity
                             };
