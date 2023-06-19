@@ -1,10 +1,10 @@
 ﻿@using UmbCheckout.Stripe.Controllers.Surface
 @using UmbCheckout.Shared.Extensions
-@model UmbCheckout.Core.ViewModels.BasketViewModel
+@inherits UmbracoViewPage<UmbCheckout.Core.ViewModels.BasketViewModel>
 <table>
     <thead>
         <tr>
-            <th scope="col">Id</th>
+            <th scope="col">Name</th>
             <th scope="col">Price</th>
             <th scope="col">Currency Price</th>
             <th scope="col">Currency Code</th>
@@ -20,7 +20,7 @@
             foreach (var lineItem in Model.Basket.LineItems)
             {
                 <tr>
-                    <th scope="row">@lineItem.Id</th>
+                    <th scope="row"><a href="@Umbraco.Content(lineItem.Id)?.Url()">@lineItem.Name</a></th>
                     <td>@lineItem.Price</td>
                     <td>@lineItem.CurrencyPrice</td>
                     <td>@lineItem.CurrencyCode</td>
