@@ -13,6 +13,9 @@
 	  <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
 	  <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	  <Description>An eCommerce solution for Umbraco</Description>
+	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
+	  <FileVersion>1.0.0.0</FileVersion>
+	  <PackageVersion>1.0.0-beta2</PackageVersion>
   </PropertyGroup>
 
 	<ItemGroup>
