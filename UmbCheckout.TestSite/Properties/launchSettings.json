@@ -16,6 +16,13 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    "IIS Express (Prod)": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      }
+    },
     "Umbraco.Web.UI": {
       "commandName": "Project",
       "dotnetRunMessages": true,
@@ -23,7 +30,7 @@
       "applicationUrl": "https://localhost:44367;http://localhost:40364",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }      
+      }
     }
   }
 }
