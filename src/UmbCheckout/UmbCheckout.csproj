@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	  <Company>UmbHost Limited</Company>
+	  <Copyright>(c) 2023 UmbHost Limited</Copyright>
+	  <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/UmbHost/UmbCheckout</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
+	  <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+	  <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	  <Description>An eCommerce solution for Umbraco</Description>
+	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
+	  <FileVersion>1.0.0.0</FileVersion>
+	  <PackageVersion>1.0.0-beta1</PackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UmbCheckout.Backoffice\UmbCheckout.Backoffice.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Core\UmbCheckout.Core.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
