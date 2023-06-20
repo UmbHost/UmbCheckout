@@ -1,86 +1,91 @@
-function UmbCheckout($scope, $timeout) {
+(function () {
 
-    $scope.promptIsVisible = "-1";
+    'use strict';
 
-    $scope.sortableOptions = {
-        axis: 'y',
-        containment: 'parent',
-        cursor: 'move',
-        items: '> div.textbox-wrapper',
-        tolerance: 'pointer',
-        disabled: $scope.readonly
-    };
+    function UmbCheckoutMetaDataPropertyEditor($scope, $timeout) {
 
-    if (!$scope.model.value) {
-        $scope.model.value = [];
-    }
+        $scope.promptIsVisible = "-1";
 
-    $scope.add = function ($event) {
-        if ($scope.readonly) {
-            $event.preventDefault();
-            $event.stopPropagation();
-            return;
+        $scope.sortableOptions = {
+            axis: 'y',
+            containment: 'parent',
+            cursor: 'move',
+            items: '> div.textbox-wrapper',
+            tolerance: 'pointer',
+            disabled: $scope.readonly
+        };
+
+        if (!$scope.model.value) {
+            $scope.model.value = [];
         }
 
-        $scope.model.value.push({ value: "" });
+        $scope.add = function ($event) {
+            if ($scope.readonly) {
+                $event.preventDefault();
+                $event.stopPropagation();
+                return;
+            }
 
-        // Focus new value
-        var newItemIndex = $scope.model.value.length - 1;
-        $scope.model.value[newItemIndex].hasFocus = true;
-        validate();
-    };
+            $scope.model.value.push({ value: "" });
 
-    $scope.remove = function (index) {
-        if ($scope.readonly) return;
+            // Focus new value
+            var newItemIndex = $scope.model.value.length - 1;
+            $scope.model.value[newItemIndex].hasFocus = true;
+            validate();
+        };
 
-        // Make sure not to trigger other prompts when remove is triggered
-        $scope.hidePrompt();
+        $scope.remove = function (index) {
+            if ($scope.readonly) return;
 
-        var remainder = [];
-        for (var x = 0; x < $scope.model.value.length; x++) {
-            if (x !== index) {
-                remainder.push($scope.model.value[x]);
+            // Make sure not to trigger other prompts when remove is triggered
+            $scope.hidePrompt();
+
+            var remainder = [];
+            for (var x = 0; x < $scope.model.value.length; x++) {
+                if (x !== index) {
+                    remainder.push($scope.model.value[x]);
+                }
+            }
+            $scope.model.value = remainder;
+        };
+
+        $scope.showPrompt = function (idx, item) {
+            if ($scope.readonly) return;
+
+            var i = $scope.model.value.indexOf(item);
+
+            // Make the prompt visible for the clicked tag only
+            if (i === idx) {
+                $scope.promptIsVisible = i;
+            }
+        };
+
+        $scope.hidePrompt = function () {
+            $scope.promptIsVisible = "-1";
+        };
+
+        function validate() {
+            if ($scope.multipleTextboxForm) {
+                var invalid = $scope.model.validation.mandatory && !$scope.model.value.length
+                $scope.multipleTextboxForm.mandatory.$setValidity("minCount", !invalid);
             }
         }
-        $scope.model.value = remainder;
-    };
 
-    $scope.showPrompt = function (idx, item) {
-        if ($scope.readonly) return;
+        $timeout(function () {
+            validate();
+        });
 
-        var i = $scope.model.value.indexOf(item);
+        // We always need to ensure we dont submit anything broken
+        var unsubscribe = $scope.$on("formSubmitting", function (ev, args) {
 
-        // Make the prompt visible for the clicked tag only
-        if (i === idx) {
-            $scope.promptIsVisible = i;
-        }
-    };
+            // Filter to items with values
+            $scope.model.value = $scope.model.value.filter(el => el.value.trim() !== "") || [];
+        });
 
-    $scope.hidePrompt = function () {
-        $scope.promptIsVisible = "-1";
-    };
-
-    function validate() {
-        if ($scope.multipleTextboxForm) {
-            var invalid = $scope.model.validation.mandatory && !$scope.model.value.length
-            $scope.multipleTextboxForm.mandatory.$setValidity("minCount", !invalid);
-        }
+        // When the scope is destroyed we need to unsubscribe
+        $scope.$on('$destroy', function () {
+            unsubscribe();
+        });
     }
-
-    $timeout(function () {
-        validate();
-    });
-
-    // We always need to ensure we dont submit anything broken
-    var unsubscribe = $scope.$on("formSubmitting", function (ev, args) {
-
-        // Filter to items with values
-        $scope.model.value = $scope.model.value.filter(el => el.value.trim() !== "") || [];
-    });
-
-    // When the scope is destroyed we need to unsubscribe
-    $scope.$on('$destroy', function () {
-        unsubscribe();
-    });
-}
-angular.module("umbraco").controller("UmbCheckout.MetaData.PropertyEditor.Controller", UmbCheckout);
+    angular.module("umbraco").controller("UmbCheckout.MetaData.PropertyEditor.Controller", UmbCheckoutMetaDataPropertyEditor);
+})();
