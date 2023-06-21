@@ -1,9 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  <StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
+	  <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 	  <Company>UmbHost Limited</Company>
 	  <Copyright>(c) 2023 UmbHost Limited</Copyright>
 	  <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
@@ -18,10 +20,21 @@
 	  <PackageTags>umbraco-marketplace;umbraco;ecommerce;umbcheckout;</PackageTags>
   </PropertyGroup>
 
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\UmbCheckout.Backoffice\UmbCheckout.Backoffice.csproj" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.16" />
+	  <ProjectReference Include="..\UmbCheckout.Backoffice\UmbCheckout.Backoffice.csproj" />
     <ProjectReference Include="..\UmbCheckout.Core\UmbCheckout.Core.csproj" />
     <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Stripe\UmbCheckout.Stripe.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
