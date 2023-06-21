@@ -386,3 +386,5 @@ MigrationBackup/
 **/umbraco/Logs/
 
 **/umbraco/mediacache/
+
+.vscode/settings.json
