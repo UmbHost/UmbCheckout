@@ -1,0 +1,3 @@
+[submodule "src/UmbCheckout.Stripe"]
+	path = src/UmbCheckout.Stripe
+	url = https://github.com/UmbHost/UmbCheckout.Stripe.git
