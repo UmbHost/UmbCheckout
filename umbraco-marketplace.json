@@ -7,9 +7,11 @@
         },
       "Category": "Commerce",
       "Description": "UmbCheckout an eCommerce solution for Umbraco",
-      "DiscussionForumUrl": "",
+      "DiscussionForumUrl": "https://github.com/UmbHost/UmbCheckout/discussions",
       "DocumentationUrl": "https://docs.umbcheckout.net",
       "LicenseTypes": [ "GPL-3.0" ],
       "IssueTrackerUrl": "https://github.com/UmbHost/UmbCheckout/issues",
-      "Title": "UmbCheckout"
+      "Title": "UmbCheckout",
+      "PackageType": "Integration",
+      "LicenseTypes": ["Free", "Subscription"]
     }
