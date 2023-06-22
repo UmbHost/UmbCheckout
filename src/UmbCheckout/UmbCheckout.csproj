@@ -16,8 +16,9 @@
 	  <Description>An eCommerce solution for Umbraco</Description>
 	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
 	  <FileVersion>1.0.0.0</FileVersion>
-	  <PackageVersion>1.0.0-beta4</PackageVersion>
+	  <PackageVersion>1.0.0-beta5</PackageVersion>
 	  <PackageTags>umbraco-marketplace;umbraco;ecommerce;umbcheckout;</PackageTags>
+	  <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
 
@@ -34,6 +35,13 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
