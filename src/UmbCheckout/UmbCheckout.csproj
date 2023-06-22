@@ -30,7 +30,6 @@
 	  <ProjectReference Include="..\UmbCheckout.Backoffice\UmbCheckout.Backoffice.csproj" />
     <ProjectReference Include="..\UmbCheckout.Core\UmbCheckout.Core.csproj" />
     <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
-    <ProjectReference Include="..\UmbCheckout.Stripe\UmbCheckout.Stripe.csproj" />
   </ItemGroup>
 
   <ItemGroup>
