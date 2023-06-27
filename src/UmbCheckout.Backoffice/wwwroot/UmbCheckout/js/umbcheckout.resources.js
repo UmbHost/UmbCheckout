@@ -48,6 +48,14 @@
                 }
                 );
         },
+        getStripeShippingRate: function (id) {
+
+            return $http.get("backoffice/UmbCheckout/ShippingRatesApi/GetStripeShippingRate?id=" + id)
+                .then(function (response) {
+                    return response;
+                }
+                );
+        },
         updateShippingRate: function (configurationValues, id) {
             configurationValues.id = id
             return $http.patch("backoffice/UmbCheckout/ShippingRatesApi/UpdateShippingRate", configurationValues)
