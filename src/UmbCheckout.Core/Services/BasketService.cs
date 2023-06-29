@@ -10,7 +10,7 @@ namespace UmbCheckout.Core.Services
     /// <summary>
     /// A service which handles all things around the basket
     /// </summary>
-    internal class BasketService : IBasketService
+    public class BasketService : IBasketService
     {
         private readonly ISessionService _sessionService;
         private readonly IEventAggregator _eventAggregator;
@@ -64,7 +64,7 @@ namespace UmbCheckout.Core.Services
                 basket.LineItems = lineItems;
                 var updateResponse = await _sessionService.Update(basket);
                 basket = updateResponse.Basket;
-
+                
                 scope.Notifications.Publish(new OnBasketAddedNotification(item, basket));
                 return basket;
             }
