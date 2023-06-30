@@ -388,3 +388,5 @@ MigrationBackup/
 **/umbraco/mediacache/
 
 .vscode/settings.json
+
+UmbCheckout.TestSite/.config/dotnet-tools.json
