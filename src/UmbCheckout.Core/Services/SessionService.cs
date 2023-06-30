@@ -191,6 +191,7 @@ namespace UmbCheckout.Core.Services
                 if (!string.IsNullOrEmpty(sessionId))
                 {
                     _contextAccessor.HttpContext.Session.Remove(sessionId);
+                    CookieHelper.Remove(_contextAccessor.HttpContext, Consts.SessionKey);
                 }
 
                 scope.Notifications.Publish(new OnSessionClearedNotification(_contextAccessor.HttpContext, sessionId, configuration));
