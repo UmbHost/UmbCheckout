@@ -260,7 +260,8 @@ namespace UmbCheckout.Core.Services
             try
             {
                 var basket = await Get();
-                return basket.LineItems.Select(x => x.Price).Sum();
+
+                return basket.LineItems.Sum(lineItem => lineItem.Price * lineItem.Quantity);
             }
             catch (Exception ex)
             {
