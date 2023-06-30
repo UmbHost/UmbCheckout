@@ -5,7 +5,7 @@ namespace UmbCheckout.Core.Interfaces
     /// <summary>
     /// A service to handle the Get, Update and Clearing of the Session
     /// </summary>
-    internal interface ISessionService
+    public interface ISessionService
     {
         /// <summary>
         /// Gets the current UmbCheckout Session
