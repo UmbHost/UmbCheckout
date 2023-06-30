@@ -53,4 +53,65 @@ public class BasketServiceTests
         Assert.NotNull(result);
         Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id));
     }
+
+    [Fact]
+    public async void IncreaseProductQuantityInBasket()
+    {
+        // Arrange
+        var product = new LineItem
+        {
+            Id = Guid.NewGuid(),
+            Quantity = 1,
+            Name = "Test Product",
+            Price = 10.00m
+        };
+
+        // Act
+        var result = await _basketService.Add(product);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id));
+
+        var increasedQuantityResult = await _basketService.Add(product);
+
+        Assert.NotNull(increasedQuantityResult);
+        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id) && x.Quantity == 2);
+    }
+
+    [Fact]
+    public async void ReduceProductQuantityInBasket()
+    {
+        // Arrange
+        var product = new LineItem
+        {
+            Id = Guid.NewGuid(),
+            Quantity = 2,
+            Name = "Test Product",
+            Price = 10.00m
+        };
+
+        // Act
+        var result = await _basketService.Add(product);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id));
+
+        var reducedQuantityResult = await _basketService.Reduce(product.Id);
+
+        Assert.NotNull(reducedQuantityResult);
+        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id) && x.Quantity == 1);
+    }
+
+    [Fact]
+    public async void GetEmptyBasket()
+    {
+        // Act
+        var result = await _basketService.Get();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(result.LineItems.Any());
+    }
 }
