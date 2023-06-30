@@ -176,7 +176,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void TotalBasketAmount()
+    public async void BasketSubtotal()
     {
         var products = new List<LineItem>
         {
