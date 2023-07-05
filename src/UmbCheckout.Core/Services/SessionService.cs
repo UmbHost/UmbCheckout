@@ -20,7 +20,7 @@ namespace UmbCheckout.Core.Services
     /// A service to handle the Get, Update and Clearing of the Session
     /// </summary>
     [LicenseProvider(typeof(UmbLicensingProvider))]
-    internal class SessionService : ISessionService
+    public sealed class SessionService : ISessionService
     {
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IDataProtectionProvider _dataProtectionProvider;
@@ -174,7 +174,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task Clear()
+        public async Task<bool> Clear()
         {
             try
             {
@@ -188,7 +188,16 @@ namespace UmbCheckout.Core.Services
 
                 var sessionId = CookieHelper.Get(_contextAccessor.HttpContext, Consts.SessionKey);
 
+                if (!string.IsNullOrEmpty(sessionId))
+                {
+                    _contextAccessor.HttpContext.Session.Remove(sessionId);
+                    CookieHelper.Remove(_contextAccessor.HttpContext, Consts.SessionKey);
+                }
+
                 scope.Notifications.Publish(new OnSessionClearedNotification(_contextAccessor.HttpContext, sessionId, configuration));
+
+                return _contextAccessor.HttpContext.Session.Keys.Contains(sessionId);
+
             }
             catch (Exception ex)
             {

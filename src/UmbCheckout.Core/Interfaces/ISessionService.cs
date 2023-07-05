@@ -23,7 +23,7 @@ namespace UmbCheckout.Core.Interfaces
         /// <summary>
         /// Clears the current UmbCheckout Session
         /// </summary>
-        /// <returns></returns>
-        Task Clear();
+        /// <returns>True if session not found, false if session is found</returns>
+        Task<bool> Clear();
     }
 }

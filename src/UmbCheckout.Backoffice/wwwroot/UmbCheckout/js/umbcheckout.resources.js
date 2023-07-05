@@ -32,9 +32,25 @@
                 }
                 );
         },
+        getStripeShippingRates: function () {
+
+            return $http.get("backoffice/UmbCheckout/ShippingRatesApi/GetStripeShippingRates")
+                .then(function (response) {
+                    return response;
+                }
+                );
+        },
         getShippingRate: function (id) {
 
             return $http.get("backoffice/UmbCheckout/ShippingRatesApi/GetShippingRate?id=" + id)
+                .then(function (response) {
+                    return response;
+                }
+                );
+        },
+        getStripeShippingRate: function (id) {
+
+            return $http.get("backoffice/UmbCheckout/ShippingRatesApi/GetStripeShippingRate?id=" + id)
                 .then(function (response) {
                     return response;
                 }
