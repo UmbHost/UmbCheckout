@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 using UmbCheckout.Core.Interfaces;
-using UmbCheckout.Core.Pocos;
+using UmbCheckout.Shared.Notifications.Configuration;
 using UmbHost.Licensing;
 using Umbraco.Cms.Core.Mapping;
-using Umbraco.Cms.Infrastructure.Scoping;
+using Umbraco.Cms.Core.Scoping;
+using IScopeProvider = Umbraco.Cms.Infrastructure.Scoping.IScopeProvider;
+using UmbCheckoutConfiguration = UmbCheckout.Core.Pocos.UmbCheckoutConfiguration;
 
 namespace UmbCheckout.Core.Services
 {
@@ -15,15 +17,17 @@ namespace UmbCheckout.Core.Services
     internal class ConfigurationService : IConfigurationService
     {
         private readonly IScopeProvider _scopeProvider;
+        private readonly ICoreScopeProvider _coreScopeProvider;
         private readonly IUmbracoMapper _mapper;
         private readonly ILogger<ConfigurationService> _logger;
         private readonly bool _licenseIsValid;
 
-        public ConfigurationService(IScopeProvider scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper)
+        public ConfigurationService(IScopeProvider scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, ICoreScopeProvider coreScopeProvider)
         {
             _scopeProvider = scopeProvider;
             _logger = logger;
             _mapper = mapper;
+            _coreScopeProvider = coreScopeProvider;
             _licenseIsValid = LicenseManager.IsValid(typeof(ConfigurationService));
         }
 
@@ -64,6 +68,7 @@ namespace UmbCheckout.Core.Services
                     configuration.StoreBasketInCookie = false;
                 }
 
+                using var coreScope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 var configurationPoco = _mapper.Map<Shared.Models.UmbCheckoutConfiguration, UmbCheckoutConfiguration>(configuration);
                 var existingConfiguration = await GetConfiguration();
                 if (existingConfiguration != null)
@@ -74,7 +79,8 @@ namespace UmbCheckout.Core.Services
                         using var scope = _scopeProvider.CreateScope(autoComplete: true);
                         var db = scope.Database;
                         var result = await db.UpdateAsync(configurationPoco);
-
+                        var updatedConfiguration = await GetConfiguration();
+                        scope.Notifications.Publish(new OnConfigurationSavedNotification(updatedConfiguration));
                         return result != 0;
                     }
                 }
