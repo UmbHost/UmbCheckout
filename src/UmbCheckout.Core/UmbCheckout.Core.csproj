@@ -26,11 +26,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\UmbHost.Licensing\UmbHost.Licensing.csproj" />
     <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="UmbHost.Licensing" Version="1.0.2" />
     <PackageReference Include="Umbraco.Cms.Web.Common" Version="10.5.1" />
     <PackageReference Include="Umbraco.Cms.Web.Website" Version="10.5.1" />
   </ItemGroup>

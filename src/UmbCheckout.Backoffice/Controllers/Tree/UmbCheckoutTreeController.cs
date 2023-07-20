@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel;
 using UmbCheckout.Shared;
-using UmbHost.Licensing;
+using UmbHost.Licensing.Models;
+using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Actions;
 using Umbraco.Cms.Core.Events;
@@ -20,18 +20,16 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
     /// </summary>
     [Tree("settings", "umbCheckout", TreeTitle = Consts.PackageName, TreeGroup = "umbCheckout", IsSingleNodeTree = true, SortOrder = 35)]
     [PluginController(Consts.PackageName)]
-    [LicenseProvider(typeof(UmbLicensingProvider))]
     public class UmbCheckoutTreeController : TreeController
     {
 
         private readonly IMenuItemCollectionFactory _menuItemCollectionFactory;
-        private readonly bool _licenseIsValid;
 
-        public UmbCheckoutTreeController(ILocalizedTextService localizedTextService, UmbracoApiControllerTypeCollection umbracoApiControllerTypeCollection, IEventAggregator eventAggregator, IMenuItemCollectionFactory menuItemCollectionFactory) 
+        public UmbCheckoutTreeController(ILocalizedTextService localizedTextService, UmbracoApiControllerTypeCollection umbracoApiControllerTypeCollection, IEventAggregator eventAggregator, IMenuItemCollectionFactory menuItemCollectionFactory, LicenseService licenseService) 
             : base(localizedTextService, umbracoApiControllerTypeCollection, eventAggregator)
         {
             _menuItemCollectionFactory = menuItemCollectionFactory ?? throw new ArgumentNullException(nameof(menuItemCollectionFactory));
-            _licenseIsValid = LicenseManager.IsValid(typeof(UmbCheckoutTreeController));
+            licenseService.RunLicenseCheck();
         }
 
         protected override ActionResult<TreeNodeCollection> GetTreeNodes(string id, FormCollection queryStrings)
@@ -50,7 +48,7 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
         {
             var menu = _menuItemCollectionFactory.Create();
 
-            if (_licenseIsValid && id == "2")
+            if (UmbCheckoutSettings.IsLicensed && id == "2")
             {
                 MenuItem? item = menu.Items.Add<ActionNew>(LocalizedTextService, opensDialog: true, useLegacyIcon: false);
                 item?.NavigateToRoute($"{Constants.Applications.Settings}/umbCheckout/taxRate");

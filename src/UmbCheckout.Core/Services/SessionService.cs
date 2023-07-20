@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,8 @@ using UmbCheckout.Shared;
 using UmbCheckout.Shared.Helpers;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Session;
-using UmbHost.Licensing;
+using UmbHost.Licensing.Models;
+using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Scoping;
 using Umbraco.Cms.Web.Common.Security;
@@ -19,7 +19,6 @@ namespace UmbCheckout.Core.Services
     /// <summary>
     /// A service to handle the Get, Update and Clearing of the Session
     /// </summary>
-    [LicenseProvider(typeof(UmbLicensingProvider))]
     public sealed class SessionService : ISessionService
     {
         private readonly IHttpContextAccessor _contextAccessor;
@@ -30,9 +29,8 @@ namespace UmbCheckout.Core.Services
         private readonly IDatabaseService _databaseService;
         private readonly IConfigurationService _configurationService;
         private string? _sessionId = string.Empty;
-        private readonly bool _licenseIsValid;
 
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, IDatabaseService databaseService)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, IDatabaseService databaseService, LicenseService licenseService)
         {
             _dataProtectionProvider = dataProtectionProvider;
             _contextAccessor = contextAccessor;
@@ -41,7 +39,7 @@ namespace UmbCheckout.Core.Services
             _coreScopeProvider = coreScopeProvider;
             _configurationService = configurationService;
             _databaseService = databaseService;
-            _licenseIsValid = LicenseManager.IsValid(typeof(SessionService));
+            licenseService.RunLicenseCheck();
         }
 
         /// <summary>
@@ -120,7 +118,7 @@ namespace UmbCheckout.Core.Services
                     }
                     else
                     {
-                        if (configuration.StoreBasketInDatabase && !string.IsNullOrEmpty(_sessionId) && _licenseIsValid)
+                        if (configuration.StoreBasketInDatabase && !string.IsNullOrEmpty(_sessionId) && UmbCheckoutSettings.IsLicensed)
                         {
                             var basket = await _databaseService.GetBasket(_sessionId);
                             if (basket != null)

@@ -1,6 +1,7 @@
 function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, notificationsService, formHelper) {
     var vm = this;
     vm.saveButtonState = "init";
+    vm.checkLicenceButtonState = "init";
     vm.createFolderError = "";
     vm.properties = [];
     vm.LicenseState = {}
@@ -13,11 +14,13 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
 
     umbCheckoutResources.getLicenseStatus()
         .then(function (response) {
-            if (response.data == "Invalid") {
+            vm.LicenseState.Status = response.data;
+
+            if (response.data.status == "Invalid") {
                 vm.LicenseState.Valid = false;
                 vm.LicenseState.Message = "UmbCheckout is running in unlicensed mode, please <a href=\"#\" target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to support development"
             }
-            else if (response.data == "Valid") {
+            else if (response.data.status == "Valid") {
                 vm.LicenseState.Valid = true;
             }
         }
@@ -54,6 +57,24 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
         }
     }
 
+    function checkLicense() {
+        vm.checkLicenceButtonState = "busy";
+        umbCheckoutResources.checkLicense()
+            .then(function (response) {
+                notificationsService.success("License check requested", "A license check has been requested");
+
+                setTimeout(function () {
+                    window.location.reload(1);
+                }, 5000);
+            })
+            .catch(
+                function (response) {
+                    notificationsService.error("License check failed to save", "A license check has failed");
+                    vm.checkLicenceButtonState = "error";
+                }
+            );
+    }
+    vm.checkLicence = checkLicense;
     vm.saveConfiguration = saveConfiguration;
 }
 angular.module("umbraco").controller("UmbCheckout.Settings.Controller", UmbCheckout);

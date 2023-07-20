@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.Pocos;
 using UmbCheckout.Shared.Models;
-using UmbHost.Licensing;
+using UmbHost.Licensing.Models;
+using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Mapping;
 using Umbraco.Cms.Infrastructure.Scoping;
 
@@ -12,20 +12,18 @@ namespace UmbCheckout.Core.Services
     /// <summary>
     /// A service which handles storing of the Basket in the database
     /// </summary>
-    [LicenseProvider(typeof(UmbLicensingProvider))]
     internal class DatabaseService : IDatabaseService
     {
         private readonly ILogger<DatabaseService> _logger;
         private readonly IScopeProvider _scopeProvider;
         private readonly IUmbracoMapper _mapper;
-        private readonly bool _licenseIsValid;
 
-        public DatabaseService(ILogger<DatabaseService> logger, IScopeProvider scopeProvider, IUmbracoMapper mapper)
+        public DatabaseService(ILogger<DatabaseService> logger, IScopeProvider scopeProvider, IUmbracoMapper mapper, LicenseService licenseService)
         {
             _logger = logger;
             _scopeProvider = scopeProvider;
             _mapper = mapper;
-            _licenseIsValid = LicenseManager.IsValid(typeof(DatabaseService));
+            licenseService.RunLicenseCheck();
         }
 
         /// <inheritdoc />
@@ -33,7 +31,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!_licenseIsValid)
+                if (!UmbCheckoutSettings.IsLicensed)
                 {
                     return null;
                 }

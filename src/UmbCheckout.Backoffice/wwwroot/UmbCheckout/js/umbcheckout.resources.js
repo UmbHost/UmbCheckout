@@ -24,6 +24,14 @@
                 }
                 );
         },
+        checkLicense: function () {
+
+            return $http.get("backoffice/UmbCheckout/LicenceCheck/CheckLicense")
+                .then(function (response) {
+                    return response;
+                }
+                );
+        },
         getShippingRates: function () {
 
             return $http.get("backoffice/UmbCheckout/ShippingRatesApi/GetShippingRates")

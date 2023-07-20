@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -6,7 +5,8 @@ using UmbCheckout.Backoffice.Models;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared;
 using UmbCheckout.Shared.Extensions;
-using UmbHost.Licensing;
+using UmbHost.Licensing.Models;
+using UmbHost.Licensing.Services;
 using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Cms.Web.Common.Attributes;
 
@@ -16,18 +16,16 @@ namespace UmbCheckout.Backoffice.Controllers.Api
     /// UmbracoAuthorizedApiController to retrieve the configuration settings for the backoffice
     /// </summary>
     [PluginController(Consts.PackageName)]
-    [LicenseProvider(typeof(UmbLicensingProvider))]
     public class ConfigurationApiController : UmbracoAuthorizedApiController
     {
         private readonly IConfigurationService _configuration;
         private readonly ILogger<ConfigurationApiController> _logger;
-        private readonly bool _licenseIsValid;
 
-        public ConfigurationApiController(IConfigurationService configuration, ILogger<ConfigurationApiController> logger)
+        public ConfigurationApiController(IConfigurationService configuration, ILogger<ConfigurationApiController> logger, LicenseService licenseService)
         {
             _configuration = configuration;
             _logger = logger;
-            _licenseIsValid = LicenseManager.IsValid(typeof(ConfigurationApiController));
+            licenseService.RunLicenseCheck();
         }
 
         /// <summary>
@@ -57,12 +55,13 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         [HttpGet]
         public IActionResult GetLicenseStatus()
         {
-            if (_licenseIsValid)
+            var model = new LicenseStatus
             {
-                return new JsonResult("Valid");
-            }
-
-            return new JsonResult("Invalid");
+                Status = UmbCheckoutSettings.LicenseStatus,
+                RegDate = UmbCheckoutSettings.LicenseDetails.RegDate,
+                ExpiryDateTime = UmbCheckoutSettings.LicenseDetails.ExpiryDateTime
+            };
+            return new JsonResult(model);
         }
 
         /// <summary>
@@ -82,7 +81,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                 var enableShipping =
                     configValues.EnableShipping.ToBoolean();
 
-                if (!_licenseIsValid)
+                if (!UmbCheckoutSettings.IsLicensed)
                 {
                     storeBasketInCookie = false;
                     storeBasketInDatabase = false;
@@ -134,7 +133,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
             {
                 var storeBasketInCookieDescription = "Whether the basket contents should be stored in a cookie";
                 var storeBasketInDatabaseDescription = "Whether the basket contents should be stored in the database";
-                if (!_licenseIsValid)
+                if (!UmbCheckoutSettings.IsLicensed)
                 {
                     storeBasketInCookieDescription += Environment.NewLine + "DISABLED IN UNLICENSED MODE";
                     storeBasketInDatabaseDescription += Environment.NewLine + "DISABLED IN UNLICENSED MODE";
@@ -191,7 +190,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     },
                 };
 
-                if (_licenseIsValid)
+                if (UmbCheckoutSettings.IsLicensed)
                 {
                     backOfficeProperties.Add(new Property
                     {

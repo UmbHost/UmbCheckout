@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.ComponentModel;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared.Notifications.Configuration;
-using UmbHost.Licensing;
+using UmbHost.Licensing.Models;
+using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Mapping;
 using Umbraco.Cms.Core.Scoping;
 using IScopeProvider = Umbraco.Cms.Infrastructure.Scoping.IScopeProvider;
@@ -13,22 +13,20 @@ namespace UmbCheckout.Core.Services
     /// <summary>
     /// A service which Gets or Updates the configuration
     /// </summary>
-    [LicenseProvider(typeof(UmbLicensingProvider))]
     internal class ConfigurationService : IConfigurationService
     {
         private readonly IScopeProvider _scopeProvider;
         private readonly ICoreScopeProvider _coreScopeProvider;
         private readonly IUmbracoMapper _mapper;
         private readonly ILogger<ConfigurationService> _logger;
-        private readonly bool _licenseIsValid;
 
-        public ConfigurationService(IScopeProvider scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, ICoreScopeProvider coreScopeProvider)
+        public ConfigurationService(IScopeProvider scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, ICoreScopeProvider coreScopeProvider, LicenseService licenseService)
         {
             _scopeProvider = scopeProvider;
             _logger = logger;
             _mapper = mapper;
             _coreScopeProvider = coreScopeProvider;
-            _licenseIsValid = LicenseManager.IsValid(typeof(ConfigurationService));
+            licenseService.RunLicenseCheck();
         }
 
         /// <inheritdoc />
@@ -39,7 +37,7 @@ namespace UmbCheckout.Core.Services
                 using var scope = _scopeProvider.CreateScope(autoComplete: true);
                 var result = await scope.Database.QueryAsync<UmbCheckoutConfiguration>().SingleOrDefault();
 
-                if (!_licenseIsValid)
+                if (!UmbCheckoutSettings.IsLicensed)
                 {
                     if (result != null)
                     {
@@ -62,7 +60,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!_licenseIsValid)
+                if (!UmbCheckoutSettings.IsLicensed)
                 {
                     configuration.StoreBasketInDatabase = false;
                     configuration.StoreBasketInCookie = false;
@@ -110,7 +108,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!_licenseIsValid)
+                if (!UmbCheckoutSettings.IsLicensed)
                 {
                     configuration.StoreBasketInDatabase = false;
                     configuration.StoreBasketInCookie = false;
