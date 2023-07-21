@@ -16,11 +16,11 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
         .then(function (response) {
             vm.LicenseState.Status = response.data;
 
-            if (response.data.status == "Invalid") {
+            if (response.data.status == "Invalid" || response.data.status == "Unlicensed") {
                 vm.LicenseState.Valid = false;
                 vm.LicenseState.Message = "UmbCheckout is running in unlicensed mode, please <a href=\"#\" target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to support development"
             }
-            else if (response.data.status == "Valid") {
+            else if (response.data.status == "Active") {
                 vm.LicenseState.Valid = true;
             }
         }
@@ -63,7 +63,7 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
             .then(function (response) {
 
                 if (response.data.Accepted == "Accepted") {
-                    notificationsService.success("License check requested", "A license check has been requested");
+                    notificationsService.success("License check requested", "A license check has been requested, please wait for the window to reload");
 
                     setTimeout(function () {
                         window.location.reload(1);
@@ -71,7 +71,7 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
                 }
 
                 if (response.data.Accepted == "Wait") {
-                    notificationsService.warning("Please to check the license", "You can try again in " + response.data.TimeLeft);
+                    notificationsService.warning("Please wait to re-check the license", "You can try again in " + response.data.TimeLeft);
                     vm.checkLicenceButtonState = "error";
                 }
             })
