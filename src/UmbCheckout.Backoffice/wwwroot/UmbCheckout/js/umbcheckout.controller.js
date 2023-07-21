@@ -61,11 +61,19 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
         vm.checkLicenceButtonState = "busy";
         umbCheckoutResources.checkLicense()
             .then(function (response) {
-                notificationsService.success("License check requested", "A license check has been requested");
 
-                setTimeout(function () {
-                    window.location.reload(1);
-                }, 5000);
+                if (response.data.Accepted == "Accepted") {
+                    notificationsService.success("License check requested", "A license check has been requested");
+
+                    setTimeout(function () {
+                        window.location.reload(1);
+                    }, 5000);
+                }
+
+                if (response.data.Accepted == "Wait") {
+                    notificationsService.warning("Please to check the license", "You can try again in " + response.data.TimeLeft);
+                    vm.checkLicenceButtonState = "error";
+                }
             })
             .catch(
                 function (response) {
