@@ -31,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms.Web.Common" Version="10.5.1" />
-    <PackageReference Include="Umbraco.Cms.Web.Website" Version="10.5.1" />
+    <PackageReference Include="Umbraco.Cms.Web.Common" Version="10.6.1" />
+    <PackageReference Include="Umbraco.Cms.Web.Website" Version="10.6.1" />
   </ItemGroup>
 
 </Project>
