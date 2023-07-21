@@ -16,7 +16,7 @@
 	  <Description>An eCommerce solution for Umbraco</Description>
 	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
 	  <FileVersion>1.0.0.0</FileVersion>
-	  <PackageVersion>1.0.0-beta5</PackageVersion>
+	  <PackageVersion>1.0.0-beta6</PackageVersion>
 	  <PackageTags>umbraco-marketplace;umbraco;ecommerce;umbcheckout;</PackageTags>
 	  <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
