@@ -2,8 +2,14 @@
     <form></form>
     <form name="configurationForm" novalidate val-form-manager ng-submit="vm.saveConfiguration()">
         <umb-panel>
-            <umb-editor-view header="false" class="form-horizontal">
-
+            <umb-editor-view class="form-horizontal">
+                <umb-editor-header name="'UmbCheckout'"
+                                   name-locked="true"
+                                   hide-alias="true"
+                                   show-back-button="false"
+                                   hide-description="true"
+                                   hide-icon="true">
+                </umb-editor-header>
                 <umb-editor-container>
                     <umb-pane>
                         <div class="dashboard-overview">

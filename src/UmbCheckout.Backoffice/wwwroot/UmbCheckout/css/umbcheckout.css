@@ -1,9 +1,4 @@
-﻿.umbcheckout .dashboard {
-    top: 0px;
-}
-
-
-.umbcheckout .dashboard-overview {
+﻿.umbcheckout .dashboard-overview {
     /*top: 0px;*/
     flex-direction: row;
     display: flex;
