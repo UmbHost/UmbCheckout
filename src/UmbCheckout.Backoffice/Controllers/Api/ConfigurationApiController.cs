@@ -61,7 +61,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                 RegDate = UmbCheckoutSettings.LicenseDetails.RegDate,
                 ExpiryDateTime = UmbCheckoutSettings.LicenseDetails.ExpiryDateTime,
                 ValidDomains = UmbCheckoutSettings.LicenseDetails.ValidDomains,
-                ValidPaths = UmbCheckoutSettings.LicenseDetails.ValidPaths
+                ValidPaths = UmbCheckoutSettings.LicenseDetails.ValidPaths,
+                LicenseAddons = UmbCheckoutSettings.LicenseDetails.LicenseAddons
             };
             return new JsonResult(model);
         }

@@ -64,7 +64,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="umb-property" label="Expiry Date">
+                                        <div class="umb-property" label="Expiry Date" ng-if="vm.LicenseState.Status.expiryDateTime != '0000-00-00'">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
                                                     <label class="control-label" for=""> <span>Expiry Date</span></label>
@@ -107,6 +107,35 @@
                                                     label="Re-Check License"
                                                     disabled="vm.checkLicenceButtonState === 'busy'">
                                         </umb-button>
+                                    </umb-box-content>
+                                </umb-box>
+                                <umb-box ng-repeat="property in vm.LicenseState.Status.licenseAddons">
+                                    <umb-box-header title="License Addon - {{property.name}}"></umb-box-header>
+                                    <umb-box-content class="block-form ">
+                                        <div class="umb-property" label="{{property.name}}">
+                                            <div class="control-group umb-control-group">
+                                                <div class="umb-el-wrap">
+                                                    <label class="control-label" for=""> <span>License Status</span></label>
+                                                    <div class="controls">
+                                                        <div style="display: flex; justify-content: space-between;align-items: center;">
+                                                            <div>{{property.status}}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="umb-property" label="{{property.name}}"  ng-if="property.nextDueDate != '0000-00-00'">
+                                            <div class="control-group umb-control-group">
+                                                <div class="umb-el-wrap">
+                                                    <label class="control-label" for=""> <span>Expiry Date</span></label>
+                                                    <div class="controls">
+                                                        <div style="display: flex; justify-content: space-between;align-items: center;">
+                                                            <div>{{property.nextDueDate}}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </umb-box-content>
                                 </umb-box>
                             </div>
