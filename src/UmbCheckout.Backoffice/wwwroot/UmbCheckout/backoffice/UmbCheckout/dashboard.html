@@ -1,4 +1,4 @@
-﻿<div ng-controller="UmbCheckout.Settings.Controller as vm" class="umbcheckout">
+<div ng-controller="UmbCheckout.Settings.Controller as vm" class="umbcheckout">
     <form></form>
     <form name="configurationForm" novalidate val-form-manager ng-submit="vm.saveConfiguration()">
         <umb-panel>
@@ -65,6 +65,30 @@
                                                     <div class="controls">
                                                         <div style="display: flex; justify-content: space-between;align-items: center;">
                                                             <div>{{vm.LicenseState.Status.expiryDateTime}}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="umb-property" label="Valid Domains">
+                                            <div class="control-group umb-control-group">
+                                                <div class="umb-el-wrap">
+                                                    <label class="control-label" for=""> <span>Valid Domains</span></label>
+                                                    <div class="controls">
+                                                        <div style="display: flex; justify-content: space-between;align-items: center;">
+                                                            <div>{{vm.LicenseState.Status.validDomains}}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="umb-property" label="Valid Path">
+                                            <div class="control-group umb-control-group">
+                                                <div class="umb-el-wrap">
+                                                    <label class="control-label" for=""> <span>Valid Path</span></label>
+                                                    <div class="controls">
+                                                        <div style="display: flex; justify-content: space-between;align-items: center;">
+                                                            <div>{{vm.LicenseState.Status.validPaths}}</div>
                                                         </div>
                                                     </div>
                                                 </div>
