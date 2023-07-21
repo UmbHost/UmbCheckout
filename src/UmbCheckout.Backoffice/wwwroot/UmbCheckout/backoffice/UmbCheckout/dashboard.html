@@ -1,4 +1,4 @@
-<div ng-controller="UmbCheckout.Settings.Controller as vm" class="umbcheckout">
+﻿<div ng-controller="UmbCheckout.Settings.Controller as vm" class="umbcheckout">
     <form></form>
     <form name="configurationForm" novalidate val-form-manager ng-submit="vm.saveConfiguration()">
         <umb-panel>
@@ -98,8 +98,7 @@
                                                     type="button"
                                                     button-style="action"
                                                     state="vm.checkLicenceButtonState"
-                                                    shortcut="ctrl+c"
-                                                    label="Check License"
+                                                    label="Re-Check License"
                                                     disabled="vm.checkLicenceButtonState === 'busy'">
                                         </umb-button>
                                     </umb-box-content>
