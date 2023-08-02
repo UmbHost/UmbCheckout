@@ -15,7 +15,7 @@
     <Description>An eCommerce solution for Umbraco</Description>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-	  <PackageVersion>1.0.0-beta6</PackageVersion>
+	  <PackageVersion>1.0.0-beta7</PackageVersion>
 	  <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
