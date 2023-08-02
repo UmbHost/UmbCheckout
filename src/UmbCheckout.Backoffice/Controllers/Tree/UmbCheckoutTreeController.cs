@@ -38,7 +38,7 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
 
             if (id == Constants.System.Root.ToInvariantString())
             {
-                nodes.Add(CreateTreeNode("1", "-1", queryStrings, "Configuration", "icon-settings", false, $"{Constants.Applications.Settings}/{"umbCheckout"}/{"dashboard"}"));
+                nodes.Add(CreateTreeNode("1", "-1", queryStrings, "Configuration", "icon-settings", false, $"{Constants.Applications.Settings}/{"UmbCheckout"}/{"dashboard"}"));
             }
 
             return nodes;
@@ -51,7 +51,7 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
             if (UmbCheckoutSettings.IsLicensed && id == "2")
             {
                 MenuItem? item = menu.Items.Add<ActionNew>(LocalizedTextService, opensDialog: true, useLegacyIcon: false);
-                item?.NavigateToRoute($"{Constants.Applications.Settings}/umbCheckout/taxRate");
+                item?.NavigateToRoute($"{Constants.Applications.Settings}/UmbCheckout/taxRate");
             }
 
             return menu;
@@ -69,7 +69,7 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
 
             if (root != null)
             {
-                root.RoutePath = $"{Constants.Applications.Settings}/umbCheckout/dashboard";
+                root.RoutePath = $"{Constants.Applications.Settings}/UmbCheckout/dashboard";
 
                 root.Icon = "icon-shopping-basket-alt-2";
                 root.HasChildren = true;
