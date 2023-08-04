@@ -33,6 +33,7 @@ namespace UmbCheckout.Core.Composers
         private static void Map(UmbCheckoutConfiguration source, Shared.Models.UmbCheckoutConfiguration target, MapperContext context)
         {
             target.Id = source.Id;
+            target.Key = source.Key;
             target.BasketInCookieExpiry = source.BasketInCookieExpiry;
             target.BasketInDatabaseExpiry = source.BasketInDatabaseExpiry;
             target.CancelPageUrl = (!string.IsNullOrEmpty(source.CancelPageUrl)
@@ -50,6 +51,7 @@ namespace UmbCheckout.Core.Composers
         private static void Map(Shared.Models.UmbCheckoutConfiguration source, UmbCheckoutConfiguration target, MapperContext context)
         {
             target.Id = source.Id;
+            target.Key = source.Key;
             target.BasketInCookieExpiry = source.BasketInCookieExpiry;
             target.BasketInDatabaseExpiry = source.BasketInDatabaseExpiry;
             target.CancelPageUrl = JsonSerializer.Serialize(source.CancelPageUrl);
