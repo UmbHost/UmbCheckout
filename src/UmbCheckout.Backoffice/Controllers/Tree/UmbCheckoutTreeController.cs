@@ -36,7 +36,6 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
             if (id == Constants.System.Root.ToInvariantString())
             {
                 nodes.Add(CreateTreeNode("1", "-1", queryStrings, "Configuration", "icon-settings", false, $"{Constants.Applications.Settings}/{"UmbCheckout"}/{"dashboard"}"));
-                nodes.Add(CreateTreeNode("2", "1", queryStrings, "Stripe", "icon-credit-card", true, $"{Constants.Applications.Settings}/{"UmbCheckout"}/{"dashboard"}"));
             }
 
             return nodes;
