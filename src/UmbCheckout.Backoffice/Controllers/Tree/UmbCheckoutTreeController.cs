@@ -39,6 +39,7 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
             if (id == Constants.System.Root.ToInvariantString())
             {
                 nodes.Add(CreateTreeNode("1", "-1", queryStrings, "Configuration", "icon-settings", false, $"{Constants.Applications.Settings}/{"UmbCheckout"}/{"dashboard"}"));
+                nodes.Add(CreateTreeNode("2", "1", queryStrings, "Stripe", "icon-credit-card", true, $"{Constants.Applications.Settings}/{"UmbCheckout"}/{"dashboard"}"));
             }
 
             return nodes;
@@ -47,13 +48,6 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
         protected override ActionResult<MenuItemCollection> GetMenuForNode(string id, FormCollection queryStrings)
         {
             var menu = _menuItemCollectionFactory.Create();
-
-            if (UmbCheckoutSettings.IsLicensed && id == "2")
-            {
-                MenuItem? item = menu.Items.Add<ActionNew>(LocalizedTextService, opensDialog: true, useLegacyIcon: false);
-                item?.NavigateToRoute($"{Constants.Applications.Settings}/UmbCheckout/taxRate");
-            }
-
             return menu;
         }
 
