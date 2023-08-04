@@ -7,6 +7,8 @@
     {
         public int Id { get; set; }
 
+        public Guid Key { get; set; } = Guid.NewGuid();
+
         public IEnumerable<MultiUrlPicker> SuccessPageUrl { get; set; } = Enumerable.Empty<MultiUrlPicker>();
 
         public IEnumerable<MultiUrlPicker> CancelPageUrl { get; set; } = Enumerable.Empty<MultiUrlPicker>();

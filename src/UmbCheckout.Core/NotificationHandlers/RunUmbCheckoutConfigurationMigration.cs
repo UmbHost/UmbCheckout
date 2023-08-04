@@ -38,6 +38,8 @@ namespace UmbCheckout.Core.NotificationHandlers
             var migrationPlan = new MigrationPlan("UmbCheckoutConfiguration");
             migrationPlan.From(string.Empty)
                 .To<AddUmbCheckoutConfigurationTable>("42d30e38-1cf0-4bd8-8f47-c6517e4be09d");
+            migrationPlan.From("42d30e38-1cf0-4bd8-8f47-c6517e4be09d")
+                .To<AddUmbCheckoutKey>("a877baa5-644d-4367-a1c0-5dccda876f79");
 
             var upgrader = new Upgrader(migrationPlan);
             upgrader.Execute(
