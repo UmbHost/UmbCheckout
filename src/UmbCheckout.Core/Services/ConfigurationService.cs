@@ -74,6 +74,7 @@ namespace UmbCheckout.Core.Services
                     if (configurationPoco != null)
                     {
                         configurationPoco.Id = existingConfiguration.Id;
+                        configurationPoco.Key = existingConfiguration.Key;
                         using var scope = _scopeProvider.CreateScope(autoComplete: true);
                         var db = scope.Database;
                         var result = await db.UpdateAsync(configurationPoco);
