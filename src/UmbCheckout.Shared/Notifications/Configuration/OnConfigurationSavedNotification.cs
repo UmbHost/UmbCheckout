@@ -8,9 +8,9 @@ namespace UmbCheckout.Shared.Notifications.Configuration
     /// </summary>
     public class OnConfigurationSavedNotification : INotification
     {
-        public UmbCheckoutConfiguration Configuration { get; }
+        public UmbCheckoutConfiguration? Configuration { get; }
 
-        public OnConfigurationSavedNotification(UmbCheckoutConfiguration configuration)
+        public OnConfigurationSavedNotification(UmbCheckoutConfiguration? configuration)
         {
             Configuration = configuration;
         }
