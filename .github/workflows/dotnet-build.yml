@@ -85,10 +85,15 @@ jobs:
       run: dotnet pack ./src/UmbCheckout.Stripe.uSync/UmbCheckout.Stripe.uSync.csproj --no-restore -c ${{env.CONFIG}} --output ${{env.OUT_FOLDER}} /p:version=${{steps.gitversion.outputs.fullSemVer}}
 
     - name: Build UmbCheckout
-      run: dotnet pack ./UmbCheckout/UmbCheckout.csproj --no-restore -c ${{env.CONFIG}} --output ${{env.OUT_FOLDER}} /p:version=${{steps.gitversion.outputs.fullSemVer}}
+      run: dotnet pack ./src/UmbCheckout/UmbCheckout.csproj --no-restore -c ${{env.CONFIG}} --output ${{env.OUT_FOLDER}} /p:version=${{steps.gitversion.outputs.fullSemVer}}
       
-    - name: Upload nuget file as build artifact      
-      uses: actions/upload-artifact@v2
-      with:
-        name: Nuget Build Output
-        path: ${{env.OUT_FOLDER}}
+  - name: Push to UmbHost GitHub Nuget Repo
+        if: ${{ github.event_name != 'pull_request' }}
+        run: | 
+          dotnet nuget push ./build.out/UmbCheckout.${{steps.gitversion.outputs.fullSemVer}}.nupkg --skip-duplicate --source https://nuget.pkg.github.com/umbhost/index.json --api-key ${{ github.token }}
+          dotnet nuget push ./build.out/UmbCheckout.Core.${{steps.gitversion.outputs.fullSemVer}}.nupkg --skip-duplicate --source https://nuget.pkg.github.com/umbhost/index.json --api-key ${{ github.token }}
+          dotnet nuget push ./build.out/UmbCheckout.Shared.${{steps.gitversion.outputs.fullSemVer}}.nupkg --skip-duplicate --source https://nuget.pkg.github.com/umbhost/index.json --api-key ${{ github.token }}
+          dotnet nuget push ./build.out/UmbCheckout.Backoffice.${{steps.gitversion.outputs.fullSemVer}}.nupkg --skip-duplicate --source https://nuget.pkg.github.com/umbhost/index.json --api-key ${{ github.token }}
+          dotnet nuget push ./build.out/UmbCheckout.Stripe.${{steps.gitversion.outputs.fullSemVer}}.nupkg --skip-duplicate --source https://nuget.pkg.github.com/umbhost/index.json --api-key ${{ github.token }}
+          dotnet nuget push ./build.out/UmbCheckout.uSync.${{steps.gitversion.outputs.fullSemVer}}.nupkg --skip-duplicate --source https://nuget.pkg.github.com/umbhost/index.json --api-key ${{ github.token }}
+          dotnet nuget push ./build.out/UmbCheckout.Stripe.uSync.${{steps.gitversion.outputs.fullSemVer}}.nupkg --skip-duplicate --source https://nuget.pkg.github.com/umbhost/index.json --api-key ${{ github.token }}
