@@ -6,4 +6,7 @@
 	<area alias="dashboard">
 		<key alias="umbCheckout">UmbCheckout</key>
 	</area>
+	<area alias="usync">
+		<key alias="umbcheckout-description">Configuration and Payment Provider settings</key>
+	</area>
 </language>
