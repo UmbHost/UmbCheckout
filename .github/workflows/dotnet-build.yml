@@ -54,8 +54,11 @@ jobs:
 # ------------------------
 # actual builds / packages 
 # ------------------------
-    - name: Restore
+    - name: Restore UmbCheckout
       run: dotnet restore ./src/UmbCheckout/UmbCheckout.csproj 
+
+    - name: Restore UmbCheckout.uSync
+      run: dotnet restore ./src/UmbCheckout.uSync/UmbCheckout.uSync.csproj
 
     - name: tests
       run: dotnet test ./src/UmbCheckout.Tests/UmbCheckout.Tests.csproj
