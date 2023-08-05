@@ -60,6 +60,9 @@ jobs:
     - name: Restore UmbCheckout.uSync
       run: dotnet restore ./src/UmbCheckout.uSync/UmbCheckout.uSync.csproj
 
+    - name: Restore UmbCheckout.Stripe.uSync
+      run: dotnet restore ./src/UmbCheckout.Stripe.uSync/UmbCheckout.Stripe.uSync.csproj
+
     - name: tests
       run: dotnet test ./src/UmbCheckout.Tests/UmbCheckout.Tests.csproj
 
@@ -75,11 +78,11 @@ jobs:
     - name: Build UmbCheckout.Backoffice
       run: dotnet pack ./src/UmbCheckout.Backoffice/UmbCheckout.Backoffice.csproj -c ${{env.CONFIG}} --output ${{env.OUT_FOLDER}} /p:version=${{steps.gitversion.outputs.fullSemVer}}
 
-    - name: Build UmbCheckout.Stripe.uSync
-      run: dotnet pack ./src/UmbCheckout.Stripe.uSync/UmbCheckout.Stripe.uSync.csproj --no-restore -c ${{env.CONFIG}} --output ${{env.OUT_FOLDER}} /p:version=${{steps.gitversion.outputs.fullSemVer}}
-
     - name: Build UmbCheckout.uSync
       run: dotnet pack ./src/UmbCheckout.uSync/UmbCheckout.uSync.csproj --no-restore -c ${{env.CONFIG}} --output ${{env.OUT_FOLDER}} /p:version=${{steps.gitversion.outputs.fullSemVer}}
+
+    - name: Build UmbCheckout.Stripe.uSync
+      run: dotnet pack ./src/UmbCheckout.Stripe.uSync/UmbCheckout.Stripe.uSync.csproj --no-restore -c ${{env.CONFIG}} --output ${{env.OUT_FOLDER}} /p:version=${{steps.gitversion.outputs.fullSemVer}}
 
     - name: Build UmbCheckout
       run: dotnet pack ./UmbCheckout/UmbCheckout.csproj --no-restore -c ${{env.CONFIG}} --output ${{env.OUT_FOLDER}} /p:version=${{steps.gitversion.outputs.fullSemVer}}
