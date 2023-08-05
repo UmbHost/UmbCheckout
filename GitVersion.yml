@@ -1,0 +1,12 @@
+assembly-versioning-scheme: MajorMinorPatch
+mode: ContinuousDeployment
+branches:
+  main:
+    mode: ContinuousDeployment
+    tag: ''
+    regex: ^main$
+  pull-request:
+    mode: ContinuousDeployment
+ignore:
+  sha: []
+merge-message-formats: {}
