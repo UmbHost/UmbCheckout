@@ -17,7 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmbCheckout", "src\UmbCheckout\UmbCheckout.csproj", "{635024AB-00AD-4CBD-8A50-A8EA7544526F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UmbCheckout.Tests", "src\UmbCheckout.Tests\UmbCheckout.Tests.csproj", "{F08CE85A-4640-4A5A-9657-2A113187DF76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmbCheckout.Tests", "src\UmbCheckout.Tests\UmbCheckout.Tests.csproj", "{F08CE85A-4640-4A5A-9657-2A113187DF76}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmbCheckout.uSync", "src\UmbCheckout.uSync\UmbCheckout.uSync.csproj", "{F8C84DB7-3BF5-4B27-A861-F80B52295C7F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +55,10 @@ Global
 		{F08CE85A-4640-4A5A-9657-2A113187DF76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F08CE85A-4640-4A5A-9657-2A113187DF76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F08CE85A-4640-4A5A-9657-2A113187DF76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8C84DB7-3BF5-4B27-A861-F80B52295C7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8C84DB7-3BF5-4B27-A861-F80B52295C7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8C84DB7-3BF5-4B27-A861-F80B52295C7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8C84DB7-3BF5-4B27-A861-F80B52295C7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
