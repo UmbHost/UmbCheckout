@@ -4,7 +4,7 @@ branches:
   main:
     mode: ContinuousDeployment
     tag: ''
-    regex: ^main$
+    regex: ^develop$
   pull-request:
     mode: ContinuousDeployment
 ignore:
