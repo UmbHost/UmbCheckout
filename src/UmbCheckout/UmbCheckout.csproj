@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <Nullable>enable</Nullable>
 	  <StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
 	  <AddRazorSupportForMvc>true</AddRazorSupportForMvc>

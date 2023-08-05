@@ -31,6 +31,15 @@ jobs:
         submodules: 'recursive'
         fetch-depth: 0   
     
+    - name: Retrieve cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-umbcheckout
+
     - name: Determine Version with GitVersion (MSBuild in Proj will do this)
       id:   gitversion
       uses: gittools/actions/gitversion/execute@v0.9.15
