@@ -11,6 +11,7 @@
 	</area>
 	<area alias="umbcheckout">
 		<key alias="disabled_unlicensed">DISABLED IN UNLICENSED MODE</key>
+		<key alias="unlicensed_warning"><![CDATA[UmbCheckout is running in unlicensed mode, please <a href=\"#\" target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to support development]]></key>
 		<key alias="help_support">Help &amp; Support</key>
 		<key alias="made_by"><![CDATA[<a href="https://umbhost.net" class="btn umb-button__button btn-link umb-button-- umb-outline">Made with <span class="color-pink icon icon-hearts"></span> by UmbHost Limited</a>]]></key>
 		<key alias="configuration">Configuration</key>
@@ -40,5 +41,7 @@
 		<key alias="documentation_description"><![CDATA[Documentation available at <a href="https://docs.umbcheckout.net/" target="_blank">https://docs.umbcheckout.net/</a>]]></key>
 		<key alias="github_report_issues"><![CDATA[Please report any issues in the bug tracker found on the <a target="_blank" href="https://github.com/UmbHost/UmbCheckout/issues">GitHub Repo</a>]]></key>
 		<key alias="support_ticket"><![CDATA[Open a support ticket through <a target="_blank" href="https://my.umbhost.net/submitticket.php?step=2&deptid=8&subject=UmbCheckout:%20[ISSUE%20NAME%20HERE]">My.UmbHost</a>]]></key>
+		<key alias="shipping_rates">Shipping Rates</key>
+		<key alias="shipping_rate">Shipping Rate</key>
 	</area>
 </language>
