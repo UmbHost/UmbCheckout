@@ -6,4 +6,46 @@
 	<area alias="dashboard">
 		<key alias="umbCheckout">UmbCheckout</key>
 	</area>
+	<area alias="usync">
+		<key alias="umbcheckout-description">Configuration and Payment Provider settings</key>
+	</area>
+	<area alias="umbcheckout">
+		<key alias="disabled_unlicensed">DISABLED IN UNLICENSED MODE</key>
+		<key alias="unlicensed_warning"><![CDATA[UmbCheckout is running in unlicensed mode, please <a href=\"https://umbcheckout.net\" target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to support development]]></key>
+		<key alias="unlicensed_notification_warning_title">UmbCheckout is unlicensed</key>
+		<key alias="unlicensed_notification_warning_message"><![CDATA[UmbCheckout is unlicensed", "UmbCheckout is running in unlicensed mode, please purchase a license to unlock this feature]]></key>
+		<key alias="help_support">Help &amp; Support</key>
+		<key alias="made_by"><![CDATA[<a href="https://umbhost.net" class="btn umb-button__button btn-link umb-button-- umb-outline">Made with <span class="color-pink icon icon-hearts"></span> by UmbHost Limited</a>]]></key>
+		<key alias="configuration">Configuration</key>
+		<key alias="license_status">License Status</key>
+		<key alias="license_addon">License Addon</key>
+		<key alias="license_addon_name">Addon Name</key>
+		<key alias="license_details">License Details</key>
+		<key alias="registration_date">Registration Date</key>
+		<key alias="valid_domains">Valid Domains</key>
+		<key alias="valid_path">Valid Path</key>
+		<key alias="recheck_license">Re-Check License</key>
+		<key alias="expiry_date">Expiry Date</key>
+		<key alias="success_page_url_label">Success Page URL</key>
+		<key alias="success_page_url_description">The checkout success page</key>
+		<key alias="cancel_page_url_label">Cancel Page URL</key>
+		<key alias="cancel_page_url_description">The checkout cancelled page</key>
+		<key alias="enable_shipping_label">Enable Shipping</key>
+		<key alias="enable_shipping_description">Enable the use of Shipping Rates</key>
+		<key alias="store_basket_cookie_label">Store Basket In a Cookie</key>
+		<key alias="store_basket_cookie_description">Whether the basket contents should be stored in a cookie</key>
+		<key alias="store_basket_cookie_expiry_label">Basket Expiry (Cookie)</key>
+		<key alias="store_basket_cookie_expiry_description">How many days the basket cookie should persist</key>
+		<key alias="store_basket_database_label">Store Basket In The Database</key>
+		<key alias="store_basket_database_description">Whether the basket contents should be stored in the database</key>
+		<key alias="store_basket_database_expiry_label">Basket Expiry (Database)</key>
+		<key alias="store_basket_database_expiry_description">How many days the basket should persist in the database</key>
+		<key alias="documentation_description"><![CDATA[Documentation available at <a href="https://docs.umbcheckout.net/" target="_blank">https://docs.umbcheckout.net/</a>]]></key>
+		<key alias="github_report_issues"><![CDATA[Please report any issues in the bug tracker found on the <a target="_blank" href="https://github.com/UmbHost/UmbCheckout/issues">GitHub Repo</a>]]></key>
+		<key alias="support_ticket"><![CDATA[Open a support ticket through <a target="_blank" href="https://my.umbhost.net/submitticket.php?step=2&deptid=8&subject=UmbCheckout:%20[ISSUE%20NAME%20HERE]">My.UmbHost</a>]]></key>
+		<key alias="shipping_rates">Shipping Rates</key>
+		<key alias="shipping_rate">Shipping Rate</key>
+		<key alias="tax_rate">Tax Rate</key>
+		<key alias="tax_rates">Tax Rates</key>
+	</area>
 </language>

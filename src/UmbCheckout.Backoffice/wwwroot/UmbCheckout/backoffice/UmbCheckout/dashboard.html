@@ -15,11 +15,12 @@
                         <div class="dashboard-overview">
                             <div class="left-col">
                                 <umb-box>
+                                    <umb-box-header title-key="umbcheckout_help_support"></umb-box-header>
                                     <umb-box-content>
-                                        <h1>UmbCheckout</h1>
-
                                         <p class="muted">
-                                            Documentation available at <a href="https://docs.umbcheckout.net/" target="_blank">https://docs.umbcheckout.net/</a>. Please report any issues in the bug tracker found on the <a target="_blank" href="https://github.com/UmbHost/UmbCheckout/issues">GitHub Repo here</a>.<br />
+                                            <localize key="umbcheckout_documentation_description"></localize><br />
+                                            <localize key="umbcheckout_github_report_issues"></localize><br />
+                                            <localize ng-if="vm.LicenseState.Valid" key="umbcheckout_support_ticket"></localize><br />
                                         </p>
 
                                         <p class="red bold" ng-if="!vm.LicenseState.Valid" ng-bind-html="vm.LicenseState.Message">
@@ -28,7 +29,7 @@
                                     </umb-box-content>
                                 </umb-box>
                                 <umb-box>
-                                    <umb-box-header title="Configuration"></umb-box-header>
+                                    <umb-box-header title-key="umbcheckout_configuration"></umb-box-header>
                                     <umb-box-content>
                                         <umb-property property="property" ng-repeat="property in vm.properties">
                                             <umb-property-editor model="property"></umb-property-editor>
@@ -38,12 +39,12 @@
                             </div>
                             <div class="right-col">
                                 <umb-box>
-                                    <umb-box-header title="License Details"></umb-box-header>
+                                    <umb-box-header title-key="umbcheckout_license_details"></umb-box-header>
                                     <umb-box-content class="block-form ">
-                                        <div class="umb-property" label="License Status">
+                                        <div class="umb-property" localize="label" label="@umbcheckout_license_status">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
-                                                    <label class="control-label" for=""> <span>License Status</span></label>
+                                                    <label class="control-label" for=""> <span><localize key="umbcheckout_license_status"></localize></span></label>
                                                     <div class="controls">
                                                         <div style="display: flex; justify-content: space-between;align-items: center;">
                                                             <div>{{vm.LicenseState.Status.status}}</div>
@@ -52,10 +53,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="umb-property" label="Registration Date">
+                                        <div class="umb-property" localize="label" label="@umbcheckout_registration_date">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
-                                                    <label class="control-label" for=""> <span>Registration Date</span></label>
+                                                    <label class="control-label" for=""> <span><localize key="umbcheckout_registration_date"></localize></span></label>
                                                     <div class="controls">
                                                         <div style="display: flex; justify-content: space-between;align-items: center;">
                                                             <div>{{vm.LicenseState.Status.regDate}}</div>
@@ -64,10 +65,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="umb-property" label="Expiry Date" ng-if="vm.LicenseState.Status.expiryDateTime != '0000-00-00'">
+                                        <div class="umb-property" localize="label" label="@umbcheckout_expiry_date" ng-if="vm.LicenseState.Status.expiryDateTime != '0000-00-00'">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
-                                                    <label class="control-label" for=""> <span>Expiry Date</span></label>
+                                                    <label class="control-label" for=""> <span><localize key="umbcheckout_expiry_date"></localize></span></label>
                                                     <div class="controls">
                                                         <div style="display: flex; justify-content: space-between;align-items: center;">
                                                             <div>{{vm.LicenseState.Status.expiryDateTime}}</div>
@@ -76,10 +77,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="umb-property" label="Valid Domains">
+                                        <div class="umb-property" localize="label" label="@umbcheckout_valid_domains">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
-                                                    <label class="control-label" for=""> <span>Valid Domains</span></label>
+                                                    <label class="control-label" for=""> <span><localize key="umbcheckout_valid_domains"></localize></span></label>
                                                     <div class="controls">
                                                         <div style="display: flex; justify-content: space-between;align-items: center;">
                                                             <div>{{vm.LicenseState.Status.validDomains}}</div>
@@ -88,10 +89,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="umb-property" label="Valid Path">
+                                        <div class="umb-property" localize="label" label="@umbcheckout_valid_path">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
-                                                    <label class="control-label" for=""> <span>Valid Path</span></label>
+                                                    <label class="control-label" for=""> <span><localize key="umbcheckout_valid_path"></localize></span></label>
                                                     <div class="controls">
                                                         <div style="display: flex; justify-content: space-between;align-items: center;">
                                                             <div>{{vm.LicenseState.Status.validPaths}}</div>
@@ -104,18 +105,30 @@
                                                     type="button"
                                                     button-style="action"
                                                     state="vm.checkLicenceButtonState"
-                                                    label="Re-Check License"
+                                                    label-key="umbcheckout_recheck_license"
                                                     disabled="vm.checkLicenceButtonState === 'busy'">
                                         </umb-button>
                                     </umb-box-content>
                                 </umb-box>
                                 <umb-box ng-repeat="property in vm.LicenseState.Status.licenseAddons">
-                                    <umb-box-header title="License Addon - {{property.name}}"></umb-box-header>
+                                    <umb-box-header title-key="umbcheckout_license_addon"></umb-box-header>
                                     <umb-box-content class="block-form ">
                                         <div class="umb-property" label="{{property.name}}">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
-                                                    <label class="control-label" for=""> <span>License Status</span></label>
+                                                    <label class="control-label" for=""> <span><localize key="umbcheckout_license_addon_name"></localize></span></label>
+                                                    <div class="controls">
+                                                        <div style="display: flex; justify-content: space-between;align-items: center;">
+                                                            <div>{{property.name}}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="umb-property" label="{{property.name}}">
+                                            <div class="control-group umb-control-group">
+                                                <div class="umb-el-wrap">
+                                                    <label class="control-label" for=""> <span><localize key="umbcheckout_license_status"></localize></span></label>
                                                     <div class="controls">
                                                         <div style="display: flex; justify-content: space-between;align-items: center;">
                                                             <div>{{property.status}}</div>
@@ -124,10 +137,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="umb-property" label="{{property.name}}"  ng-if="property.nextDueDate != '0000-00-00'">
+                                        <div class="umb-property" label="{{property.name}}" ng-if="property.nextDueDate != '0000-00-00'">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
-                                                    <label class="control-label" for=""> <span>Expiry Date</span></label>
+                                                    <label class="control-label" for=""> <span><localize key="umbcheckout_expiry_date"></localize></span></label>
                                                     <div class="controls">
                                                         <div style="display: flex; justify-content: space-between;align-items: center;">
                                                             <div>{{property.nextDueDate}}</div>
@@ -145,9 +158,7 @@
 
                 <umb-editor-footer>
                     <umb-editor-footer-content-left>
-                        <a href="https://umbhost.net" class="btn umb-button__button btn-link umb-button-- umb-outline" ng-if="!vm.LicenseState.Valid">
-                            Made with <span class="color-pink icon icon-hearts"></span> by UmbHost Limited
-                        </a>
+                        <localize ng-if="!vm.LicenseState.Valid" key="umbcheckout_made_by"></localize>
                     </umb-editor-footer-content-left>
 
                     <umb-editor-footer-content-right>
