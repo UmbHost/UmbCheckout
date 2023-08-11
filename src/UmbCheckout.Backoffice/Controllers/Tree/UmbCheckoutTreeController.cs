@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UmbCheckout.Shared;
 using UmbHost.Licensing.Services;
@@ -15,16 +16,18 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
     /// <summary>
     /// Umbraco TreeController which adds the group and root menu link
     /// </summary>
-    [Tree("settings", "umbCheckout", TreeTitle = Consts.PackageName, TreeGroup = "umbCheckout", IsSingleNodeTree = true, SortOrder = 35)]
+    [Tree("settings", Consts.TreeAlias, TreeTitle = Consts.PackageName, TreeGroup = Consts.TreeGroup, IsSingleNodeTree = true, SortOrder = 35)]
     [PluginController(Consts.PackageName)]
     public class UmbCheckoutTreeController : TreeController
     {
 
         private readonly IMenuItemCollectionFactory _menuItemCollectionFactory;
+        private readonly ILocalizedTextService _localizedTextService;
 
         public UmbCheckoutTreeController(ILocalizedTextService localizedTextService, UmbracoApiControllerTypeCollection umbracoApiControllerTypeCollection, IEventAggregator eventAggregator, IMenuItemCollectionFactory menuItemCollectionFactory, LicenseService licenseService) 
             : base(localizedTextService, umbracoApiControllerTypeCollection, eventAggregator)
         {
+            _localizedTextService = localizedTextService;
             _menuItemCollectionFactory = menuItemCollectionFactory ?? throw new ArgumentNullException(nameof(menuItemCollectionFactory));
             licenseService.RunLicenseCheck();
         }
@@ -35,7 +38,7 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
 
             if (id == Constants.System.Root.ToInvariantString())
             {
-                nodes.Add(CreateTreeNode("1", "-1", queryStrings, "Configuration", "icon-settings", false, $"{Constants.Applications.Settings}/{"UmbCheckout"}/{"dashboard"}"));
+                nodes.Add(CreateTreeNode("1", "-1", queryStrings, _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.Configuration, CultureInfo.CurrentUICulture), "icon-settings", false, $"{Constants.Applications.Settings}/{"UmbCheckout"}/{"dashboard"}"));
             }
 
             return nodes;

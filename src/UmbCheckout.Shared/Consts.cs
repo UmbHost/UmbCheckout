@@ -11,6 +11,10 @@
 
         public const string SessionMode = "payment";
 
+        public const string TreeAlias = "umbCheckout";
+
+        public const string TreeGroup = "umbCheckout";
+
         public static class PropertyAlias
         {
             public const string PriceAlias = "umbCheckoutPrice";

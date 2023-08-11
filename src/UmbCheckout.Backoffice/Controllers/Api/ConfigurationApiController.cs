@@ -138,12 +138,12 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         {
             try
             {
-                var storeBasketInCookieDescription = _localizedTextService.Localize("umbcheckout", "store_basket_cookie_description", CultureInfo.CurrentUICulture);
-                var storeBasketInDatabaseDescription = _localizedTextService.Localize("umbcheckout", "store_basket_database_description", CultureInfo.CurrentUICulture);
+                var storeBasketInCookieDescription = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketCookieDescription, CultureInfo.CurrentUICulture);
+                var storeBasketInDatabaseDescription = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketDatabaseDescription, CultureInfo.CurrentUICulture);
                 if (!UmbCheckoutSettings.IsLicensed)
                 {
-                    storeBasketInCookieDescription += Environment.NewLine + _localizedTextService.Localize("umbcheckout", "disabled_unlicensed", CultureInfo.CurrentUICulture);
-                    storeBasketInDatabaseDescription += Environment.NewLine + _localizedTextService.Localize("umbcheckout", "disabled_unlicensed", CultureInfo.CurrentUICulture);
+                    storeBasketInCookieDescription += Environment.NewLine + _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.DisabledUnlicensed, CultureInfo.CurrentUICulture);
+                    storeBasketInDatabaseDescription += Environment.NewLine + _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.DisabledUnlicensed, CultureInfo.CurrentUICulture);
                 }
 
                 var configurationDb = await _configuration.GetConfiguration();
@@ -152,8 +152,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     new()
                     {
                         Alias = "successPageUrl",
-                        Description = _localizedTextService.Localize("umbcheckout", "success_page_url_description", CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize("umbcheckout", "success_page_url_label", CultureInfo.CurrentUICulture),
+                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.SuccessPageUrlDescription, CultureInfo.CurrentUICulture),
+                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.SuccessPageUrlLabel, CultureInfo.CurrentUICulture),
                         Value = configurationDb != null ? configurationDb.SuccessPageUrl : string.Empty,
                         View = "multiurlpicker",
                         Config = new Config
@@ -171,8 +171,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     new()
                     {
                         Alias = "cancelPageUrl",
-                        Description = _localizedTextService.Localize("umbcheckout", "cancel_page_url_description", CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize("umbcheckout", "cancel_page_url_label", CultureInfo.CurrentUICulture),
+                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.CancelPageUrlDescription, CultureInfo.CurrentUICulture),
+                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.CancelPageUrlLabel, CultureInfo.CurrentUICulture),
                         Value = configurationDb != null ? configurationDb.CancelPageUrl : string.Empty,
                         View = "multiurlpicker",
                         Config = new Config
@@ -190,8 +190,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     new()
                     {
                         Alias = "enableShipping",
-                        Description = _localizedTextService.Localize("umbcheckout", "enable_shipping_description", CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize("umbcheckout", "enable_shipping_label", CultureInfo.CurrentUICulture),
+                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.EnableShippingDescription, CultureInfo.CurrentUICulture),
+                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.EnableShippingLabel, CultureInfo.CurrentUICulture),
                         Value = configurationDb != null ? configurationDb.EnableShipping.ToString() : "false",
                         View = "boolean"
                     },
@@ -211,8 +211,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     backOfficeProperties.Add(new Property
                     {
                         Alias = "basketInCookieExpiry",
-                        Description = _localizedTextService.Localize("umbcheckout", "store_basket_cookie_expiry_description", CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize("umbcheckout", "store_basket_cookie_expiry_label", CultureInfo.CurrentUICulture),
+                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketCookieExpiryDescription, CultureInfo.CurrentUICulture),
+                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketCookieExpiryLabel, CultureInfo.CurrentUICulture),
                         Value = configurationDb != null ? configurationDb.BasketInCookieExpiry.ToString() : "30",
                         View = "integer",
                         Validation = new Validation
@@ -225,7 +225,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     {
                         Alias = "storeBasketInDatabase",
                         Description = storeBasketInDatabaseDescription,
-                        Label = _localizedTextService.Localize("umbcheckout", "store_basket_database_label", CultureInfo.CurrentUICulture),
+                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketCookieLabel, CultureInfo.CurrentUICulture),
                         Value = configurationDb != null ? configurationDb.StoreBasketInDatabase.ToString() : "false",
                         View = "boolean"
                     });
@@ -233,8 +233,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     backOfficeProperties.Add(new Property
                     {
                         Alias = "basketInDatabaseExpiry",
-                        Description = _localizedTextService.Localize("umbcheckout", "store_basket_database_expiry_description", CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize("umbcheckout", "store_basket_database_expiry_label", CultureInfo.CurrentUICulture),
+                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketDatabaseExpiryDescription, CultureInfo.CurrentUICulture),
+                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketDatabaseExpiryLabel, CultureInfo.CurrentUICulture),
                         Value = configurationDb != null ? configurationDb.BasketInDatabaseExpiry.ToString() : "30",
                         View = "integer",
                         Validation = new Validation
