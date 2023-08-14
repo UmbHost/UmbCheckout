@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.ViewModels;
+using UmbCheckout.Shared.Enums;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Web.Common;
 using Umbraco.Extensions;
@@ -22,13 +23,15 @@ namespace UmbCheckout.Core.ViewComponents
             _umbracoContextAccessor = umbracoContextAccessor;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket", string? linkCssClass = null)
+        public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket", string? linkCssClass = null, BasketLinkType linkType = BasketLinkType.TotalCount)
         {
             var model = new BasketLinkViewModel
             {
                 LinkCssClass = linkCssClass,
                 LinkName = linkName,
-                TotalItems = await _basketService.TotalItems()
+                TotalItems = await _basketService.TotalItems(),
+                SubTotal = await _basketService.SubTotal(),
+                LinkType = linkType
             };
 
             var hasContext = _umbracoContextAccessor.TryGetUmbracoContext(out var umbracoContext);

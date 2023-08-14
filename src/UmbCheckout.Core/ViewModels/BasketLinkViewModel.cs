@@ -1,4 +1,6 @@
-﻿namespace UmbCheckout.Core.ViewModels
+﻿using UmbCheckout.Shared.Enums;
+
+namespace UmbCheckout.Core.ViewModels
 {
     /// <summary>
     /// View model for the Basket Link View Component
@@ -13,5 +15,8 @@
         public string LinkUrl { get; set; } = string.Empty;
 
         public long TotalItems { get; set; }
+
+        public BasketLinkType LinkType { get; set; } = BasketLinkType.TotalCount;
+        public decimal SubTotal { get; set; }
     }
 }

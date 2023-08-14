@@ -1,2 +1,18 @@
-﻿@model UmbCheckout.Core.ViewModels.BasketLinkViewModel
-<a class="@Model.LinkCssClass" href="@Model.LinkUrl">@Model.LinkName: @Model.TotalItems</a>
+﻿@using System.Globalization
+@using UmbCheckout.Shared.Enums
+@using UmbCheckout.Shared.Extensions
+@model UmbCheckout.Core.ViewModels.BasketLinkViewModel
+<a class="@Model.LinkCssClass" href="@Model.LinkUrl">
+    @Model.LinkName:
+
+    @switch (Model.LinkType)
+    {
+        case BasketLinkType.TotalCount:
+            @Model.TotalItems
+            break;
+
+        case BasketLinkType.SubTotal:
+            @Model.SubTotal.FormatCurrency(CultureInfo.CurrentUICulture.GetISOCurrencySymbol())
+            break;
+    }
+</a>
