@@ -1,4 +1,4 @@
-﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Basket>
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Basket>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @using UmbCheckout.Core.Interfaces
 @inject IBasketService BasketService
@@ -40,6 +40,16 @@
 </style>
 <section class="section section--sand">
     <div class="container">
-        <vc:stripe-basket></vc:stripe-basket>
+        @if (TempData["UmbCheckout_Added_To_Basket"] != null)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-success">
+                        Successfully added @UmbracoContext.Content.GetById((Guid)TempData["UmbCheckout_Added_To_Basket"]).Name to basket.
+                    </div>
+                </div>
+            </div>
+        }
+        <vc:stripe-basket reduce-button-css-class="button button--border--solid" increase-button-css-class="button button--border--solid" remove-button-css-class="button button--border--solid" checkout-button-css-class="button button--border--solid"></vc:stripe-basket>
     </div>
 </section>
