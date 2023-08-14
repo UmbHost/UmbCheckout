@@ -5,6 +5,9 @@
     /// </summary>
     public class BasketLinkViewModel
     {
+
+        public string? LinkCssClass { get; set; } = null;
+
         public string LinkName { get; set; } = string.Empty;
 
         public string LinkUrl { get; set; } = string.Empty;

@@ -22,10 +22,11 @@ namespace UmbCheckout.Core.ViewComponents
             _umbracoContextAccessor = umbracoContextAccessor;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket Count")
+        public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket", string? linkCssClass = null)
         {
             var model = new BasketLinkViewModel
             {
+                LinkCssClass = linkCssClass,
                 LinkName = linkName,
                 TotalItems = await _basketService.TotalItems()
             };

@@ -1,4 +1,4 @@
-﻿@using Umbraco.Cms.Web.Common.PublishedModels;
+@using Umbraco.Cms.Web.Common.PublishedModels;
 @using Umbraco.Extensions
 @using UmbCheckout.Core.Interfaces
 @inject IBasketService BasketService
@@ -63,7 +63,7 @@
 
         <nav class="nav-bar top-nav">
             @await Html.PartialAsync("~/Views/Partials/Navigation/TopNavigation.cshtml")
-            <vc:basket-link link-name="Basket"></vc:basket-link>
+            <vc:basket-link link-name="Basket" link-css-class="nav-link"></vc:basket-link>
         </nav>
 
         <div class="mobile-nav-handler">
