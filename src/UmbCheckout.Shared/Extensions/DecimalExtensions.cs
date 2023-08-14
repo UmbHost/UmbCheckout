@@ -5,7 +5,7 @@ namespace UmbCheckout.Shared.Extensions
     /// <summary>
     /// Extension which formats a decimal as currency with currency symbol
     /// </summary>
-    public static class DecimalExtension
+    public static class DecimalExtensions
     {
         private static readonly Dictionary<string, CultureInfo> ISOCurrenciesToACultureMap =
             CultureInfo.GetCultures(CultureTypes.SpecificCultures)
