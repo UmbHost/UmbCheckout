@@ -29,9 +29,13 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
 
-    - name: Setup .NET SDK
+    - name: Setup dotnet
       uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: "7.0.304"
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
