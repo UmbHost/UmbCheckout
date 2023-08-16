@@ -18,6 +18,9 @@ Install the test site, discard any Git Changes and then Import Everything using 
 
 ### Contribution guidelines
 
+You will need to sign the Contribution License Agreement which can be found at the link below:
+[https://cla-assistant.io/UmbHost/UmbCheckout](https://cla-assistant.io/UmbHost/UmbCheckout)
+
 To raise a new bug, create an issue on the GitHub repository. To fix a bug or add new features, fork the repository and send a pull request with your changes. Feel free to add ideas to the repository's issues list if you would to discuss anything related to the package.
 
 ### Who do I talk to?
