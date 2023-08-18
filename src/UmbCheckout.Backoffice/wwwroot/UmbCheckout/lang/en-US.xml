@@ -18,6 +18,8 @@
 		<key alias="made_by"><![CDATA[<a href="https://umbhost.net" class="btn umb-button__button btn-link umb-button-- umb-outline">Made with <span class="color-pink icon icon-hearts"></span> by UmbHost Limited</a>]]></key>
 		<key alias="configuration">Configuration</key>
 		<key alias="license_status">License Status</key>
+		<key alias="license_development">Development License</key>
+		<key alias="license_development_true">Yes</key>
 		<key alias="license_addon">License Addon</key>
 		<key alias="license_addon_name">Addon Name</key>
 		<key alias="license_details">License Details</key>

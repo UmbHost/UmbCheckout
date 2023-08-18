@@ -53,25 +53,6 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         }
 
         /// <summary>
-        /// Gets the license status
-        /// </summary>
-        /// <returns>The license status as a string</returns>
-        [HttpGet]
-        public IActionResult GetLicenseStatus()
-        {
-            var model = new LicenseStatus
-            {
-                Status = UmbCheckoutSettings.LicenseStatus,
-                RegDate = UmbCheckoutSettings.LicenseDetails.RegDate,
-                ExpiryDateTime = UmbCheckoutSettings.LicenseDetails.ExpiryDateTime,
-                ValidDomains = UmbCheckoutSettings.LicenseDetails.ValidDomains,
-                ValidPaths = UmbCheckoutSettings.LicenseDetails.ValidPaths,
-                LicenseAddons = UmbCheckoutSettings.LicenseDetails.LicenseAddons
-            };
-            return new JsonResult(model);
-        }
-
-        /// <summary>
         /// Updates the configuration
         /// </summary>
         /// <param name="configValues">The configuration values</param>

@@ -2,7 +2,7 @@
     return {
         getLicenseStatus: function () {
 
-            return $http.get("backoffice/UmbCheckout/ConfigurationApi/GetLicenseStatus")
+            return $http.get("backoffice/UmbCheckout/LicenseStatusApi/GetLicenseStatus")
                 .then(function (response) {
                     return response;
                 }

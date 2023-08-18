@@ -41,6 +41,18 @@
                                 <umb-box>
                                     <umb-box-header title-key="umbcheckout_license_details"></umb-box-header>
                                     <umb-box-content class="block-form ">
+                                        <div class="umb-property" localize="label" label="@umbcheckout_license_development" ng-if="vm.LicenseState.Status.isDevelopmentLicense">
+                                            <div class="control-group umb-control-group">
+                                                <div class="umb-el-wrap">
+                                                    <label class="control-label" for=""> <span><localize key="umbcheckout_license_development"></localize></span></label>
+                                                    <div class="controls">
+                                                        <div style="display: flex; justify-content: space-between;align-items: center;">
+                                                            <div><localize key="umbcheckout_license_development_true"></localize></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="umb-property" localize="label" label="@umbcheckout_license_status">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
