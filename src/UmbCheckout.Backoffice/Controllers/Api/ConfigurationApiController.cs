@@ -225,7 +225,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     {
                         Alias = "storeBasketInDatabase",
                         Description = storeBasketInDatabaseDescription,
-                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketCookieLabel, CultureInfo.CurrentUICulture),
+                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketDatabaseLabel, CultureInfo.CurrentUICulture),
                         Value = configurationDb != null ? configurationDb.StoreBasketInDatabase.ToString() : "false",
                         View = "boolean"
                     });
