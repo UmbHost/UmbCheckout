@@ -2206,7 +2206,7 @@
       "UmbHost.Licensing": {
         "type": "Transitive",
         "resolved": "1.1.10",
-        "contentHash": "BJ/59HvWJXOliVpK6Kkay48BTH2xqiqQmqgn6D0NzqLlgBeA67cDaLpIiQSZe7oqtdwWIQktw4xu9vmtlyg5Vw==",
+        "contentHash": "bGJM+juLF+wjJKamNEEJ9P2ye64/pDv+hw4vnCxg4ObMxwoginZTdQXaZMQTRG+BfeLIPUmqYivki+MTWRskIA==",
         "dependencies": {
           "Umbraco.Cms.Web.BackOffice": "10.6.1"
         }
