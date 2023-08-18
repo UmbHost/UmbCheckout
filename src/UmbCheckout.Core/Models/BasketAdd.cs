@@ -7,7 +7,7 @@
     {
         public Guid Id { get; set; }
 
-        public string CurrencyCode { get; set; } = string.Empty;
+        public string? CurrencyCode { get; set; } = string.Empty;
 
         public int Quantity { get; set; } = 1;
     }

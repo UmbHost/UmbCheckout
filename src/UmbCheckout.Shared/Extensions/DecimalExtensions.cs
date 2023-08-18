@@ -13,9 +13,9 @@ namespace UmbCheckout.Shared.Extensions
                 .GroupBy(x => x.ISOCurrencySymbol)
                 .ToDictionary(g => g.Key, g => g.First().c, StringComparer.OrdinalIgnoreCase);
 
-        public static string FormatCurrency(this decimal amount, string currencyCode)
+        public static string FormatCurrency(this decimal amount, string? currencyCode)
         {
-            if (ISOCurrenciesToACultureMap.TryGetValue(currencyCode, out var culture))
+            if (currencyCode != null && ISOCurrenciesToACultureMap.TryGetValue(currencyCode, out var culture))
                 return amount.ToString("C", culture);
             return amount.ToString("F");
         }

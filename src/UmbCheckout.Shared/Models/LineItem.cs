@@ -7,14 +7,14 @@ namespace UmbCheckout.Shared.Models
     /// </summary>
     public class LineItem
     {
-        private string _currencyCode = string.Empty;
+        private string? _currencyCode = string.Empty;
         public Guid Id { get; set; } = Guid.Empty;
 
         public string Name { get; set; } = string.Empty;
 
-        public string CurrencyCode
+        public string? CurrencyCode
         {
-            get => _currencyCode.ToUpper();
+            get => _currencyCode?.ToUpper();
             set => _currencyCode = value;
         }
 
