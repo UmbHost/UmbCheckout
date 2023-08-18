@@ -12,6 +12,8 @@ namespace UmbCheckout.Shared.Models
 
         public string Name { get; set; } = string.Empty;
 
+        public string? Description { get; set; } = string.Empty;
+
         public string? CurrencyCode
         {
             get => _currencyCode?.ToUpper();
