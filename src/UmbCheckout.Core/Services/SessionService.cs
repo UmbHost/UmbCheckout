@@ -25,10 +25,9 @@ namespace UmbCheckout.Core.Services
         private readonly IEventAggregator _eventAggregator;
         private readonly ICoreScopeProvider _coreScopeProvider;
         private readonly ILogger<SessionService> _logger;
-        private readonly IDatabaseService _databaseService;
         private readonly IConfigurationService _configurationService;
 
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, IDatabaseService databaseService, LicenseService licenseService)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService)
         {
             _dataProtectionProvider = dataProtectionProvider;
             _contextAccessor = contextAccessor;
@@ -36,7 +35,6 @@ namespace UmbCheckout.Core.Services
             _eventAggregator = eventAggregator;
             _coreScopeProvider = coreScopeProvider;
             _configurationService = configurationService;
-            _databaseService = databaseService;
             licenseService.RunLicenseCheck();
         }
 
@@ -93,8 +91,8 @@ namespace UmbCheckout.Core.Services
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 await _eventAggregator.PublishAsync(new OnSessionCreateStartedNotification());
 
-                var session = _contextAccessor.HttpContext.Session.Keys.Contains(Consts.SessionKey) ? _contextAccessor.HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(Consts.SessionKey) :
-                              await Create();
+                var session = (_contextAccessor.HttpContext.Session.Keys.Contains(Consts.SessionKey) ? _contextAccessor.HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(Consts.SessionKey) :
+                    await Create()) ?? await Create();
 
                 if (configuration is { StoreBasketInCookie: true })
                 {
