@@ -5,7 +5,7 @@
     /// </summary>
     public class BasketAdd
     {
-        public Guid Id { get; set; }
+        public Guid Key { get; set; }
 
         public string? CurrencyCode { get; set; } = string.Empty;
 
