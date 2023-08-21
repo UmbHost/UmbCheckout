@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -89,7 +89,7 @@ namespace UmbCheckout.Core.Services
                 var configuration = await _configurationService.GetConfiguration();
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnSessionCreateStartedNotification());
+                await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
 
                 var session = (_contextAccessor.HttpContext.Session.Keys.Contains(Consts.SessionKey) ? _contextAccessor.HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(Consts.SessionKey) :
                     await Create()) ?? await Create();
