@@ -8,7 +8,6 @@ using UmbCheckout.Shared;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Session;
 using UmbHost.Licensing.Helpers;
-using UmbHost.Licensing.Models;
 using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Scoping;
@@ -28,7 +27,6 @@ namespace UmbCheckout.Core.Services
         private readonly ILogger<SessionService> _logger;
         private readonly IDatabaseService _databaseService;
         private readonly IConfigurationService _configurationService;
-        private string? _sessionId = string.Empty;
 
         public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, IDatabaseService databaseService, LicenseService licenseService)
         {
@@ -59,20 +57,20 @@ namespace UmbCheckout.Core.Services
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 await _eventAggregator.PublishAsync(new OnSessionCreateStartedNotification());
 
-                var encryptedSessionId = EncryptionHelper.Encrypt(Guid.NewGuid().ToString(), _dataProtectionProvider);
-                _sessionId = encryptedSessionId;
+                var sessionId = _contextAccessor.HttpContext.Session.Id;
                 var session = new UmbCheckoutSession
                 {
                     Basket = new Basket
                     {
-                        SessionId = _sessionId
+                        SessionId = sessionId
                     }
                 };
 
-                CookieHelper.Set(_contextAccessor.HttpContext, Consts.SessionKey, encryptedSessionId);
-                _contextAccessor.HttpContext.Session.SetObjectAsJson(encryptedSessionId, session);
+                var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(session.Basket), _dataProtectionProvider);
 
-                scope.Notifications.Publish(new OnSessionCreatedNotification(_contextAccessor.HttpContext, Consts.SessionKey, encryptedSessionId, configuration));
+                _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey, session);
+
+                scope.Notifications.Publish(new OnSessionCreatedNotification(_contextAccessor.HttpContext, Consts.SessionKey, encryptedBasket, configuration));
                 return session;
             }
             catch (Exception ex)
@@ -95,17 +93,12 @@ namespace UmbCheckout.Core.Services
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 await _eventAggregator.PublishAsync(new OnSessionCreateStartedNotification());
 
-                if (configuration != null)
-                {
-                    _sessionId = CookieHelper.Get(_contextAccessor.HttpContext, Consts.SessionKey);
-                }
-
-                var session = (string.IsNullOrEmpty(_sessionId) ? await Create() : _contextAccessor.HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(_sessionId)) ??
+                var session = _contextAccessor.HttpContext.Session.Keys.Contains(Consts.SessionKey) ? _contextAccessor.HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(Consts.SessionKey) :
                               await Create();
 
                 if (configuration is { StoreBasketInCookie: true })
                 {
-                    var encryptedBasketCookie = CookieHelper.Get(_contextAccessor.HttpContext, Consts.SessionKey + "_Basket");
+                    var encryptedBasketCookie = CookieHelper.Get(_contextAccessor.HttpContext, Consts.SessionBasketKey);
                     if (encryptedBasketCookie != null)
                     {
                         var basketCookie = EncryptionHelper.Decrypt(encryptedBasketCookie, _dataProtectionProvider);
@@ -113,23 +106,12 @@ namespace UmbCheckout.Core.Services
                         if (basket != null)
                         {
                             session.Basket = basket;
-                            _contextAccessor.HttpContext.Session.SetObjectAsJson(_sessionId!, session);
-                        }
-                    }
-                    else
-                    {
-                        if (configuration.StoreBasketInDatabase && !string.IsNullOrEmpty(_sessionId) && UmbCheckoutSettings.IsLicensed)
-                        {
-                            var basket = await _databaseService.GetBasket(_sessionId);
-                            if (basket != null)
-                            {
-                                session.Basket = basket;
-                            }
+                            _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey, session);
                         }
                     }
                 }
 
-                scope.Notifications.Publish(new OnSessionGetNotification(_contextAccessor.HttpContext, _sessionId, session.Basket, configuration));
+                scope.Notifications.Publish(new OnSessionGetNotification(_contextAccessor.HttpContext, Consts.SessionBasketKey, session.Basket, configuration));
 
                 return session;
             }
@@ -157,10 +139,10 @@ namespace UmbCheckout.Core.Services
 
                 session.Basket = basket;
 
-                _contextAccessor.HttpContext.Session.SetObjectAsJson(_sessionId!, session);
+                _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey, session);
 
                 var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(basket), _dataProtectionProvider);
-                scope.Notifications.Publish(new OnSessionUpdatedNotification(_contextAccessor.HttpContext, Consts.SessionKey + "_Basket", basket, encryptedBasket, configuration));
+                scope.Notifications.Publish(new OnSessionUpdatedNotification(_contextAccessor.HttpContext, Consts.SessionKey, basket, encryptedBasket, configuration));
 
                 return session;
             }
@@ -184,17 +166,15 @@ namespace UmbCheckout.Core.Services
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 await _eventAggregator.PublishAsync(new OnSessionClearStartedNotification());
 
-                var sessionId = CookieHelper.Get(_contextAccessor.HttpContext, Consts.SessionKey);
+                var sessionId = _contextAccessor.HttpContext.Session.Id;
 
-                if (!string.IsNullOrEmpty(sessionId))
-                {
-                    _contextAccessor.HttpContext.Session.Remove(sessionId);
-                    CookieHelper.Remove(_contextAccessor.HttpContext, Consts.SessionKey);
-                }
+                _contextAccessor.HttpContext.Session.Clear();
+
+                await _contextAccessor.HttpContext.Session.CommitAsync();
 
                 scope.Notifications.Publish(new OnSessionClearedNotification(_contextAccessor.HttpContext, sessionId, configuration));
 
-                return _contextAccessor.HttpContext.Session.Keys.Contains(sessionId);
+                return _contextAccessor.HttpContext.Session.Keys.Contains(Consts.SessionKey);
 
             }
             catch (Exception ex)

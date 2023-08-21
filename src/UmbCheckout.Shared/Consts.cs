@@ -7,7 +7,9 @@
     {
         public const string PackageName = "UmbCheckout";
         
-        public const string SessionKey = "umbCheckoutBasketSessionId";
+        public const string SessionKey = "UmbCheckoutSession";
+
+        public const string SessionBasketKey = SessionKey + "_Basket";
 
         public const string SessionMode = "payment";
 
