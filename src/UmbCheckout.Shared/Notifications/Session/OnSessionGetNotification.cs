@@ -10,14 +10,12 @@ namespace UmbCheckout.Shared.Notifications.Session
     public class OnSessionGetNotification : INotification
     {
         public HttpContext HttpContext { get; }
-        public string? SessionKey { get; }
-        public Models.Basket Basket { get; }
+        public UmbCheckoutSession? Session { get; }
         public UmbCheckoutConfiguration? Configuration { get; }
-        public OnSessionGetNotification(HttpContext httpContext, string? sessionId, Models.Basket basket, UmbCheckoutConfiguration? configuration)
+        public OnSessionGetNotification(HttpContext httpContext, UmbCheckoutSession? session, UmbCheckoutConfiguration? configuration)
         {
             HttpContext = httpContext;
-            Basket = basket;
-            SessionKey = sessionId;
+            Session = session;
             Configuration = configuration;
         }
     }

@@ -94,7 +94,7 @@ namespace UmbCheckout.Core.Services
                 var session = (_contextAccessor.HttpContext.Session.Keys.Contains(Consts.SessionKey) ? _contextAccessor.HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(Consts.SessionKey) :
                     await Create()) ?? await Create();
 
-                if (configuration is { StoreBasketInCookie: true })
+                scope.Notifications.Publish(new OnSessionGetNotification(_contextAccessor.HttpContext, session, configuration));
                 {
                     var encryptedBasketCookie = CookieHelper.Get(_contextAccessor.HttpContext, Consts.SessionBasketKey);
                     if (encryptedBasketCookie != null)
