@@ -30,23 +30,23 @@ namespace UmbCheckout.Core.Interfaces
         /// <summary>
         /// Reduces the item quantity by 1 or removes it if the last item
         /// </summary>
-        /// <param name="id">Item to be reduced in the Basket</param>
+        /// <param name="key">Item to be reduced in the Basket</param>
         /// <returns>The updated Basket</returns>
-        Task<Basket> Reduce(Guid id);
+        Task<Basket> Reduce(Guid key);
 
         /// <summary>
         /// Removes an item from the Basket
         /// </summary>
-        /// <param name="id">Item to be removed from the Basket</param>
+        /// <param name="key">Item to be removed from the Basket</param>
         /// <returns>The updated Basket</returns>
-        Task<Basket> Remove(Guid id);
+        Task<Basket> Remove(Guid key);
 
         /// <summary>
         /// Removes multiple items from the Basket
         /// </summary>
-        /// <param name="ids">Items to be removed from the Basket</param>
+        /// <param name="keys">Items to be removed from the Basket</param>
         /// <returns>The updated Basket</returns>
-        Task<Basket> Remove(IEnumerable<Guid> ids);
+        Task<Basket> Remove(IEnumerable<Guid> keys);
 
         /// <summary>
         /// Removes items from the Basket and clears any Basket cookies

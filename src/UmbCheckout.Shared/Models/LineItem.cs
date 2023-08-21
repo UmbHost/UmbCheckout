@@ -8,7 +8,7 @@ namespace UmbCheckout.Shared.Models
     public class LineItem
     {
         private string? _currencyCode = string.Empty;
-        public Guid Id { get; set; } = Guid.Empty;
+        public Guid Key { get; set; } = Guid.Empty;
 
         public string Name { get; set; } = string.Empty;
 

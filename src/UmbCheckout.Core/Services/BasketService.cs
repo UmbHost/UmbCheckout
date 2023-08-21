@@ -51,9 +51,9 @@ namespace UmbCheckout.Core.Services
                 await _eventAggregator.PublishAsync(new OnBasketAddStartedNotification(item, basket));
 
                 var lineItems = basket.LineItems.ToList();
-                if (lineItems.Any(x => x.Id.Equals(item.Id)))
+                if (lineItems.Any(x => x.Key.Equals(item.Key)))
                 {
-                    var lineItem = lineItems.First(x => x.Id.Equals(item.Id));
+                    var lineItem = lineItems.First(x => x.Key.Equals(item.Key));
                     lineItem.Quantity += item.Quantity;
                 }
                 else
@@ -88,9 +88,9 @@ namespace UmbCheckout.Core.Services
 
                 foreach (var item in items)
                 {
-                    if (lineItems.Any(x => x.Id.Equals(item.Id)))
+                    if (lineItems.Any(x => x.Key.Equals(item.Key)))
                     {
-                        var lineItem = lineItems.First(x => x.Id.Equals(item.Id));
+                        var lineItem = lineItems.First(x => x.Key.Equals(item.Key));
                         lineItem.Quantity++;
                     }
                     else
@@ -114,19 +114,19 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Reduce(Guid id)
+        public async Task<Basket> Reduce(Guid key)
         {
             try
             {
                 var basket = await Get();
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(id, basket));
+                await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket));
 
                 var lineItems = basket.LineItems.ToList();
-                if (lineItems.Any(x => x.Id.Equals(id)))
+                if (lineItems.Any(x => x.Key.Equals(key)))
                 {
-                    var lineItem = lineItems.First(x => x.Id.Equals(id));
+                    var lineItem = lineItems.First(x => x.Key.Equals(key));
                     lineItem.Quantity--;
                     if (lineItem.Quantity == 0)
                     {
@@ -138,7 +138,7 @@ namespace UmbCheckout.Core.Services
                 var updateResponse = await _sessionService.Update(basket);
                 basket = updateResponse.Basket;
 
-                scope.Notifications.Publish(new OnBasketReducedNotification(id, basket));
+                scope.Notifications.Publish(new OnBasketReducedNotification(key, basket));
                 return basket;
             }
             catch (Exception ex)
@@ -149,19 +149,19 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Remove(Guid id)
+        public async Task<Basket> Remove(Guid key)
         {
             try
             {
                 var basket = await Get();
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(id, basket));
+                await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket));
 
                 var lineItems = basket.LineItems.ToList();
-                if (lineItems.Any(x => x.Id.Equals(id)))
+                if (lineItems.Any(x => x.Key.Equals(key)))
                 {
-                    var lineItem = lineItems.First(x => x.Id.Equals(id));
+                    var lineItem = lineItems.First(x => x.Key.Equals(key));
                     lineItems.Remove(lineItem);
                 }
 
@@ -169,7 +169,7 @@ namespace UmbCheckout.Core.Services
                 var updateResponse = await _sessionService.Update(basket);
                 basket = updateResponse.Basket;
 
-                scope.Notifications.Publish(new OnBasketRemovedNotification(id, basket));
+                scope.Notifications.Publish(new OnBasketRemovedNotification(key, basket));
                 return basket;
             }
             catch (Exception ex)
@@ -180,23 +180,23 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Remove(IEnumerable<Guid> ids)
+        public async Task<Basket> Remove(IEnumerable<Guid> keys)
         {
             try
             {
                 var basket = await Get();
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(ids, basket));
+                await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket));
 
                 var lineItems = basket.LineItems.ToList();
 
-                foreach (var id in ids)
+                foreach (var key in keys)
                 {
-                    if (!lineItems.Any(x => x.Id.Equals(id)))
+                    if (!lineItems.Any(x => x.Key.Equals(key)))
                         continue;
 
-                    var lineItem = lineItems.First(x => x.Id.Equals(id));
+                    var lineItem = lineItems.First(x => x.Key.Equals(key));
                     lineItems.Remove(lineItem);
                 }
 
@@ -204,7 +204,7 @@ namespace UmbCheckout.Core.Services
                 var updateResponse = await _sessionService.Update(basket);
                 basket = updateResponse.Basket;
 
-                scope.Notifications.Publish(new OnBasketRemovedManyNotification(ids, basket));
+                scope.Notifications.Publish(new OnBasketRemovedManyNotification(keys, basket));
                 return basket;
             }
             catch (Exception ex)
