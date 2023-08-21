@@ -1,12 +1,12 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 
-namespace UmbCheckout.Core.Helpers
+namespace UmbCheckout.Shared.Helpers
 {
     /// <summary>
     /// A helper to Set or Get a session item
     /// </summary>
-    internal static class SessionHelper
+    public static class SessionHelper
     {
         /// <summary>
         /// Sets a session item
