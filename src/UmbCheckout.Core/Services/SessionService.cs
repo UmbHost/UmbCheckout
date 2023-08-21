@@ -1,10 +1,10 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using UmbCheckout.Core.Helpers;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared;
+using UmbCheckout.Shared.Helpers;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Session;
 using UmbHost.Licensing.Helpers;
@@ -95,21 +95,6 @@ namespace UmbCheckout.Core.Services
                     await Create()) ?? await Create();
 
                 scope.Notifications.Publish(new OnSessionGetNotification(_contextAccessor.HttpContext, session, configuration));
-                {
-                    var encryptedBasketCookie = CookieHelper.Get(_contextAccessor.HttpContext, Consts.SessionBasketKey);
-                    if (encryptedBasketCookie != null)
-                    {
-                        var basketCookie = EncryptionHelper.Decrypt(encryptedBasketCookie, _dataProtectionProvider);
-                        var basket = JsonSerializer.Deserialize<Basket>(basketCookie);
-                        if (basket != null)
-                        {
-                            session.Basket = basket;
-                            _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey, session);
-                        }
-                    }
-                }
-
-                scope.Notifications.Publish(new OnSessionGetNotification(_contextAccessor.HttpContext, Consts.SessionBasketKey, session.Basket, configuration));
 
                 return session;
             }
