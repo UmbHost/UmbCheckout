@@ -40,7 +40,7 @@ public class BasketServiceTests
         // Arrange
         var product = new LineItem
         {
-            Id = Guid.NewGuid(),
+            Key = Guid.NewGuid(),
             Quantity = 1,
             Name = "Test Product",
             Price = 10.00m
@@ -51,7 +51,7 @@ public class BasketServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id));
+        Assert.Contains(result.LineItems, x => x.Key.Equals(product.Key));
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class BasketServiceTests
         // Arrange
         var product = new LineItem
         {
-            Id = Guid.NewGuid(),
+            Key = Guid.NewGuid(),
             Quantity = 1,
             Name = "Test Product",
             Price = 10.00m
@@ -71,12 +71,12 @@ public class BasketServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id));
+        Assert.Contains(result.LineItems, x => x.Key.Equals(product.Key));
 
         var increasedQuantityResult = await _basketService.Add(product);
 
         Assert.NotNull(increasedQuantityResult);
-        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id) && x.Quantity == 2);
+        Assert.Contains(result.LineItems, x => x.Key.Equals(product.Key) && x.Quantity == 2);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class BasketServiceTests
         // Arrange
         var product = new LineItem
         {
-            Id = Guid.NewGuid(),
+            Key = Guid.NewGuid(),
             Quantity = 2,
             Name = "Test Product",
             Price = 10.00m
@@ -96,12 +96,12 @@ public class BasketServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id));
+        Assert.Contains(result.LineItems, x => x.Key.Equals(product.Key));
 
-        var reducedQuantityResult = await _basketService.Reduce(product.Id);
+        var reducedQuantityResult = await _basketService.Reduce(product.Key);
 
         Assert.NotNull(reducedQuantityResult);
-        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id) && x.Quantity == 1);
+        Assert.Contains(result.LineItems, x => x.Key.Equals(product.Key) && x.Quantity == 1);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class BasketServiceTests
         // Arrange
         var product = new LineItem
         {
-            Id = Guid.NewGuid(),
+            Key = Guid.NewGuid(),
             Quantity = 2,
             Name = "Test Product",
             Price = 10.00m
@@ -121,12 +121,12 @@ public class BasketServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id));
+        Assert.Contains(result.LineItems, x => x.Key.Equals(product.Key));
 
-        var removedResult = await _basketService.Remove(product.Id);
+        var removedResult = await _basketService.Remove(product.Key);
 
         Assert.NotNull(removedResult);
-        Assert.DoesNotContain(result.LineItems, x => x.Id.Equals(product.Id));
+        Assert.DoesNotContain(result.LineItems, x => x.Key.Equals(product.Key));
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public class BasketServiceTests
         // Arrange
         var product = new LineItem
         {
-            Id = Guid.NewGuid(),
+            Key = Guid.NewGuid(),
             Quantity = 2,
             Name = "Test Product",
             Price = 10.00m
@@ -146,7 +146,7 @@ public class BasketServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id));
+        Assert.Contains(result.LineItems, x => x.Key.Equals(product.Key));
 
         var clearedBasket = await _basketService.Clear();
         Assert.NotNull(clearedBasket);
@@ -159,7 +159,7 @@ public class BasketServiceTests
         // Arrange
         var product = new LineItem
         {
-            Id = Guid.NewGuid(),
+            Key = Guid.NewGuid(),
             Quantity = 2,
             Name = "Test Product",
             Price = 10.00m
@@ -170,7 +170,7 @@ public class BasketServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains(result.LineItems, x => x.Id.Equals(product.Id));
+        Assert.Contains(result.LineItems, x => x.Key.Equals(product.Key));
 
         Assert.True(result.ItemCount == 1);
     }
@@ -182,14 +182,43 @@ public class BasketServiceTests
         {
             new()
             {
-                Id = Guid.NewGuid(),
+                Key = Guid.NewGuid(),
                 Quantity = 2,
                 Name = "Test Product",
                 Price = 10.00m
             },
             new()
             {
-                Id = Guid.NewGuid(),
+                Key = Guid.NewGuid(),
+                Quantity = 1,
+                Name = "Test Product 2",
+                Price = 20.00m
+            }
+        };
+
+        // Act
+        var result = await _basketService.Add(products);
+        var subTotal = result.Total;
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(subTotal == 40.00m);
+    }
+
+    [Fact]
+    public async void BasketServiceSubtotal()
+    {
+        var products = new List<LineItem>
+        {
+            new()
+            {
+                Key = Guid.NewGuid(),
+                Quantity = 2,
+                Name = "Test Product",
+                Price = 10.00m
+            },
+            new()
+            {
+                Key = Guid.NewGuid(),
                 Quantity = 1,
                 Name = "Test Product 2",
                 Price = 20.00m

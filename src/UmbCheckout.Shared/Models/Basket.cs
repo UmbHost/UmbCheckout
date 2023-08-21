@@ -20,7 +20,7 @@
             {
                 if (_total == default)
                 {
-                    _total = LineItems.Select(x => x.Price).Sum();
+                    _total = LineItems.Sum(lineItem => lineItem.Price * lineItem.Quantity);
                 }
 
                 return _total;
