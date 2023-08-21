@@ -4,9 +4,9 @@
     "net6.0": {
       "UmbHost.Licensing": {
         "type": "Direct",
-        "requested": "[1.1.11, )",
-        "resolved": "1.1.11",
-        "contentHash": "kkj7DTQt3QQpChxWMCsNVfWu3LzFbkpMIvQMRmdCPurVy6RDCUoOXEcPGfKA5vh2Wd0tkTMBwu3WwEmfHLXJMA==",
+        "requested": "[1.1.12, )",
+        "resolved": "1.1.12",
+        "contentHash": "+11+73iNND6GgdAh5iaOpTp7ns0NLXBoGC8juo4xKddtK3dTJGGp9kXa6bY4H4uk7iknqHcpuRBR3dp0bjnz5w==",
         "dependencies": {
           "Umbraco.Cms.Web.BackOffice": "10.6.1"
         }
