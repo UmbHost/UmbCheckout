@@ -29,7 +29,7 @@
 	</ItemGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.16" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.21" />
 	  <ProjectReference Include="..\UmbCheckout.Backoffice\UmbCheckout.Backoffice.csproj" />
     <ProjectReference Include="..\UmbCheckout.Core\UmbCheckout.Core.csproj" />
     <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
