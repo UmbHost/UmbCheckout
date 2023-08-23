@@ -30,6 +30,17 @@
             public const string TaxRatesAlias = "umbCheckoutTaxRates";
         }
 
+        public static class TempData
+        {
+            public const string UmbCheckoutBasketReduced = "UmbCheckout_Basket_Reduced";
+
+            public const string UmbCheckoutBasketRemoved = "UmbCheckout_Basket_Removed";
+
+            public const string UmbCheckoutEmptyBasket = "UmbCheckout_EmptyBasket";
+
+            public const string UmbCheckoutAddedToBasket = "UmbCheckout_Added_To_Basket";
+        }
+
         public static class LocalizationKeys
         {
             public const string Area = "umbcheckout";
