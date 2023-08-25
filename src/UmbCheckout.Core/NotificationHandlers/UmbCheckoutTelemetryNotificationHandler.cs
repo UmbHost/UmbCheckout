@@ -71,7 +71,8 @@ namespace UmbCheckout.Core.NotificationHandlers
                     umbracoVersion = _umbracoVersion.SemanticVersion.ToSemanticStringWithoutBuild(),
                     umbCheckoutVersion = UmbCheckoutVersion.SemanticVersion.ToString(),
                     installedPackages = JsonSerializer.Serialize(installedPackages),
-                    isLicensed = UmbCheckoutSettings.IsLicensed.ToString()
+                    isLicensed = UmbCheckoutSettings.IsLicensed.ToString(),
+                    isDevelopmentLicense = UmbCheckoutSettings.LicenseDetails.IsDevelopmentLicense.ToString()
                 };
 
                 var json = JsonConvert.SerializeObject(data, Formatting.None);
