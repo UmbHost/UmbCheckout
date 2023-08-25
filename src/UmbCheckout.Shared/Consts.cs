@@ -17,7 +17,7 @@
 
         public const string TreeGroup = "umbCheckout";
 
-        public const string TelemetryUrl = "https://telementery.umbcheckout.net/api/telemetry/";
+        public const string TelemetryUrl = "https://telemetry.umbcheckout.net/api/telemetry/";
         //public const string TelemetryUrl = "http://127.0.0.1:8787/api/telemetry/";
         public static class PropertyAlias
         {
