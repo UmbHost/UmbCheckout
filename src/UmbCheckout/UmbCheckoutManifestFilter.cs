@@ -17,12 +17,10 @@ namespace UmbCheckout
     {
         public void Filter(List<PackageManifest> manifests)
         {
-            var assembly = typeof(UmbCheckoutManifestFilter).Assembly;
-
             manifests.Add(new PackageManifest
             {
                 PackageName = Consts.PackageName,
-                Version = assembly.GetName().Version.ToString(3),
+                Version = UmbCheckoutVersion.Version.ToString(3),
                 AllowPackageTelemetry = true,
                 BundleOptions = BundleOptions.None
             });
