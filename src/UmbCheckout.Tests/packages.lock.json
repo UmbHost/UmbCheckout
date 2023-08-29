@@ -2434,6 +2434,16 @@
           "xunit.extensibility.core": "[2.4.2]"
         }
       },
+      "umbcheckout.backoffice": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Components.Web": "[6.0.21, )",
+          "UmbCheckout.Core": "[1.0.0, )",
+          "UmbCheckout.Shared": "[1.0.0, )",
+          "Umbraco.Cms.Core": "[10.6.1, )",
+          "Umbraco.Cms.Web.BackOffice": "[10.6.1, )"
+        }
+      },
       "umbcheckout.core": {
         "type": "Project",
         "dependencies": {
