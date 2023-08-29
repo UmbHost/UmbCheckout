@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Net.Mime;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using UmbCheckout.Shared;
 using UmbCheckout.Shared.Notifications.Configuration;
 using UmbHost.Licensing.Models;
@@ -13,6 +14,7 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using UmbCheckoutAppSettings = UmbCheckout.Shared.Models.UmbCheckoutAppSettings;
+using Microsoft.Extensions.Hosting;
 
 namespace UmbCheckout.Core.NotificationHandlers
 {
@@ -23,8 +25,9 @@ namespace UmbCheckout.Core.NotificationHandlers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IUmbracoVersion _umbracoVersion;
         private readonly IPackagingService _packagingService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IPackagingService packagingService)
+        public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IPackagingService packagingService, IWebHostEnvironment webHostEnvironment)
         {
 
             _umbCheckoutConfiguration = umbCheckoutConfiguration.Value;
@@ -32,6 +35,7 @@ namespace UmbCheckout.Core.NotificationHandlers
             _httpClientFactory = httpClientFactory;
             _umbracoVersion = umbracoVersion;
             _packagingService = packagingService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task HandleAsync(OnConfigurationSavedNotification notification, CancellationToken cancellationToken)
@@ -72,7 +76,8 @@ namespace UmbCheckout.Core.NotificationHandlers
                     umbCheckoutVersion = UmbCheckoutVersion.SemanticVersion.ToString(),
                     installedPackages = JsonSerializer.Serialize(installedPackages),
                     isLicensed = UmbCheckoutSettings.IsLicensed.ToString(),
-                    isDevelopmentLicense = UmbCheckoutSettings.LicenseDetails.IsDevelopmentLicense.ToString()
+                    isDevelopmentLicense = UmbCheckoutSettings.LicenseDetails.IsDevelopmentLicense.ToString(),
+                    environmentName = _webHostEnvironment.EnvironmentName
                 };
 
                 var json = JsonConvert.SerializeObject(data, Formatting.None);
