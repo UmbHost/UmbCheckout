@@ -1,4 +1,5 @@
-﻿using Umbraco.Cms.Core.Models.PublishedContent;
+﻿using UmbCheckout.Backoffice.Models;
+using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Serialization;
 using Umbraco.Extensions;
@@ -32,7 +33,7 @@ public class MetaDataValueConverter : PropertyValueConverterBase
         }
 
         var metaDataDictionary  = new Dictionary<string, string>();
-        var values = _jsonSerializer.Deserialize<IEnumerable<MetaDataIntermediate>>(sourceString);
+        var values = _jsonSerializer.Deserialize<IEnumerable<UmbCheckoutMetaData>>(sourceString);
         if (values != null)
         {
             foreach (var metaDataItem in values)
@@ -41,11 +42,5 @@ public class MetaDataValueConverter : PropertyValueConverterBase
             }
         }
         return metaDataDictionary;
-    }
-
-    private class MetaDataIntermediate
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Value { get; set; } = string.Empty;
     }
 }
