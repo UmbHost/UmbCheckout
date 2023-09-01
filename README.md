@@ -31,4 +31,4 @@ This project is maintained by [UmbHost Limited](https://umbhost.net) and contrib
 
 Copyright &copy; 2023 [UmbHost Limited](https://umbhost.net), and other contributors
 
-Licensed under GNU General Public License v3.0 during the development phase, this will change to the Apache License 2.0 license once the first stable release is out
+Licensed under the Apache License 2.0 license
