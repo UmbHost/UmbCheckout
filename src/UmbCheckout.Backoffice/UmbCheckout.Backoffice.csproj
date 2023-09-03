@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+	  <StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
+	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Company>UmbHost Limited</Company>
+    <Copyright>(c) 2023 UmbHost Limited</Copyright>
+    <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UmbHost/UmbCheckout</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Description>An eCommerce solution for Umbraco</Description>
+	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
+	  <FileVersion>1.0.0.0</FileVersion>
+	  <VersionPrefix>1.0.0</VersionPrefix>
+	  <PackageIcon>icon.png</PackageIcon>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>umbraco;ecommerce;umbcheckout;commerce;shop;checkout;</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+	<ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.21" />
+    <PackageReference Include="Umbraco.Cms.Core" Version="10.6.1" />
+    <PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UmbCheckout.Core\UmbCheckout.Core.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

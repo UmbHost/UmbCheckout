@@ -1,0 +1,71 @@
+@using Umbraco.Cms.Web.Common.PublishedModels
+@using Umbraco.Extensions
+@using UmbCheckout.Stripe.Controllers.Surface
+@using System.Globalization
+@using System.Drawing
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Product>
+@{
+    Layout = "master.cshtml";
+    var defaultCurrency = Model.Parent<Products>().DefaultCurrency;
+
+    var text = Model.Value("metaData");
+
+    var isoCurrencyCode = new RegionInfo(CultureInfo.CurrentCulture.Name).ISOCurrencySymbol;
+}
+<!-- for the section we want to show the shop header -->
+@Html.Partial("~/Views/Partials/SectionHeader.cshtml", Model.Parent)
+
+<section class="section">
+    <div class="container">
+        @if (TempData["UmbCheckout_Added_To_Basket"] != null)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-success">
+                        Successfully added @UmbracoContext.Content.GetById((Guid)TempData["UmbCheckout_Added_To_Basket"]).Name to basket.
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="col-md-6">
+                <div class="product-image-container">
+                    <img class="product-image" src="@Model.Photos?.Url()" alt="@Model.ProductName image" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h1>@Model.ProductName</h1>
+                <div class="product-price">@Model.UmbCheckoutPrice.ToString("C")</div>
+                <div class="product-teaser">@Model.Description</div>
+                <div class="product-button">
+                    @using (Html.BeginUmbracoForm<StripeBasketController>(nameof(StripeBasketController.Add), FormMethod.Post))
+                    {
+                        <label for="quantity">Quantity:</label>
+                        <input class="form-control" type="number" name="quantity" value="1" min="1" /> <br />
+                        <input type="hidden" name="id" value="@Model.Key" />
+                        <input type="hidden" name="currencyCode" value="@isoCurrencyCode" />
+                        <button class="button button--border--solid" type="submit">Buy</button>
+                    }
+                </div>
+                <div class="product-advantages">
+                    @if (Model.Features != null)
+                    {
+                        foreach (var feature in Model.Features)
+                        {
+                            <div class="product-advantage">
+                                <h4>@feature.FeatureName</h4>
+                                <h5>@feature.FeatureDetails</h5>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="section section--sand">
+    <div class="container">
+        <!-- todo: Check if grid is empty via a property value converter -->
+        @Html.GetGridHtml(Model, "bodyText", "bootstrap3-fluid")
+    </div>
+</section>

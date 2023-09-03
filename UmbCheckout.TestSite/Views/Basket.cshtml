@@ -1,0 +1,55 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Basket>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+@using UmbCheckout.Core.Interfaces
+@inject IBasketService BasketService
+@{
+    Layout = null;
+    Layout = "master.cshtml";
+    var basket = await BasketService.Get();
+    var subTotal = await BasketService.SubTotal();
+}
+@Html.Partial("~/Views/Partials/SectionHeader.cshtml")
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%
+    }
+
+        table td {
+            padding: 15px;
+        }
+
+        table thead th {
+            background-color: #e7afa3;
+            border: 1px solid #e7afa3;
+            padding: 15px;
+        }
+
+        table tbody td {
+            color: #636363;
+            border: 1px solid #dddfe1;
+        }
+
+        table tbody tr {
+            background-color: #f9fafb;
+        }
+
+            table tbody tr:nth-child(odd) {
+                background-color: #ffffff;
+            }
+</style>
+<section class="section section--sand">
+    <div class="container">
+        @if (TempData["UmbCheckout_Added_To_Basket"] != null)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-success">
+                        Successfully added @UmbracoContext.Content.GetById((Guid)TempData["UmbCheckout_Added_To_Basket"]).Name to basket.
+                    </div>
+                </div>
+            </div>
+        }
+        <vc:stripe-basket reduce-button-css-class="button button--border--solid" increase-button-css-class="button button--border--solid" remove-button-css-class="button button--border--solid" checkout-button-css-class="button button--border--solid"></vc:stripe-basket>
+    </div>
+</section>

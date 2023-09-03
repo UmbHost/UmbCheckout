@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <Nullable>enable</Nullable>
+	  <Company>UmbHost Limited</Company>
+	  <Copyright>(c) 2023 UmbHost Limited</Copyright>
+	  <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/UmbHost/UmbCheckout</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
+	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+	  <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	  <Description>An eCommerce solution for Umbraco</Description>
+	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
+	  <FileVersion>1.0.0.0</FileVersion>
+	  <VersionPrefix>1.0.0</VersionPrefix>
+	  <PackageIcon>icon.png</PackageIcon>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>umbraco;ecommerce;umbcheckout;commerce;shop;checkout;</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+	<ItemGroup>
+    <PackageReference Include="Umbraco.Cms.Core" Version="10.6.1" />
+    <PackageReference Include="Umbraco.Cms.Infrastructure" Version="10.6.1" />
+    <PackageReference Include="Umbraco.Cms.Web.Common" Version="10.6.1" />
+  </ItemGroup>
+
+</Project>
