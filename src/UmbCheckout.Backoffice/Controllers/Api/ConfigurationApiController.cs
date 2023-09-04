@@ -6,6 +6,7 @@ using UmbCheckout.Backoffice.Models;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared;
 using UmbCheckout.Shared.Extensions;
+using UmbCheckout.Shared.Models;
 using UmbHost.Licensing.Models;
 using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Services;

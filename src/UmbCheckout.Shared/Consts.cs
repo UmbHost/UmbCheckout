@@ -46,6 +46,8 @@
         public static class LocalizationKeys
         {
             public const string Area = "umbcheckout";
+            public const string UseLiveApiDetailsLabel = "use_live_api_details_label";
+            public const string UseLiveApiDetails = "use_live_api_details";
             public const string DisabledUnlicensed = "disabled_unlicensed";
             public const string UnlicensedWarning = "unlicensed_warning";
             public const string UnlicensedNotificationWarningTitle = "unlicensed_notification_warning_title";

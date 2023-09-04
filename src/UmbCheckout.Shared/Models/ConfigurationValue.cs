@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
-using UmbCheckout.Shared.Models;
 
-namespace UmbCheckout.Backoffice.Models
+namespace UmbCheckout.Shared.Models
 {
     /// <summary>
     /// The backoffice configuration properties
