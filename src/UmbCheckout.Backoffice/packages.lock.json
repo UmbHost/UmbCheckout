@@ -2205,8 +2205,8 @@
       },
       "UmbHost.Licensing": {
         "type": "Transitive",
-        "resolved": "1.2.0",
-        "contentHash": "9tRSIqJahEInf4MKJbbvjL8LgFwXk7GdmsPEfbq9usq3k6iUsDQUwhOc4bYBSb4DRFlXe8pT6UP3P/w9BQGoTA==",
+        "resolved": "1.2.1",
+        "contentHash": "q9IdA8sQJWjCJxDJuctQbtuLiJacXpytsM4tF2z1qBadCZxpSHvNCqp70jfvQrrmo5btlJlVc+8KgF38Ml+0dg==",
         "dependencies": {
           "Umbraco.Cms.Web.BackOffice": "10.6.1"
         }
@@ -2310,7 +2310,7 @@
         "type": "Project",
         "dependencies": {
           "UmbCheckout.Shared": "[1.0.0, )",
-          "UmbHost.Licensing": "[1.2.0, )",
+          "UmbHost.Licensing": "[1.2.1, )",
           "Umbraco.Cms.Web.Common": "[10.6.1, )",
           "Umbraco.Cms.Web.Website": "[10.6.1, )"
         }
