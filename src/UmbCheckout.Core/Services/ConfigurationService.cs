@@ -117,7 +117,7 @@ namespace UmbCheckout.Core.Services
 
                 using var scope = _scopeProvider.CreateScope(autoComplete: true);
                 var db = scope.Database;
-                var result = (long?)await db.InsertAsync(configuration);
+                var result = await db.InsertAsync(configuration);
 
                 return result is not null;
             }
