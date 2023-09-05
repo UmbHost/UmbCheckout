@@ -16,6 +16,8 @@
 		<key alias="unlicensed_notification_warning_message"><![CDATA[UmbCheckout is unlicensed", "UmbCheckout is running in unlicensed mode, please purchase a license to unlock this feature]]></key>
 		<key alias="help_support">Help &amp; Support</key>
 		<key alias="made_by"><![CDATA[<a href="https://umbhost.net" class="btn umb-button__button btn-link umb-button-- umb-outline">Made with <span class="color-pink icon icon-hearts"></span> by UmbHost Limited</a>]]></key>
+		<key alias="use_live_api_details_label">Use live API details</key>
+		<key alias="use_live_api_details">Whether to use the payment providers live API details</key>
 		<key alias="configuration">Configuration</key>
 		<key alias="license_status">License Status</key>
 		<key alias="license_development">Development License</key>
