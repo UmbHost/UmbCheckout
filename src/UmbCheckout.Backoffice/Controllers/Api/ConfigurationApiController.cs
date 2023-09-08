@@ -91,7 +91,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     StoreBasketInDatabase = storeBasketInDatabase,
                     SuccessPageUrl = configValues.SuccessPageUrl,
                     CancelPageUrl = configValues.CancelPageUrl,
-                    EnableShipping = enableShipping
+                    EnableShipping = enableShipping,
+                    CurrencyCode = configValues.CurrencyCode.ToUpper()
                 };
 
                 var updated = await _configuration.UpdateConfiguration(configuration);
@@ -163,6 +164,22 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                             IgnoreUserStartNodes = false,
                             MaxNumber = 1,
                             MinNumber = 1,
+                        },
+                        Validation = new Validation
+                        {
+                            Mandatory = true
+                        }
+                    },
+                    new()
+                    {
+                        Alias = "currencyCode",
+                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.CurrencyCodeDescription, CultureInfo.CurrentUICulture),
+                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.CurrencyCodeLabel, CultureInfo.CurrentUICulture),
+                        Value = configurationDb != null ? configurationDb.CurrencyCode : string.Empty,
+                        View = "textbox",
+                        Config = new Config
+                        {
+                            MaxChars = 3
                         },
                         Validation = new Validation
                         {

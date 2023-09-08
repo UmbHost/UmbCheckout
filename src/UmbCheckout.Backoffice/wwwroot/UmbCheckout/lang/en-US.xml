@@ -30,6 +30,8 @@
 		<key alias="valid_path">Valid Path</key>
 		<key alias="recheck_license">Re-Check License</key>
 		<key alias="expiry_date">Expiry Date</key>
+		<key alias="currency_code_label">Currency Code</key>
+		<key alias="currency_code_description">The default 3 letter currency code</key>
 		<key alias="success_page_url_label">Success Page URL</key>
 		<key alias="success_page_url_description">The checkout success page</key>
 		<key alias="cancel_page_url_label">Cancel Page URL</key>

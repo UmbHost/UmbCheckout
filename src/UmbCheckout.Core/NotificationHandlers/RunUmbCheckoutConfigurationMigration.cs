@@ -40,6 +40,8 @@ namespace UmbCheckout.Core.NotificationHandlers
                 .To<AddUmbCheckoutConfigurationTable>("42d30e38-1cf0-4bd8-8f47-c6517e4be09d");
             migrationPlan.From("42d30e38-1cf0-4bd8-8f47-c6517e4be09d")
                 .To<AddUmbCheckoutKey>("a877baa5-644d-4367-a1c0-5dccda876f79");
+            migrationPlan.From("a877baa5-644d-4367-a1c0-5dccda876f79")
+                .To<AddUmbCheckoutCurrencyCode>("943bb809-80f8-4435-8c94-c6717e54a808");
 
             var upgrader = new Upgrader(migrationPlan);
             upgrader.Execute(

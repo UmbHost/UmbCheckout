@@ -68,6 +68,8 @@
             public const string SuccessPageUrlDescription = "success_page_url_description";
             public const string CancelPageUrlLabel = "cancel_page_url_label";
             public const string CancelPageUrlDescription = "cancel_page_url_description";
+            public const string CurrencyCodeDescription = "currency_code_description";
+            public const string CurrencyCodeLabel = "currency_code_label";
             public const string EnableShippingLabel = "enable_shipping_label";
             public const string EnableShippingDescription = "enable_shipping_description";
             public const string StoreBasketCookieLabel = "store_basket_cookie_label";
