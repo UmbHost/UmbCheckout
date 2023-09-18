@@ -46,6 +46,7 @@ namespace UmbCheckout.Core.Composers
             target.StoreBasketInCookie = source.StoreBasketInCookie;
             target.StoreBasketInDatabase = source.StoreBasketInDatabase;
             target.EnableShipping = source.EnableShipping;
+            target.CurrencyCode = source.CurrencyCode;
         }
 
         private static void Map(Shared.Models.UmbCheckoutConfiguration source, UmbCheckoutConfiguration target, MapperContext context)
@@ -59,6 +60,7 @@ namespace UmbCheckout.Core.Composers
             target.StoreBasketInCookie = source.StoreBasketInCookie;
             target.StoreBasketInDatabase = source.StoreBasketInDatabase;
             target.EnableShipping = source.EnableShipping;
+            target.CurrencyCode = source.CurrencyCode;
         }
 
         private static void Map(UmbCheckoutBasket source, Basket target, MapperContext context)

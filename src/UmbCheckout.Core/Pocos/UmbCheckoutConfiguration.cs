@@ -19,6 +19,10 @@ namespace UmbCheckout.Core.Pocos
         [NullSetting(NullSetting = NullSettings.Null)]
         public Guid Key { get; set; } = Guid.NewGuid();
 
+        [Column("CurrencyCode")]
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string CurrencyCode { get; set; } = string.Empty;
+
         [Column("SuccessPageUrl")]
         [NullSetting(NullSetting = NullSettings.NotNull)]
         public string SuccessPageUrl { get; set; } = string.Empty;

@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
-using UmbCheckout.Shared.Models;
 
-namespace UmbCheckout.Backoffice.Models
+namespace UmbCheckout.Shared.Models
 {
     /// <summary>
     /// The backoffice configuration properties
@@ -10,6 +9,9 @@ namespace UmbCheckout.Backoffice.Models
     {
         [JsonPropertyName("successPageUrl")]
         public IEnumerable<MultiUrlPicker> SuccessPageUrl { get; set; } = Enumerable.Empty<MultiUrlPicker>();
+
+        [JsonPropertyName("currencyCode")]
+        public string CurrencyCode { get; set; } = string.Empty;
 
         [JsonPropertyName("cancelPageUrl")]
         public IEnumerable<MultiUrlPicker> CancelPageUrl { get; set; } = Enumerable.Empty<MultiUrlPicker>();
