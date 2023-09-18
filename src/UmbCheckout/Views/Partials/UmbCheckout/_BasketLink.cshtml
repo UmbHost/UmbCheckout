@@ -1,7 +1,15 @@
 ﻿@using System.Globalization
+@using UmbCheckout.Core.Interfaces
 @using UmbCheckout.Shared.Enums
 @using UmbCheckout.Shared.Extensions
 @model UmbCheckout.Core.ViewModels.BasketLinkViewModel
+@inject IConfigurationService ConfigurationService
+@{
+    var configuration = await ConfigurationService.GetConfiguration();
+    var fallbackCurrencyCode = !string.IsNullOrEmpty(configuration?.CurrencyCode) ? configuration.CurrencyCode : CultureInfo.CurrentUICulture.GetISOCurrencySymbol();
+
+    var currencyCode = !string.IsNullOrEmpty(Model.CurrencyCode) ? Model.CurrencyCode : fallbackCurrencyCode;
+}
 <a class="@Model.LinkCssClass" href="@Model.LinkUrl">
     @Model.LinkName:
 
@@ -12,7 +20,7 @@
             break;
 
         case BasketLinkType.SubTotal:
-            @Model.SubTotal.FormatCurrency(CultureInfo.CurrentUICulture.GetISOCurrencySymbol())
+            @Model.SubTotal.FormatCurrency(currencyCode)
             break;
     }
 </a>

@@ -22,7 +22,7 @@ namespace UmbCheckout.Core.ViewComponents
             _umbracoContextAccessor = umbracoContextAccessor;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket", string? linkCssClass = null, BasketLinkType linkType = BasketLinkType.TotalCount)
+        public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket", string? linkCssClass = null, BasketLinkType linkType = BasketLinkType.TotalCount, string? currencyCode = null)
         {
             var model = new BasketLinkViewModel
             {
@@ -30,7 +30,8 @@ namespace UmbCheckout.Core.ViewComponents
                 LinkName = linkName,
                 TotalItems = await _basketService.TotalItems(),
                 SubTotal = await _basketService.SubTotal(),
-                LinkType = linkType
+                LinkType = linkType,
+                CurrencyCode = currencyCode
             };
 
             var hasContext = _umbracoContextAccessor.TryGetUmbracoContext(out var umbracoContext);

@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using Schema.NET;
-using UmbCheckout.Shared.Extensions;
+﻿using Schema.NET;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Strings;
@@ -10,7 +8,7 @@ namespace UmbCheckout.Core.Extensions
 {
     public static class PublishedContentExtensions
     {
-        public static HtmlEncodedString ToProductSchema(this IPublishedContent content, string? nameAlias = null, string? descriptionAlias = null, string? imageAlias = null, string? skuAlias = null, string? mpnAlias = null, string? brandAlias = null, string? currencyCode = null)
+        public static HtmlEncodedString ToProductSchema(this IPublishedContent content, string currencyCode, string? nameAlias = null, string? descriptionAlias = null, string? imageAlias = null, string? skuAlias = null, string? mpnAlias = null, string? brandAlias = null)
         {
             var productSchema = new Product
             {
@@ -48,7 +46,7 @@ namespace UmbCheckout.Core.Extensions
             productSchema.Offers = new Offer
             {
                 Url = new Uri(content.Url(mode: UrlMode.Absolute)),
-                PriceCurrency = CultureInfo.CurrentUICulture.GetISOCurrencySymbol(),
+                PriceCurrency = currencyCode,
                 Price = content.Value<decimal>(Shared.Consts.PropertyAlias.PriceAlias)
             };
 
