@@ -30,6 +30,10 @@
             public const string MetaDataAlias = "umbCheckoutMetaData";
 
             public const string TaxRatesAlias = "umbCheckoutTaxRates";
+
+            public const string Sku = "sku";
+
+            public const string Mpn = "mpn";
         }
 
         public static class TempData
