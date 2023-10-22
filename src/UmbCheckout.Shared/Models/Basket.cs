@@ -10,6 +10,10 @@
 
         public string SessionId { get; set; } = string.Empty;
 
+        public string? CustomerReferenceId { get; set; } = null;
+
+        public Customer? Customer { get; set; } = null;
+
         public IEnumerable<LineItem> LineItems { get; set; } = Enumerable.Empty<LineItem>();
 
         public long ItemCount => LineItems.Count();
