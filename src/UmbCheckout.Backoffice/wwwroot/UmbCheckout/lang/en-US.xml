@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <language>
+	<area alias="treeHeaders">
+		<key alias="umbCheckoutGroup">UmbCheckout</key>
+	</area>
 	<area alias="dashboardTabs">
 		<key alias="umbCheckout">UmbCheckout</key>
 	</area>
