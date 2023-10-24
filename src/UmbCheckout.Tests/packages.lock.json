@@ -1298,8 +1298,8 @@
       },
       "Stripe.net": {
         "type": "Transitive",
-        "resolved": "42.1.0",
-        "contentHash": "CKzE/cOJkQZHJ5eD6ycrQSaKvcf1ACUxYiYyDvutaC9efeaPlozHsoBQRo0ilSx4a5YnEAd8SaNAXTIhIgdaiw==",
+        "resolved": "43.0.0",
+        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
         "dependencies": {
           "Newtonsoft.Json": "12.0.3",
           "System.Configuration.ConfigurationManager": "6.0.0"
@@ -2475,7 +2475,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Components.Web": "[6.0.21, )",
-          "Stripe.net": "[42.1.0, )",
+          "Stripe.net": "[43.0.0, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
           "Umbraco.Cms.Web.BackOffice": "[10.6.1, )",
