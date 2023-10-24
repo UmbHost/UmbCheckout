@@ -25,5 +25,7 @@ namespace UmbCheckout.Shared.Models
         public string CurrencyPrice => Price.FormatCurrency(CurrencyCode);
 
         public long Quantity { get; set; }
+
+        public Dictionary<string, string> MetaData { get; set; } = new();
     }
 }
