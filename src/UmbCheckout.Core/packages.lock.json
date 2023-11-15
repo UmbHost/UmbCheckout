@@ -14,9 +14,9 @@
       },
       "UmbHost.Licensing": {
         "type": "Direct",
-        "requested": "[1.2.1, )",
-        "resolved": "1.2.1",
-        "contentHash": "q9IdA8sQJWjCJxDJuctQbtuLiJacXpytsM4tF2z1qBadCZxpSHvNCqp70jfvQrrmo5btlJlVc+8KgF38Ml+0dg==",
+        "requested": "[1.2.3, )",
+        "resolved": "1.2.3",
+        "contentHash": "JpAvDf2Z/h8nmgUkiCi244hRGTt3MVt9N7cOc4M2NaVjbPwuGrQ367aG/UjEyzZi6qFEbAgKgndUxQqnBLdGfg==",
         "dependencies": {
           "Umbraco.Cms.Web.BackOffice": "10.6.1"
         }
