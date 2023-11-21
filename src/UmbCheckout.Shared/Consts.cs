@@ -91,6 +91,10 @@
             public const string ShippingRate = "shipping_rate";
             public const string TaxRate = "tax_rate";
             public const string TaxRates = "tax_rates";
+            public const string ShippingAllowedCountries = "allowed_shipping_countries";
+            public const string ShippingAllowedCountriesLabel = "allowed_shipping_countries_label";
+            public const string CollectPhoneNumber = "collect_phone_number";
+            public const string CollectPhoneNumberLabel = "collect_phone_number_label";
         }
     }
 }
