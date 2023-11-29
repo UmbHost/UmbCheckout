@@ -4,7 +4,11 @@ UmbCheckout is an eCommerce solution for Umbraco which integrates with Stripe Ch
 
 ## Getting started
 
-Supports Umbraco V10+ (Currently only test with V10)
+Only long term support (LTS) versions for Umbraco are officially supported.
+
+Community contributions for short term support versions (STS) are welcome.
+
+Currently it has been officially tested against Umbraco v10 and v13.
 
 ## Documentation
 
@@ -47,6 +51,12 @@ There are a number of addon features available with a paid license.
 * All future official payment providers including PayPal and Klarna
 
 ## Getting started with the TestSite
+
+Run the test site for the Umbraco version you wish to test against:
+
+Umbraco 10 - UmbCheckout.TestSite.v10
+Umbraco 11 - UmbCheckout.TestSite.v11
+Umbraco 13 - UmbCheckout.TestSite.v13
 
 Install the test site, discard any Git Changes and then Import Everything using uSync
 
