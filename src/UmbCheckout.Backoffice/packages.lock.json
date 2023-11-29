@@ -2300,16 +2300,6 @@
           "Umbraco.Cms.PublishedCache.NuCache": "10.6.1"
         }
       },
-      "Umbraco.Cms.Web.Website": {
-        "type": "Transitive",
-        "resolved": "10.6.1",
-        "contentHash": "hue1iUdtSrgS8C+zEfUQZmuUbXR3jDbMzIUbtxCUQiFqDzYmOszrUrAIDPsSGnhJxRrVxgpQ3SVzZLzvljp4Ww==",
-        "dependencies": {
-          "Umbraco.Cms.Core": "10.6.1",
-          "Umbraco.Cms.Infrastructure": "10.6.1",
-          "Umbraco.Cms.Web.Common": "10.6.1"
-        }
-      },
       "Umbraco.CSharpTest.Net.Collections": {
         "type": "Transitive",
         "resolved": "14.906.1403.1085",
@@ -2321,8 +2311,8 @@
           "Schema.NET": "[12.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
           "UmbHost.Licensing": "[1.2.3, )",
-          "Umbraco.Cms.Web.Common": "[10.6.1, )",
-          "Umbraco.Cms.Web.Website": "[10.6.1, )"
+          "Umbraco.Cms.Web.BackOffice": "[10.6.1, )",
+          "Umbraco.Cms.Web.Common": "[10.6.1, )"
         }
       },
       "umbcheckout.shared": {
@@ -2330,7 +2320,7 @@
         "dependencies": {
           "Umbraco.Cms.Core": "[10.6.1, )",
           "Umbraco.Cms.Infrastructure": "[10.6.1, )",
-          "Umbraco.Cms.Web.Common": "[10.6.1, )"
+          "Umbraco.Cms.Web.Common": "[10.0.0, )"
         }
       }
     }
