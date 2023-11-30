@@ -63,5 +63,8 @@ namespace UmbCheckout.Backoffice.Models
 
         [JsonProperty("ignoreUserStartNodes")]
         public bool IgnoreUserStartNodes { get; set; }
+
+        [JsonProperty("maxChars")]
+        public int MaxChars { get; set; }
     }
 }

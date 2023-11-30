@@ -9,6 +9,8 @@
 
         public Guid Key { get; set; } = Guid.NewGuid();
 
+        public string CurrencyCode { get; set; } = string.Empty;
+
         public IEnumerable<MultiUrlPicker> SuccessPageUrl { get; set; } = Enumerable.Empty<MultiUrlPicker>();
 
         public IEnumerable<MultiUrlPicker> CancelPageUrl { get; set; } = Enumerable.Empty<MultiUrlPicker>();

@@ -18,5 +18,7 @@ namespace UmbCheckout.Core.ViewModels
 
         public BasketLinkType LinkType { get; set; } = BasketLinkType.TotalCount;
         public decimal SubTotal { get; set; }
+
+        public string? CurrencyCode { get; set; } = null;
     }
 }

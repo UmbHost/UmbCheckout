@@ -30,6 +30,10 @@
             public const string MetaDataAlias = "umbCheckoutMetaData";
 
             public const string TaxRatesAlias = "umbCheckoutTaxRates";
+
+            public const string Sku = "sku";
+
+            public const string Mpn = "mpn";
         }
 
         public static class TempData
@@ -46,6 +50,8 @@
         public static class LocalizationKeys
         {
             public const string Area = "umbcheckout";
+            public const string UseLiveApiDetailsLabel = "use_live_api_details_label";
+            public const string UseLiveApiDetails = "use_live_api_details";
             public const string DisabledUnlicensed = "disabled_unlicensed";
             public const string UnlicensedWarning = "unlicensed_warning";
             public const string UnlicensedNotificationWarningTitle = "unlicensed_notification_warning_title";
@@ -66,6 +72,8 @@
             public const string SuccessPageUrlDescription = "success_page_url_description";
             public const string CancelPageUrlLabel = "cancel_page_url_label";
             public const string CancelPageUrlDescription = "cancel_page_url_description";
+            public const string CurrencyCodeDescription = "currency_code_description";
+            public const string CurrencyCodeLabel = "currency_code_label";
             public const string EnableShippingLabel = "enable_shipping_label";
             public const string EnableShippingDescription = "enable_shipping_description";
             public const string StoreBasketCookieLabel = "store_basket_cookie_label";
@@ -83,6 +91,10 @@
             public const string ShippingRate = "shipping_rate";
             public const string TaxRate = "tax_rate";
             public const string TaxRates = "tax_rates";
+            public const string ShippingAllowedCountries = "allowed_shipping_countries";
+            public const string ShippingAllowedCountriesLabel = "allowed_shipping_countries_label";
+            public const string CollectPhoneNumber = "collect_phone_number";
+            public const string CollectPhoneNumberLabel = "collect_phone_number_label";
         }
     }
 }
