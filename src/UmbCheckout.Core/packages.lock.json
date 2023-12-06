@@ -14,9 +14,9 @@
       },
       "UmbHost.Licensing": {
         "type": "Direct",
-        "requested": "[1.2.3, )",
-        "resolved": "1.2.3",
-        "contentHash": "JpAvDf2Z/h8nmgUkiCi244hRGTt3MVt9N7cOc4M2NaVjbPwuGrQ367aG/UjEyzZi6qFEbAgKgndUxQqnBLdGfg==",
+        "requested": "[1.2.5, )",
+        "resolved": "1.2.5",
+        "contentHash": "rm1hbp2Q3j2hoi4+iOXaEXltGQw2Vzcug94KxniCc+4AODY2AUCkj9EsBK/62Ih9eYzL7LwLXeePNK6z7vMx/w==",
         "dependencies": {
           "Umbraco.Cms.Web.BackOffice": "10.6.1"
         }
@@ -2274,11 +2274,11 @@
       },
       "UmbHost.Licensing": {
         "type": "Direct",
-        "requested": "[1.2.3, )",
-        "resolved": "1.2.3",
-        "contentHash": "JpAvDf2Z/h8nmgUkiCi244hRGTt3MVt9N7cOc4M2NaVjbPwuGrQ367aG/UjEyzZi6qFEbAgKgndUxQqnBLdGfg==",
+        "requested": "[1.2.5, )",
+        "resolved": "1.2.5",
+        "contentHash": "rm1hbp2Q3j2hoi4+iOXaEXltGQw2Vzcug94KxniCc+4AODY2AUCkj9EsBK/62Ih9eYzL7LwLXeePNK6z7vMx/w==",
         "dependencies": {
-          "Umbraco.Cms.Web.BackOffice": "10.6.1"
+          "Umbraco.Cms.Web.BackOffice": "11.4.2"
         }
       },
       "Umbraco.Cms.Web.BackOffice": {
@@ -4384,11 +4384,11 @@
       },
       "UmbHost.Licensing": {
         "type": "Direct",
-        "requested": "[1.2.3, )",
-        "resolved": "1.2.3",
-        "contentHash": "JpAvDf2Z/h8nmgUkiCi244hRGTt3MVt9N7cOc4M2NaVjbPwuGrQ367aG/UjEyzZi6qFEbAgKgndUxQqnBLdGfg==",
+        "requested": "[1.2.5, )",
+        "resolved": "1.2.5",
+        "contentHash": "rm1hbp2Q3j2hoi4+iOXaEXltGQw2Vzcug94KxniCc+4AODY2AUCkj9EsBK/62Ih9eYzL7LwLXeePNK6z7vMx/w==",
         "dependencies": {
-          "Umbraco.Cms.Web.BackOffice": "10.6.1"
+          "Umbraco.Cms.Web.BackOffice": "13.0.0-rc3"
         }
       },
       "Umbraco.Cms.Web.BackOffice": {
