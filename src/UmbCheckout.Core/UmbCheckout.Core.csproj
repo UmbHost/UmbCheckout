@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
@@ -38,7 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="Schema.NET" Version="12.0.0" />
-    <PackageReference Include="UmbHost.Licensing" Version="1.2.5" />
+    <PackageReference Include="UmbHost.Licensing" Version="1.2.6" />
   </ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
