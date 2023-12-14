@@ -33,6 +33,10 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="UmbHost.Licensing" Version="1.2.6" />
+  </ItemGroup>
+
 	<ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>

@@ -2175,6 +2175,14 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
+      "UmbHost.Licensing": {
+        "type": "Transitive",
+        "resolved": "1.2.6",
+        "contentHash": "IiVIrefcRCtwGpz3zfr7boPAJtMvEg7o1svPnLg80AvNcHQmQf9VoappHCg4JFd1txfMydCk/H6eogRyjJD16w==",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "10.6.1"
+        }
+      },
       "Umbraco.Cms.Core": {
         "type": "Transitive",
         "resolved": "10.6.1",
@@ -2301,6 +2309,7 @@
           "Microsoft.AspNetCore.Components.Web": "[6.0.21, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
+          "UmbHost.Licensing": "[1.2.6, )",
           "Umbraco.Cms.Core": "[10.6.1, )",
           "Umbraco.Cms.Web.BackOffice": "[10.6.1, )"
         }
@@ -4358,6 +4367,14 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
+      "UmbHost.Licensing": {
+        "type": "Transitive",
+        "resolved": "1.2.6",
+        "contentHash": "IiVIrefcRCtwGpz3zfr7boPAJtMvEg7o1svPnLg80AvNcHQmQf9VoappHCg4JFd1txfMydCk/H6eogRyjJD16w==",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "11.4.2"
+        }
+      },
       "Umbraco.Cms.Core": {
         "type": "Transitive",
         "resolved": "11.4.2",
@@ -4474,6 +4491,7 @@
           "Microsoft.AspNetCore.Components.Web": "[7.0.0, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
+          "UmbHost.Licensing": "[1.2.6, )",
           "Umbraco.Cms.Core": "[11.4.2, )",
           "Umbraco.Cms.Web.BackOffice": "[11.4.2, )"
         }
@@ -6566,6 +6584,14 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
+      "UmbHost.Licensing": {
+        "type": "Transitive",
+        "resolved": "1.2.6",
+        "contentHash": "IiVIrefcRCtwGpz3zfr7boPAJtMvEg7o1svPnLg80AvNcHQmQf9VoappHCg4JFd1txfMydCk/H6eogRyjJD16w==",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "13.0.0"
+        }
+      },
       "Umbraco.Cms.Core": {
         "type": "Transitive",
         "resolved": "13.0.0",
@@ -6680,6 +6706,7 @@
           "Microsoft.AspNetCore.Components.Web": "[8.0.0, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
+          "UmbHost.Licensing": "[1.2.6, )",
           "Umbraco.Cms.Core": "[13.0.0, )",
           "Umbraco.Cms.Web.BackOffice": "[13.0.0, )"
         }

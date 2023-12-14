@@ -15,6 +15,15 @@
           "System.IO.Pipelines": "6.0.3"
         }
       },
+      "UmbHost.Licensing": {
+        "type": "Direct",
+        "requested": "[1.2.6, )",
+        "resolved": "1.2.6",
+        "contentHash": "IiVIrefcRCtwGpz3zfr7boPAJtMvEg7o1svPnLg80AvNcHQmQf9VoappHCg4JFd1txfMydCk/H6eogRyjJD16w==",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "10.6.1"
+        }
+      },
       "Umbraco.Cms.Core": {
         "type": "Direct",
         "requested": "[10.6.1, )",
@@ -2330,6 +2339,15 @@
           "System.IO.Pipelines": "7.0.0"
         }
       },
+      "UmbHost.Licensing": {
+        "type": "Direct",
+        "requested": "[1.2.6, )",
+        "resolved": "1.2.6",
+        "contentHash": "IiVIrefcRCtwGpz3zfr7boPAJtMvEg7o1svPnLg80AvNcHQmQf9VoappHCg4JFd1txfMydCk/H6eogRyjJD16w==",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "11.4.2"
+        }
+      },
       "Umbraco.Cms.Core": {
         "type": "Direct",
         "requested": "[11.4.2, )",
@@ -4494,6 +4512,15 @@
           "Microsoft.Extensions.Primitives": "8.0.0",
           "Microsoft.JSInterop": "8.0.0",
           "System.IO.Pipelines": "8.0.0"
+        }
+      },
+      "UmbHost.Licensing": {
+        "type": "Direct",
+        "requested": "[1.2.6, )",
+        "resolved": "1.2.6",
+        "contentHash": "IiVIrefcRCtwGpz3zfr7boPAJtMvEg7o1svPnLg80AvNcHQmQf9VoappHCg4JFd1txfMydCk/H6eogRyjJD16w==",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "13.0.0"
         }
       },
       "Umbraco.Cms.Core": {
