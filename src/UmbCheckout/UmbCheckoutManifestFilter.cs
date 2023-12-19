@@ -22,7 +22,17 @@ namespace UmbCheckout
                 PackageName = Consts.PackageName,
                 Version = UmbCheckoutVersion.Version.ToString(3),
                 AllowPackageTelemetry = true,
-                BundleOptions = BundleOptions.None
+                BundleOptions = BundleOptions.None,
+                Scripts = new []
+                {
+                    "/App_Plugins/UmbCheckout/js/umbcheckout.metadata.propertyeditor.controller.js",
+                    "/App_Plugins/UmbCheckout/js/umbcheckout.resources.js",
+                    "/App_Plugins/UmbCheckout/js/umbcheckout.controller.js"
+                },
+                Stylesheets = new []
+                {
+                    "/App_Plugins/UmbCheckout/css/umbcheckout.css"
+                }
             });
         }
     }
