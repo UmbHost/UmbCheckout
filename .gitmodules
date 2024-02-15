@@ -7,6 +7,3 @@
 [submodule "src/UmbCheckout.Stripe.uSync"]
 	path = src/UmbCheckout.Stripe.uSync
 	url = https://github.com/UmbHost/UmbCheckout.Stripe.uSync.git
-[submodule "src/UmbCheckout.Stripe.Forms"]
-	path = src/UmbCheckout.Stripe.Forms
-	url = https://github.com/UmbHost/UmbCheckout.Stripe.Forms

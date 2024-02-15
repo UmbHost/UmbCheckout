@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
 	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <Nullable>enable</Nullable>
@@ -22,20 +22,32 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\icon.png">
+    <EmbeddedResource Include="..\..\icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\README.md">
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
-    </None>
+    </EmbeddedResource>
   </ItemGroup>
 
-	<ItemGroup>
-    <PackageReference Include="Umbraco.Cms.Core" Version="10.6.1" />
-    <PackageReference Include="Umbraco.Cms.Infrastructure" Version="10.6.1" />
-    <PackageReference Include="Umbraco.Cms.Web.Common" Version="10.6.1" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<PackageReference Include="Umbraco.Cms.Core" Version="10.8.1" />
+		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="10.8.1" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="10.8.1" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<PackageReference Include="Umbraco.Cms.Core" Version="11.4.2" />
+		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="11.4.2" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="11.4.2" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="Umbraco.Cms.Core" Version="13.0.0" />
+		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="13.0.0" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="13.0.0" />
+	</ItemGroup>
 
 </Project>
