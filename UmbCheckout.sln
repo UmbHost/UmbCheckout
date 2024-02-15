@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmbCheckout.TestSite", "UmbCheckout.TestSite\UmbCheckout.TestSite.csproj", "{10E1C44E-10E6-49E3-A03A-FC1ED207547B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmbCheckout.Backoffice", "src\UmbCheckout.Backoffice\UmbCheckout.Backoffice.csproj", "{82B95291-CE73-42E7-ADFD-59B7FB9A9B99}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmbCheckout.Core", "src\UmbCheckout.Core\UmbCheckout.Core.csproj", "{52F3FFCA-0BDA-49F5-B822-BC6679DA1D04}"
@@ -27,10 +25,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{10E1C44E-10E6-49E3-A03A-FC1ED207547B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{10E1C44E-10E6-49E3-A03A-FC1ED207547B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{10E1C44E-10E6-49E3-A03A-FC1ED207547B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{10E1C44E-10E6-49E3-A03A-FC1ED207547B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{82B95291-CE73-42E7-ADFD-59B7FB9A9B99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{82B95291-CE73-42E7-ADFD-59B7FB9A9B99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82B95291-CE73-42E7-ADFD-59B7FB9A9B99}.Release|Any CPU.ActiveCfg = Release|Any CPU
