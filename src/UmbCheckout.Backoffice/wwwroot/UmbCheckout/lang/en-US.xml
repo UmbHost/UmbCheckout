@@ -14,9 +14,9 @@
 	</area>
 	<area alias="umbcheckout">
 		<key alias="disabled_unlicensed">DISABLED IN UNLICENSED MODE</key>
-		<key alias="unlicensed_warning"><![CDATA[UmbCheckout is running in unlicensed mode, please <a href=\"https://umbcheckout.net\" target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to support development]]></key>
+		<key alias="unlicensed_warning"><![CDATA[UmbCheckout is running in unlicensed mode, please <a href='https://umbcheckout.net' target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to support development]]></key>
 		<key alias="unlicensed_notification_warning_title">UmbCheckout is unlicensed</key>
-		<key alias="unlicensed_notification_warning_message"><![CDATA[UmbCheckout is unlicensed", "UmbCheckout is running in unlicensed mode, please purchase a license to unlock this feature]]></key>
+		<key alias="unlicensed_notification_warning_message"><![CDATA[UmbCheckout is running in unlicensed mode, please <a href='https://umbcheckout.net' target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to unlock this feature]]></key>
 		<key alias="help_support">Help &amp; Support</key>
 		<key alias="made_by"><![CDATA[<a href="https://umbhost.net" class="btn umb-button__button btn-link umb-button-- umb-outline">Made with <span class="color-pink icon icon-hearts"></span> by UmbHost Limited</a>]]></key>
 		<key alias="use_live_api_details_label">Use live API details</key>
