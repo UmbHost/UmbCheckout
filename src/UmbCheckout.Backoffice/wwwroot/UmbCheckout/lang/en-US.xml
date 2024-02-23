@@ -56,5 +56,7 @@
 		<key alias="shipping_rate">Shipping Rate</key>
 		<key alias="tax_rate">Tax Rate</key>
 		<key alias="tax_rates">Tax Rates</key>
+		<key alias="first_page">First Page</key>
+		<key alias="next_page">Next Page</key>
 	</area>
 </language>
