@@ -47,12 +47,6 @@
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.8.1" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="11.4.2" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="11.4.2" />
-	</ItemGroup>
-
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
 		<PackageReference Include="Umbraco.Cms.Core" Version="13.0.0" />
