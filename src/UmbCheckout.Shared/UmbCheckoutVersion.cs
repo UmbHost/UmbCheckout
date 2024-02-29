@@ -11,14 +11,14 @@ namespace UmbCheckout.Shared
 
             AssemblyVersion = assembly.GetName().Version;
 
-            AssemblyFileVersion = Version.Parse(assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version);
+            AssemblyFileVersion = Version.Parse(assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
 
-            SemanticVersion = SemVersion.Parse(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
+            SemanticVersion = SemVersion.Parse(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion);
 
             Version = new Version(SemanticVersion.Major, SemanticVersion.Minor, SemanticVersion.Patch);
         }
 
-        public static Version AssemblyVersion { get; }
+        public static Version? AssemblyVersion { get; }
 
         public static Version AssemblyFileVersion { get; }
 
