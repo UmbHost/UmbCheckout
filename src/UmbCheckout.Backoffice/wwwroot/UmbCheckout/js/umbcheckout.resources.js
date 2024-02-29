@@ -16,6 +16,14 @@
                 }
                 );
         },
+        getHasUmbracoApplicationUrlSet: function () {
+
+            return $http.get("backoffice/UmbCheckout/ConfigurationApi/HasUmbracoApplicationUrlSet")
+                .then(function (response) {
+                    return response;
+                }
+                );
+        },
         updateConfiguration: function (configurationValues) {
 
             return $http.patch("backoffice/UmbCheckout/ConfigurationApi/UpdateConfiguration", configurationValues)

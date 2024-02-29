@@ -14,15 +14,25 @@
 	</area>
 	<area alias="umbcheckout">
 		<key alias="disabled_unlicensed">DISABLED IN UNLICENSED MODE</key>
-		<key alias="unlicensed_warning"><![CDATA[UmbCheckout is running in unlicensed mode, please <a href=\"https://umbcheckout.net\" target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to support development]]></key>
+		<key alias="unlicensed_warning"><![CDATA[UmbCheckout is running in unlicensed mode, please <a href='https://umbcheckout.net' target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to support development]]></key>
 		<key alias="unlicensed_notification_warning_title">UmbCheckout is unlicensed</key>
-		<key alias="unlicensed_notification_warning_message"><![CDATA[UmbCheckout is unlicensed", "UmbCheckout is running in unlicensed mode, please purchase a license to unlock this feature]]></key>
+		<key alias="unlicensed_notification_warning_message"><![CDATA[UmbCheckout is running in unlicensed mode, please <a href='https://umbcheckout.net' target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to unlock this feature]]></key>
 		<key alias="help_support">Help &amp; Support</key>
 		<key alias="made_by"><![CDATA[<a href="https://umbhost.net" class="btn umb-button__button btn-link umb-button-- umb-outline">Made with <span class="color-pink icon icon-hearts"></span> by UmbHost Limited</a>]]></key>
 		<key alias="use_live_api_details_label">Use live API details</key>
 		<key alias="use_live_api_details">Whether to use the payment providers live API details</key>
 		<key alias="configuration">Configuration</key>
+		<key alias="configuration_saved_title">Configuration saved</key>
+		<key alias="configuration_failed_save_title">Configuration failed to save</key>
+		<key alias="configuration_failed_save_message">There was an issue trying to save the configuration</key>
+		<key alias="configuration_saved_message">The configuration has been saved successfully</key>
 		<key alias="license_status">License Status</key>
+		<key alias="license_check_requested_title">License check requested</key>
+		<key alias="license_check_requested_message">A license check has been requested, please wait for the window to reload</key>
+		<key alias="license_check_request_wait_title">Please wait to re-check the license</key>
+		<key alias="license_check_request_wait_message">You can try again in </key>
+		<key alias="license_check_request_failed_title">License check failed to save</key>
+		<key alias="license_check_request_failed_message">A license check has failed</key>
 		<key alias="license_development">Development License</key>
 		<key alias="license_development_true">Yes</key>
 		<key alias="license_addon">License Addon</key>
@@ -56,5 +66,8 @@
 		<key alias="shipping_rate">Shipping Rate</key>
 		<key alias="tax_rate">Tax Rate</key>
 		<key alias="tax_rates">Tax Rates</key>
+		<key alias="first_page">First Page</key>
+		<key alias="next_page">Next Page</key>
+		<key alias="umbracoapplicationurlunset"><![CDATA[The &quot;Umbraco Application Url&quot; configuration setting is unset, you can read how to <a class="bold underline" href="https://docs.umbraco.com/umbraco-cms/reference/configuration/webroutingsettings#umbraco-application-url" target="_blank">set the value here</a>.<br /> This is required to match your license.]]></key>
 	</area>
 </language>

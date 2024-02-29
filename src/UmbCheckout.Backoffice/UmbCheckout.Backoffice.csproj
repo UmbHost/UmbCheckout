@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Company>UmbHost Limited</Company>
-    <Copyright>(c) 2023 UmbHost Limited</Copyright>
+    <Copyright>(c) $([System.DateTime]::Now.ToString(`yyyy`)) UmbHost Limited</Copyright>
     <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UmbHost/UmbCheckout</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="UmbHost.Licensing" Version="1.3.0" />
+    <PackageReference Include="UmbHost.Licensing" Version="1.4.0" />
   </ItemGroup>
 
 	<ItemGroup>
@@ -42,21 +42,21 @@
   </ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.21" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="10.8.1" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.8.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[6.0.21, 7)" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[10.8.1, 11)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.1, 11)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="11.4.2" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="11.4.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[7.0.0, 8)" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[12.3.4, 13)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[12.3.4, 13)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="13.0.0" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="13.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0, 9)" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[13.0.0, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0, 14)" />
 	</ItemGroup>
 
   <ItemGroup>

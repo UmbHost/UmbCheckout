@@ -1,10 +1,12 @@
-function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, notificationsService, formHelper) {
+function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, notificationsService, formHelper, localizationService) {
     var vm = this;
     vm.saveButtonState = "init";
     vm.checkLicenceButtonState = "init";
     vm.createFolderError = "";
     vm.properties = [];
     vm.LicenseState = {}
+    vm.HasUmbracoApplicationUrlSet = false;
+    vm.UmbracoApplicationUrlNotSetMessage = "";
 
     umbCheckoutResources.getConfiguration()
         .then(function (response) {
@@ -12,13 +14,24 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
         }
     );
 
+    umbCheckoutResources.getHasUmbracoApplicationUrlSet()
+        .then(function (response) {
+            vm.HasUmbracoApplicationUrlSet = response.data;
+            localizationService.localize("umbcheckout_umbracoapplicationurlunset").then(function (value) {
+                vm.UmbracoApplicationUrlNotSetMessage = value;
+            });
+        }
+        );
+
     umbCheckoutResources.getLicenseStatus()
         .then(function (response) {
             vm.LicenseState.Status = response.data;
 
-            if (response.data.status == "Invalid" || response.data.status == "Unlicensed") {
+            if (response.data.status == "Invalid" || response.data.status == "Unlicensed" || response.data.status == "Expired") {
                 vm.LicenseState.Valid = false;
-                vm.LicenseState.Message = "UmbCheckout is running in unlicensed mode, please <a href=\"#\" target=\"_blank\"  class=\"red bold underline\">purchase a license</a> to support development"
+                localizationService.localize("umbcheckout_unlicensed_warning").then(function (value) {
+                    vm.LicenseState.Message = value;
+                });
             }
             else if (response.data.status == "Active") {
                 vm.LicenseState.Valid = true;
@@ -41,13 +54,21 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
             umbCheckoutResources.updateConfiguration(configurationValues)
                 .then(function (response) {
                     vm.properties = response.data
-                    notificationsService.success("Configuration saved", "The configuration has been saved successfully");
+                    localizationService.localize("umbcheckout_configuration_saved_title").then(function (title) {
+                        localizationService.localize("umbcheckout_configuration_saved_message").then(function (message) {
+                            notificationsService.success(title, message);
+                        });
+                    });
                     vm.saveButtonState = "success";
                     $scope.configurationForm.$dirty = false;
                 })
                 .catch(
                     function (response) {
-                        notificationsService.error("Configuration failed to save", "There was an issue trying to save the configuration");
+                        localizationService.localize("umbcheckout_configuration_failed_save_title").then(function (title) {
+                            localizationService.localize("umbcheckout_configuration_failed_save_message").then(function (message) {
+                                notificationsService.error(title, message);
+                            });
+                        });
                         vm.saveButtonState = "error";
                     }
                 );
@@ -63,7 +84,12 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
             .then(function (response) {
 
                 if (response.data.Accepted == "Accepted") {
-                    notificationsService.success("License check requested", "A license check has been requested, please wait for the window to reload");
+
+                    localizationService.localize("umbcheckout_license_check_requested_title").then(function (title) {
+                        localizationService.localize("umbcheckout_license_check_requested_message").then(function (message) {
+                            notificationsService.success(title, message);
+                        });
+                    });
 
                     setTimeout(function () {
                         window.location.reload(1);
@@ -71,13 +97,24 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
                 }
 
                 if (response.data.Accepted == "Wait") {
-                    notificationsService.warning("Please wait to re-check the license", "You can try again in " + response.data.TimeLeft);
+
+                    localizationService.localize("umbcheckout_license_check_request_wait_title").then(function (title) {
+                        localizationService.localize("umbcheckout_license_check_request_wait_message").then(function (message) {
+                            notificationsService.warning(title, message + response.data.TimeLeft);
+                        });
+                    });
+
                     vm.checkLicenceButtonState = "error";
                 }
             })
             .catch(
                 function (response) {
-                    notificationsService.error("License check failed to save", "A license check has failed");
+                    localizationService.localize("umbcheckout_license_check_request_failed_title").then(function (title) {
+                        localizationService.localize("umbcheckout_license_check_request_failed_message").then(function (message) {
+                            notificationsService.error(title, message);
+                        });
+                    });
+
                     vm.checkLicenceButtonState = "error";
                 }
             );

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
@@ -6,7 +6,7 @@
 	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <Nullable>enable</Nullable>
 	  <Company>UmbHost Limited</Company>
-	  <Copyright>(c) 2023 UmbHost Limited</Copyright>
+	  <Copyright>(c) $([System.DateTime]::Now.ToString(`yyyy`)) UmbHost Limited</Copyright>
 	  <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/UmbHost/UmbCheckout</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
@@ -33,21 +33,21 @@
   </ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<PackageReference Include="Umbraco.Cms.Core" Version="10.8.1" />
-		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="10.8.1" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="10.8.1" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[10.8.1, 11)" />
+		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="[10.8.1, 11)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[10.8.1, 11)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-		<PackageReference Include="Umbraco.Cms.Core" Version="11.4.2" />
-		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="11.4.2" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="11.4.2" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[12.3.4, 13)" />
+		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="[12.3.4, 13)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[12.3.4, 13)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Umbraco.Cms.Core" Version="13.0.0" />
-		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="13.0.0" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="13.0.0" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[13.0.0, 14)" />
+		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="[13.0.0, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0, 14)" />
 	</ItemGroup>
 
 </Project>
