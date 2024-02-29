@@ -22,7 +22,17 @@
 		<key alias="use_live_api_details_label">Use live API details</key>
 		<key alias="use_live_api_details">Whether to use the payment providers live API details</key>
 		<key alias="configuration">Configuration</key>
+		<key alias="configuration_saved_title">Configuration saved</key>
+		<key alias="configuration_failed_save_title">Configuration failed to save</key>
+		<key alias="configuration_failed_save_message">There was an issue trying to save the configuration</key>
+		<key alias="configuration_saved_message">The configuration has been saved successfully</key>
 		<key alias="license_status">License Status</key>
+		<key alias="license_check_requested_title">License check requested</key>
+		<key alias="license_check_requested_message">A license check has been requested, please wait for the window to reload</key>
+		<key alias="license_check_request_wait_title">Please wait to re-check the license</key>
+		<key alias="license_check_request_wait_message">You can try again in </key>
+		<key alias="license_check_request_failed_title">License check failed to save</key>
+		<key alias="license_check_request_failed_message">A license check has failed</key>
 		<key alias="license_development">Development License</key>
 		<key alias="license_development_true">Yes</key>
 		<key alias="license_addon">License Addon</key>
