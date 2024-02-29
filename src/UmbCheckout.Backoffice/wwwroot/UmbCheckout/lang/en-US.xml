@@ -58,5 +58,6 @@
 		<key alias="tax_rates">Tax Rates</key>
 		<key alias="first_page">First Page</key>
 		<key alias="next_page">Next Page</key>
+		<key alias="umbracoapplicationurlunset"><![CDATA[The &quot;Umbraco Application Url&quot; configuration setting is unset, you can read how to <a class="bold underline" href="https://docs.umbraco.com/umbraco-cms/reference/configuration/webroutingsettings#umbraco-application-url" target="_blank">set the value here</a>.<br /> This is required to match your license.]]></key>
 	</area>
 </language>

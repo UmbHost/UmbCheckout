@@ -41,6 +41,7 @@
                                 <umb-box>
                                     <umb-box-header title-key="umbcheckout_license_details"></umb-box-header>
                                     <umb-box-content class="block-form ">
+                                        <div ng-if="!vm.HasUmbracoApplicationUrlSet" class="alert alert-danger" ng-bind-html="vm.UmbracoApplicationUrlNotSetMessage"></div>
                                         <div class="umb-property" localize="label" label="@umbcheckout_license_development" ng-if="vm.LicenseState.Status.isDevelopmentLicense">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">

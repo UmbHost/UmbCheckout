@@ -1,16 +1,27 @@
-function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, notificationsService, formHelper) {
+function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, notificationsService, formHelper, localizationService) {
     var vm = this;
     vm.saveButtonState = "init";
     vm.checkLicenceButtonState = "init";
     vm.createFolderError = "";
     vm.properties = [];
     vm.LicenseState = {}
+    vm.HasUmbracoApplicationUrlSet = false;
+    vm.UmbracoApplicationUrlNotSetMessage = "";
 
     umbCheckoutResources.getConfiguration()
         .then(function (response) {
             vm.properties = response.data
         }
     );
+
+    umbCheckoutResources.getHasUmbracoApplicationUrlSet()
+        .then(function (response) {
+            vm.HasUmbracoApplicationUrlSet = response.data;
+            localizationService.localize("umbcheckout_umbracoapplicationurlunset").then(function (value) {
+                vm.UmbracoApplicationUrlNotSetMessage = value;
+            });
+        }
+        );
 
     umbCheckoutResources.getLicenseStatus()
         .then(function (response) {

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using UmbCheckout.Backoffice.Models;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared;
@@ -9,6 +10,7 @@ using UmbCheckout.Shared.Extensions;
 using UmbCheckout.Shared.Models;
 using UmbHost.Licensing.Models;
 using UmbHost.Licensing.Services;
+using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Cms.Web.Common.Attributes;
@@ -24,13 +26,15 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         private readonly IConfigurationService _configuration;
         private readonly ILocalizedTextService _localizedTextService;
         private readonly ILogger<ConfigurationApiController> _logger;
+        private readonly WebRoutingSettings _umbracoWebRoutingSettings;
 
-        public ConfigurationApiController(IConfigurationService configuration, ILogger<ConfigurationApiController> logger, LicenseService licenseService, ILocalizedTextService localizedTextService)
+        public ConfigurationApiController(IConfigurationService configuration, ILogger<ConfigurationApiController> logger, LicenseService licenseService, ILocalizedTextService localizedTextService, IOptions<WebRoutingSettings> umbracoWebRoutingSettings)
         {
             _configuration = configuration;
             _logger = logger;
             _localizedTextService = localizedTextService;
             licenseService.RunLicenseCheck();
+            _umbracoWebRoutingSettings = umbracoWebRoutingSettings.Value;
         }
 
         /// <summary>
@@ -51,6 +55,15 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                 _logger.LogError(ex, ex.Message);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Gets whether the Umbraco Application Url configuration has been set
+        /// </summary>
+        /// <returns>True if the Umbraco Application Url has been set, false if not</returns>
+        public bool HasUmbracoApplicationUrlSet()
+        {
+            return !string.IsNullOrWhiteSpace(_umbracoWebRoutingSettings.UmbracoApplicationUrl);
         }
 
         /// <summary>
