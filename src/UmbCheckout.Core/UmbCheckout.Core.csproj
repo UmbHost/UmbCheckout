@@ -6,7 +6,7 @@
 	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <Nullable>enable</Nullable>
 	  <Company>UmbHost Limited</Company>
-	  <Copyright>(c) 2023 UmbHost Limited</Copyright>
+	  <Copyright>(c) $([System.DateTime]::Now.ToString(`yyyy`)) UmbHost Limited</Copyright>
 	  <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/UmbHost/UmbCheckout</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
