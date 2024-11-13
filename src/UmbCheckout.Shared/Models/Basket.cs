@@ -32,5 +32,7 @@
 
             set => _total = value;
         }
+
+        public Dictionary<string, string> MetaData { get; set; } = new();
     }
 }
