@@ -68,7 +68,7 @@ namespace UmbCheckout.Core.Services
 
                 _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey, session);
 
-                scope.Notifications.Publish(new OnSessionCreatedNotification(_contextAccessor.HttpContext, Consts.SessionKey, encryptedBasket, configuration));
+                scope.Notifications.Publish(new OnSessionCreatedNotification(_contextAccessor.HttpContext, sessionId, encryptedBasket, configuration));
                 return session;
             }
             catch (Exception ex)
@@ -122,10 +122,12 @@ namespace UmbCheckout.Core.Services
 
                 session.Basket = basket;
 
+                var sessionId = _contextAccessor.HttpContext.Session.Id;
+
                 _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey, session);
 
                 var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(basket), _dataProtectionProvider);
-                scope.Notifications.Publish(new OnSessionUpdatedNotification(_contextAccessor.HttpContext, Consts.SessionKey, basket, encryptedBasket, configuration));
+                scope.Notifications.Publish(new OnSessionUpdatedNotification(_contextAccessor.HttpContext, sessionId, basket, encryptedBasket, configuration));
 
                 return session;
             }
