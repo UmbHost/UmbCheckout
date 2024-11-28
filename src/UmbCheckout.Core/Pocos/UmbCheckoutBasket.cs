@@ -39,6 +39,6 @@ namespace UmbCheckout.Core.Pocos
         [Column("MetaData")]
         [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         [NullSetting(NullSetting = NullSettings.Null)]
-        public Dictionary<string, string>? MetaData { get; set; }
+        public string? MetaData { get; set; }
     }
 }
