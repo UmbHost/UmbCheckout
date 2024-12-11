@@ -67,11 +67,15 @@ namespace UmbCheckout.Core.Composers
         {
             target.LineItems = JsonSerializer.Deserialize<IEnumerable<LineItem>>(source.LineItems) ?? Array.Empty<LineItem>();
             target.Total = source.BasketTotal;
+            if (source.MetaData != null)
+                target.MetaData = JsonSerializer.Deserialize<Dictionary<string, string>>(source.MetaData) ??
+                                  new Dictionary<string, string>();
         }
 
         private static void Map(Basket source, UmbCheckoutBasket target, MapperContext context)
         {
             target.LineItems = JsonSerializer.Serialize(source.LineItems);
+            target.MetaData = JsonSerializer.Serialize(source.MetaData);
             target.BasketTotal = source.Total;
         }
     }
