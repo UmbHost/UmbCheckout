@@ -1,4 +1,5 @@
-﻿using UmbCheckout.Shared.Extensions;
+﻿using System.Text.Json.Serialization;
+using UmbCheckout.Shared.Extensions;
 
 namespace UmbCheckout.Shared.Models
 {
@@ -22,6 +23,7 @@ namespace UmbCheckout.Shared.Models
 
         public decimal Price { get; set; }
 
+        [JsonIgnore]
         public string CurrencyPrice => Price.FormatCurrency(CurrencyCode);
 
         public long Quantity { get; set; }
