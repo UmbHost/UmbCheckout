@@ -4,7 +4,6 @@ using UmbCheckout.Core.Pocos;
 using UmbCheckout.Shared.Models;
 using UmbHost.Licensing.Models;
 using UmbHost.Licensing.Services;
-using Umbraco.Cms.Core.Mapping;
 using Umbraco.Cms.Infrastructure.Scoping;
 
 namespace UmbCheckout.Core.Services
@@ -12,17 +11,17 @@ namespace UmbCheckout.Core.Services
     /// <summary>
     /// A service which handles storing of the Basket in the database
     /// </summary>
-    internal class DatabaseService : IDatabaseService
+    public class DatabaseService : IDatabaseService
     {
         private readonly ILogger<DatabaseService> _logger;
         private readonly IScopeProvider _scopeProvider;
-        private readonly IUmbracoMapper _mapper;
+        private readonly IDatabaseMapperService _databaseMapperService;
 
-        public DatabaseService(ILogger<DatabaseService> logger, IScopeProvider scopeProvider, IUmbracoMapper mapper, LicenseService licenseService)
+        public DatabaseService(ILogger<DatabaseService> logger, IScopeProvider scopeProvider, LicenseService licenseService, IDatabaseMapperService databaseMapperService)
         {
             _logger = logger;
             _scopeProvider = scopeProvider;
-            _mapper = mapper;
+            _databaseMapperService = databaseMapperService;
             licenseService.RunLicenseCheck();
         }
 
@@ -40,7 +39,8 @@ namespace UmbCheckout.Core.Services
                 var existingBasket = await db.QueryAsync<UmbCheckoutBasket>().Where(x => x.SessionId == sessionId).SingleOrDefault();
                 if (existingBasket != null)
                 {
-                    return _mapper.Map<UmbCheckoutBasket, Basket>(existingBasket);
+                    var basket = _databaseMapperService.ToBasket(existingBasket);
+                    return basket;
                 }
 
                 return null;

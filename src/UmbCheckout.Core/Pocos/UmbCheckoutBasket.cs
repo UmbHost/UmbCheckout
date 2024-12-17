@@ -35,5 +35,10 @@ namespace UmbCheckout.Core.Pocos
         [Column("LastUpdatedDateTime")]
         [NullSetting(NullSetting = NullSettings.NotNull)]
         public DateTime? LastUpdatedDateTime { get; set; } = DateTime.Now;
+        
+        [Column("MetaData")]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? MetaData { get; set; }
     }
 }

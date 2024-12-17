@@ -28,6 +28,7 @@ namespace UmbCheckout.Core.Composers
             builder.Services.AddTransient<IBasketService, BasketService>();
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
             builder.Services.AddTransient<IDatabaseService, DatabaseService>();
+            builder.Services.AddTransient<IDatabaseMapperService, DatabaseMapperService>();
         }
     }
 }
