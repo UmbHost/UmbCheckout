@@ -2,6 +2,16 @@
   "version": 1,
   "dependencies": {
     "net6.0": {
+      "Stripe.net": {
+        "type": "Direct",
+        "requested": "[43.0.0, )",
+        "resolved": "43.0.0",
+        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
+        "dependencies": {
+          "Newtonsoft.Json": "12.0.3",
+          "System.Configuration.ConfigurationManager": "6.0.0"
+        }
+      },
       "Umbraco.Cms.Core": {
         "type": "Direct",
         "requested": "[10.8.1, 11.0.0)",
@@ -2234,6 +2244,16 @@
       }
     },
     "net7.0": {
+      "Stripe.net": {
+        "type": "Direct",
+        "requested": "[43.0.0, )",
+        "resolved": "43.0.0",
+        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
+        "dependencies": {
+          "Newtonsoft.Json": "12.0.3",
+          "System.Configuration.ConfigurationManager": "6.0.0"
+        }
+      },
       "Umbraco.Cms.Core": {
         "type": "Direct",
         "requested": "[12.3.4, 13.0.0)",
@@ -4328,6 +4348,16 @@
       }
     },
     "net8.0": {
+      "Stripe.net": {
+        "type": "Direct",
+        "requested": "[43.0.0, )",
+        "resolved": "43.0.0",
+        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
+        "dependencies": {
+          "Newtonsoft.Json": "12.0.3",
+          "System.Configuration.ConfigurationManager": "6.0.0"
+        }
+      },
       "Umbraco.Cms.Core": {
         "type": "Direct",
         "requested": "[13.0.0, 14.0.0)",

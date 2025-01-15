@@ -2478,6 +2478,7 @@
       "umbcheckout.shared": {
         "type": "Project",
         "dependencies": {
+          "Stripe.net": "[43.0.0, )",
           "Umbraco.Cms.Core": "[10.8.1, 11.0.0)",
           "Umbraco.Cms.Infrastructure": "[10.8.1, 11.0.0)",
           "Umbraco.Cms.Web.Common": "[10.8.1, 11.0.0)"
@@ -4858,6 +4859,7 @@
       "umbcheckout.shared": {
         "type": "Project",
         "dependencies": {
+          "Stripe.net": "[43.0.0, )",
           "Umbraco.Cms.Core": "[12.3.4, 13.0.0)",
           "Umbraco.Cms.Infrastructure": "[12.3.4, 13.0.0)",
           "Umbraco.Cms.Web.Common": "[12.3.4, 13.0.0)"
@@ -7219,6 +7221,7 @@
       "umbcheckout.shared": {
         "type": "Project",
         "dependencies": {
+          "Stripe.net": "[43.0.0, )",
           "Umbraco.Cms.Core": "[13.0.0, 14.0.0)",
           "Umbraco.Cms.Infrastructure": "[13.0.0, 14.0.0)",
           "Umbraco.Cms.Web.Common": "[13.0.0, 14.0.0)"
