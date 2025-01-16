@@ -1225,15 +1225,6 @@
           "Smidge": "4.2.1"
         }
       },
-      "Stripe.net": {
-        "type": "Transitive",
-        "resolved": "43.0.0",
-        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
-        "dependencies": {
-          "Newtonsoft.Json": "12.0.3",
-          "System.Configuration.ConfigurationManager": "6.0.0"
-        }
-      },
       "System.AppContext": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -2275,7 +2266,6 @@
       "umbcheckout.shared": {
         "type": "Project",
         "dependencies": {
-          "Stripe.net": "[43.0.0, )",
           "Umbraco.Cms.Core": "[10.8.1, 11.0.0)",
           "Umbraco.Cms.Infrastructure": "[10.8.1, 11.0.0)",
           "Umbraco.Cms.Web.Common": "[10.8.1, 11.0.0)"
@@ -3408,15 +3398,6 @@
           "Smidge": "4.3.0"
         }
       },
-      "Stripe.net": {
-        "type": "Transitive",
-        "resolved": "43.0.0",
-        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
-        "dependencies": {
-          "Newtonsoft.Json": "12.0.3",
-          "System.Configuration.ConfigurationManager": "6.0.0"
-        }
-      },
       "System.AppContext": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -4447,7 +4428,6 @@
       "umbcheckout.shared": {
         "type": "Project",
         "dependencies": {
-          "Stripe.net": "[43.0.0, )",
           "Umbraco.Cms.Core": "[12.3.4, 13.0.0)",
           "Umbraco.Cms.Infrastructure": "[12.3.4, 13.0.0)",
           "Umbraco.Cms.Web.Common": "[12.3.4, 13.0.0)"
@@ -5591,15 +5571,6 @@
           "Smidge": "4.3.0"
         }
       },
-      "Stripe.net": {
-        "type": "Transitive",
-        "resolved": "43.0.0",
-        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
-        "dependencies": {
-          "Newtonsoft.Json": "12.0.3",
-          "System.Configuration.ConfigurationManager": "6.0.0"
-        }
-      },
       "System.AppContext": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -6599,7 +6570,6 @@
       "umbcheckout.shared": {
         "type": "Project",
         "dependencies": {
-          "Stripe.net": "[43.0.0, )",
           "Umbraco.Cms.Core": "[13.0.0, 14.0.0)",
           "Umbraco.Cms.Infrastructure": "[13.0.0, 14.0.0)",
           "Umbraco.Cms.Web.Common": "[13.0.0, 14.0.0)"

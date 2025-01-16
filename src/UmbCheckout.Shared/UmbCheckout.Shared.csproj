@@ -50,8 +50,4 @@
 		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0, 14)" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <PackageReference Include="Stripe.net" Version="43.0.0" />
-	</ItemGroup>
-
 </Project>
