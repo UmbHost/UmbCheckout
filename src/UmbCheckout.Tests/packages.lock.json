@@ -1309,10 +1309,10 @@
       },
       "Stripe.net": {
         "type": "Transitive",
-        "resolved": "43.0.0",
-        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
+        "resolved": "47.1.0",
+        "contentHash": "APS+3Rlc2KD3e8dUaPzYKhSwTGNFixxITHUU4+fE0SZKPcNwnBW6dXAVoN4TgjWm9LX3jrTyTX6kWneJ+kjeew==",
         "dependencies": {
-          "Newtonsoft.Json": "12.0.3",
+          "Newtonsoft.Json": "13.0.3",
           "System.Configuration.ConfigurationManager": "6.0.0"
         }
       },
@@ -2487,7 +2487,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Components.Web": "[6.0.21, 7.0.0)",
-          "Stripe.net": "[43.0.0, )",
+          "Stripe.net": "[47.1.0, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
           "UmbHost.Licensing": "[1.4.0, )",
@@ -3712,11 +3712,11 @@
       },
       "Stripe.net": {
         "type": "Transitive",
-        "resolved": "43.0.0",
-        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
+        "resolved": "47.1.0",
+        "contentHash": "APS+3Rlc2KD3e8dUaPzYKhSwTGNFixxITHUU4+fE0SZKPcNwnBW6dXAVoN4TgjWm9LX3jrTyTX6kWneJ+kjeew==",
         "dependencies": {
-          "Newtonsoft.Json": "12.0.3",
-          "System.Configuration.ConfigurationManager": "6.0.0"
+          "Newtonsoft.Json": "13.0.3",
+          "System.Configuration.ConfigurationManager": "7.0.0"
         }
       },
       "System.AppContext": {
@@ -4867,7 +4867,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Components.Web": "[7.0.0, 8.0.0)",
-          "Stripe.net": "[43.0.0, )",
+          "Stripe.net": "[47.1.0, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
           "UmbHost.Licensing": "[1.4.0, )",
@@ -6101,11 +6101,11 @@
       },
       "Stripe.net": {
         "type": "Transitive",
-        "resolved": "43.0.0",
-        "contentHash": "Kdv2B5dWagOZlDrGQjN3yDJW2anZl0QWgenpmUPoOeOXOVRvw+jpwefvHqWw6AoGQ+WcaNdFYF+5nxcZ1mR7EA==",
+        "resolved": "47.1.0",
+        "contentHash": "APS+3Rlc2KD3e8dUaPzYKhSwTGNFixxITHUU4+fE0SZKPcNwnBW6dXAVoN4TgjWm9LX3jrTyTX6kWneJ+kjeew==",
         "dependencies": {
-          "Newtonsoft.Json": "12.0.3",
-          "System.Configuration.ConfigurationManager": "6.0.0"
+          "Newtonsoft.Json": "13.0.3",
+          "System.Configuration.ConfigurationManager": "8.0.0"
         }
       },
       "System.AppContext": {
@@ -7228,7 +7228,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Components.Web": "[8.0.0, 9.0.0)",
-          "Stripe.net": "[43.0.0, )",
+          "Stripe.net": "[47.1.0, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
           "UmbHost.Licensing": "[1.4.0, )",
