@@ -42,13 +42,13 @@
   </ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[10.8.1, 11)" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.1, 11)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[10.8.8, 11)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.8, 11)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0, 14)" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.5.3, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.5.3, 14)" />
 	</ItemGroup>
 
 </Project>
