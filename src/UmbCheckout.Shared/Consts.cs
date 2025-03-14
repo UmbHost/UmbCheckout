@@ -97,6 +97,8 @@
             public const string CollectPhoneNumberLabel = "collect_phone_number_label";
             public const string CollectPromotionalEmailsConsent = "collect_promotional_emails_consent";
             public const string CollectPromotionalEmailsConsentLabel = "collect_promotional_emails_consent_label";
+            public const string AllowPromotionalCodes = "allow_promotional_codes";
+            public const string AllowPromotionalCodesLabel = "allow_promotional_codes_label";
             public const string FirstPage = "first_page";
             public const string NextPage = "next_page";
         }

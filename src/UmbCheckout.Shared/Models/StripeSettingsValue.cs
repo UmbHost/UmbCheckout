@@ -19,5 +19,8 @@ namespace UmbCheckout.Shared.Models
 
         [JsonPropertyName("shippingAllowedCountries")]
         public string? ShippingAllowedCountries { get; set; } = "";
+
+        [JsonPropertyName("allowPromotionalCodes")]
+        public string AllowPromotionalCodes { get; set; } = "False";
     }
 }
