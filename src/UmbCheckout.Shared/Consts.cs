@@ -95,6 +95,8 @@
             public const string ShippingAllowedCountriesLabel = "allowed_shipping_countries_label";
             public const string CollectPhoneNumber = "collect_phone_number";
             public const string CollectPhoneNumberLabel = "collect_phone_number_label";
+            public const string CollectPromotionalEmailsConsent = "collect_promotional_emails_consent";
+            public const string CollectPromotionalEmailsConsentLabel = "collect_promotional_emails_consent_label";
             public const string FirstPage = "first_page";
             public const string NextPage = "next_page";
         }

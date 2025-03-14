@@ -14,6 +14,9 @@ namespace UmbCheckout.Shared.Models
         [JsonPropertyName("collectPhoneNumber")]
         public string CollectPhoneNumber { get; set; } = "False";
 
+        [JsonPropertyName("collectPromotionalEmailsConsent")]
+        public string CollectionPromotionalEmailsConsent { get; set; } = "False";
+
         [JsonPropertyName("shippingAllowedCountries")]
         public string? ShippingAllowedCountries { get; set; } = "";
     }
