@@ -23,6 +23,8 @@
         {
             public const string PriceAlias = "umbCheckoutPrice";
 
+            public const string CurrencyCode = "umbCheckoutCurrencyCode";
+
             public const string DescriptionAlias = "umbCheckoutDescription";
 
             public const string FallbackDescriptionAlias = "description";
