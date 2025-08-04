@@ -99,6 +99,10 @@
             public const string CollectPromotionalEmailsConsentLabel = "collect_promotional_emails_consent_label";
             public const string AllowPromotionalCodes = "allow_promotional_codes";
             public const string AllowPromotionalCodesLabel = "allow_promotional_codes_label";
+            public const string EnableAbandonedCartRecoveryLabel = "enable_abandoned_cart_recovery_label";
+            public const string EnableAbandonedCartRecovery = "enable_abandoned_cart_recovery";
+            public const string AllowPromotionalCodesOnRecoveredCarts = "allow_promotional_codes_on_recovered_carts";
+            public const string AllowPromotionalCodesOnRecoveredCartsLabel = "allow_promotional_codes_on_recovered_carts_label";
             public const string FirstPage = "first_page";
             public const string NextPage = "next_page";
         }

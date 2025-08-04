@@ -22,5 +22,11 @@ namespace UmbCheckout.Shared.Models
 
         [JsonPropertyName("allowPromotionalCodes")]
         public string AllowPromotionalCodes { get; set; } = "False";
+
+        [JsonPropertyName("enableAbandonedCartRecovery")]
+        public string EnableAbandonedCartRecovery { get; set; } = "False";
+
+        [JsonPropertyName("allowPromotionalCodesOnRecoveredCarts")]
+        public string AllowPromotionalCodesOnRecoveredCarts { get; set; } = "False";
     }
 }
