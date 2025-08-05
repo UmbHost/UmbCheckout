@@ -2,6 +2,7 @@
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.ViewModels;
 using UmbCheckout.Shared.Enums;
+using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
 
@@ -15,15 +16,19 @@ namespace UmbCheckout.Core.ViewComponents
     {
         private readonly IBasketService _basketService;
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
+        private readonly ICurrencyService _currencyService;
 
-        public BasketLinkViewComponent(IBasketService basketService, IUmbracoContextAccessor umbracoContextAccessor)
+        public BasketLinkViewComponent(IBasketService basketService, IUmbracoContextAccessor umbracoContextAccessor, ICurrencyService currencyService)
         {
             _basketService = basketService;
             _umbracoContextAccessor = umbracoContextAccessor;
+            _currencyService = currencyService;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket", string? linkCssClass = null, BasketLinkType linkType = BasketLinkType.TotalCount, string? currencyCode = null)
+        public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket", string? linkCssClass = null, BasketLinkType linkType = BasketLinkType.TotalCount, Guid? currencyNodeKey = null)
         {
+            var currencyCode = await _currencyService.GetCurrencyAsync(currencyNodeKey);
+
             var model = new BasketLinkViewModel
             {
                 LinkCssClass = linkCssClass,
