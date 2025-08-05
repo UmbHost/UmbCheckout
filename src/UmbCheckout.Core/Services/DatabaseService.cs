@@ -2,8 +2,8 @@
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.Pocos;
 using UmbCheckout.Shared.Models;
-using UmbHost.Licensing.Models;
-using UmbHost.Licensing.Services;
+using UmbHost.Licencing.Models;
+using UmbHost.Licencing.Services;
 using Umbraco.Cms.Infrastructure.Scoping;
 
 namespace UmbCheckout.Core.Services
@@ -17,12 +17,12 @@ namespace UmbCheckout.Core.Services
         private readonly IScopeProvider _scopeProvider;
         private readonly IDatabaseMapperService _databaseMapperService;
 
-        public DatabaseService(ILogger<DatabaseService> logger, IScopeProvider scopeProvider, LicenseService licenseService, IDatabaseMapperService databaseMapperService)
+        public DatabaseService(ILogger<DatabaseService> logger, IScopeProvider scopeProvider, LicenceService licenseService, IDatabaseMapperService databaseMapperService)
         {
             _logger = logger;
             _scopeProvider = scopeProvider;
             _databaseMapperService = databaseMapperService;
-            licenseService.RunLicenseCheck();
+            licenseService.RunLicenceCheck();
         }
 
         /// <inheritdoc />

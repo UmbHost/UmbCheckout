@@ -33,17 +33,25 @@
   </ItemGroup>
 
 	<ItemGroup>
+    <ProjectReference Include="..\..\..\..\UmbLicensing\UmbHost.Licencing.csproj" />
     <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Schema.NET" Version="12.0.0" />
-    <PackageReference Include="UmbHost.Licensing" Version="1.4.0" />
   </ItemGroup>
 
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<ProjectReference Include="..\..\UmbLicensing\UmbHost.Licencing.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<PackageReference Include="UmbHost.Licensing" Version="2.0.0" />
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.5.3, 14)" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.5.3, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.5.3, 13.9999.9999)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.5.3, 13.9999.9999)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">

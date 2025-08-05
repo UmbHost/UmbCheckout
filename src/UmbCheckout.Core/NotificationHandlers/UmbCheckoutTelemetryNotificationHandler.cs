@@ -5,8 +5,6 @@ using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using UmbCheckout.Shared;
 using UmbCheckout.Shared.Notifications.Configuration;
-using UmbHost.Licensing.Models;
-using UmbHost.Licensing.Notifications;
 using Umbraco.Cms.Core.Configuration;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Events;
@@ -14,11 +12,12 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using UmbCheckoutAppSettings = UmbCheckout.Shared.Models.UmbCheckoutAppSettings;
-using Microsoft.Extensions.Hosting;
+using UmbHost.Licencing.Models;
+using UmbHost.Licencing.Notifications;
 
 namespace UmbCheckout.Core.NotificationHandlers
 {
-    public class UmbCheckoutTelemetryNotificationHandler : INotificationAsyncHandler<OnConfigurationSavedNotification>, INotificationAsyncHandler<OnLicenseCheckCompletedNotification>
+    public class UmbCheckoutTelemetryNotificationHandler : INotificationAsyncHandler<OnConfigurationSavedNotification>, INotificationAsyncHandler<OnLicenceCheckCompletedNotification>
     {
         private readonly UmbCheckoutAppSettings _umbCheckoutConfiguration;
         private readonly GlobalSettings _globalSettings;
@@ -43,7 +42,7 @@ namespace UmbCheckout.Core.NotificationHandlers
             await PingTelemetryServer(cancellationToken);
         }
 
-        public async Task HandleAsync(OnLicenseCheckCompletedNotification notification, CancellationToken cancellationToken)
+        public async Task HandleAsync(OnLicenceCheckCompletedNotification notification, CancellationToken cancellationToken)
         {
             await PingTelemetryServer(cancellationToken);
         }
@@ -66,15 +65,24 @@ namespace UmbCheckout.Core.NotificationHandlers
                     return;
                 }
 
-                var installedPackages = _packagingService.GetAllInstalledPackages()
+#if NET8_0
+                var installedCheckoutPackages = _packagingService.GetAllInstalledPackages()
                     .Where(x => !string.IsNullOrEmpty(x.PackageName) && x.PackageName.StartsWith("UmbCheckout."));
+
+#endif
+
+#if NET9_0
+                var installedPackages = await _packagingService.GetAllInstalledPackagesAsync();
+                var installedCheckoutPackages = installedPackages
+                    .Where(x => !string.IsNullOrEmpty(x.PackageName) && x.PackageName.StartsWith("UmbCheckout."));
+#endif
 
                 var data = new
                 {
                     umbracoId = umbracoId,
                     umbracoVersion = _umbracoVersion.SemanticVersion.ToSemanticStringWithoutBuild(),
                     umbCheckoutVersion = UmbCheckoutVersion.SemanticVersion.ToString(),
-                    installedPackages = JsonSerializer.Serialize(installedPackages),
+                    installedPackages = JsonSerializer.Serialize(installedCheckoutPackages),
                     isLicensed = UmbCheckoutSettings.IsLicensed.ToString(),
                     isDevelopmentLicense = UmbCheckoutSettings.LicenseDetails.IsDevelopmentLicense.ToString(),
                     environmentName = _webHostEnvironment.EnvironmentName

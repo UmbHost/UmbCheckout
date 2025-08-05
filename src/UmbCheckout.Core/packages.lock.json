@@ -12,15 +12,6 @@
           "System.Text.Json": "7.0.0"
         }
       },
-      "UmbHost.Licensing": {
-        "type": "Direct",
-        "requested": "[1.4.0, )",
-        "resolved": "1.4.0",
-        "contentHash": "n6y+8QPhP+bE/RVi01RYEL9/c+PlkwDnvzjvJmdrYNo7NZP7dXkq8Is0EAaf3JnRKjL0ZKpP8IgctCz8GkWAuA==",
-        "dependencies": {
-          "Umbraco.Cms.Web.BackOffice": "[13.0.0, 14.0.0)"
-        }
-      },
       "Umbraco.Cms.Web.BackOffice": {
         "type": "Direct",
         "requested": "[13.5.3, 14.0.0)",
@@ -2160,15 +2151,6 @@
           "System.Text.Json": "7.0.0"
         }
       },
-      "UmbHost.Licensing": {
-        "type": "Direct",
-        "requested": "[1.4.0, )",
-        "resolved": "1.4.0",
-        "contentHash": "n6y+8QPhP+bE/RVi01RYEL9/c+PlkwDnvzjvJmdrYNo7NZP7dXkq8Is0EAaf3JnRKjL0ZKpP8IgctCz8GkWAuA==",
-        "dependencies": {
-          "Umbraco.Cms.Web.BackOffice": "[13.0.0, 14.0.0)"
-        }
-      },
       "Umbraco.Cms.Web.Common": {
         "type": "Direct",
         "requested": "[16.1.1, 16.9999.9999)",
@@ -4092,16 +4074,6 @@
           "Microsoft.Extensions.Caching.Hybrid": "9.4.0",
           "Umbraco.Cms.Core": "[16.1.1, 17.0.0)",
           "Umbraco.Cms.Infrastructure": "[16.1.1, 17.0.0)"
-        }
-      },
-      "Umbraco.Cms.Web.BackOffice": {
-        "type": "Transitive",
-        "resolved": "13.0.0",
-        "contentHash": "QtWAvGHnx9XRM2t+QiAt8IMaroCEVxSnl4TD17PjDWOCIMUebtoI0YPVyrrs01O63h9587c+eFIZh6YMWJyDZg==",
-        "dependencies": {
-          "Newtonsoft.Json": "13.0.3",
-          "Serilog.AspNetCore": "8.0.0",
-          "Umbraco.Cms.Web.Common": "[13.0.0, 14.0.0)"
         }
       },
       "umbcheckout.shared": {

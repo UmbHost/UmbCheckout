@@ -4,7 +4,7 @@ using UmbCheckout.Core.NotificationHandlers;
 using UmbCheckout.Core.Services;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Configuration;
-using UmbHost.Licensing.Notifications;
+using UmbHost.Licencing.Notifications;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 
@@ -22,7 +22,7 @@ namespace UmbCheckout.Core.Composers
                 .AddNotificationAsyncHandler<OnConfigurationSavedNotification,
                     UmbCheckoutTelemetryNotificationHandler>();
             builder
-                .AddNotificationAsyncHandler<OnLicenseCheckCompletedNotification,
+                .AddNotificationAsyncHandler<OnLicenceCheckCompletedNotification,
                     UmbCheckoutTelemetryNotificationHandler>();
             builder.Services.AddTransient<ISessionService, SessionService>();
             builder.Services.AddTransient<IBasketService, BasketService>();

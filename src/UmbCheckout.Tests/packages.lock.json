@@ -4450,6 +4450,16 @@
           "Umbraco.Cms.Infrastructure": "[16.1.1, 17.0.0)"
         }
       },
+      "Umbraco.Cms.Web.BackOffice": {
+        "type": "Transitive",
+        "resolved": "13.0.0",
+        "contentHash": "QtWAvGHnx9XRM2t+QiAt8IMaroCEVxSnl4TD17PjDWOCIMUebtoI0YPVyrrs01O63h9587c+eFIZh6YMWJyDZg==",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3",
+          "Serilog.AspNetCore": "8.0.0",
+          "Umbraco.Cms.Web.Common": "[13.0.0, 14.0.0)"
+        }
+      },
       "Umbraco.Cms.Web.Common": {
         "type": "Transitive",
         "resolved": "16.1.1",
@@ -4557,7 +4567,6 @@
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
           "UmbHost.Licensing": "[1.4.0, )",
-          "Umbraco.Cms.Web.BackOffice": "[16.1.1, 16.9999.9999)",
           "Umbraco.Cms.Web.Common": "[16.1.1, 16.9999.9999)",
           "Umbraco.Cms.Web.Website": "[16.1.1, 16.9999.9999)"
         }

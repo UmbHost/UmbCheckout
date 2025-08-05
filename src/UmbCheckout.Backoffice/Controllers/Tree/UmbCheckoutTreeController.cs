@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿#if NET8_0
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UmbCheckout.Shared;
@@ -73,3 +74,4 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
         }
     }
 }
+#endif

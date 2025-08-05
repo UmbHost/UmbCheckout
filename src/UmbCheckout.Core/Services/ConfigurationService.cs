@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared.Notifications.Configuration;
-using UmbHost.Licensing.Models;
-using UmbHost.Licensing.Services;
+using UmbHost.Licencing.Models;
+using UmbHost.Licencing.Services;
 using Umbraco.Cms.Core.Mapping;
 using Umbraco.Cms.Core.Scoping;
 using IScopeProvider = Umbraco.Cms.Infrastructure.Scoping.IScopeProvider;
@@ -20,13 +20,13 @@ namespace UmbCheckout.Core.Services
         private readonly IUmbracoMapper _mapper;
         private readonly ILogger<ConfigurationService> _logger;
 
-        public ConfigurationService(IScopeProvider scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, ICoreScopeProvider coreScopeProvider, LicenseService licenseService)
+        public ConfigurationService(IScopeProvider scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, ICoreScopeProvider coreScopeProvider, LicenceService licenseService)
         {
             _scopeProvider = scopeProvider;
             _logger = logger;
             _mapper = mapper;
             _coreScopeProvider = coreScopeProvider;
-            licenseService.RunLicenseCheck();
+            licenseService.RunLicenceCheck();
         }
 
         /// <inheritdoc />

@@ -7,7 +7,7 @@ using UmbCheckout.Shared;
 using UmbCheckout.Shared.Helpers;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Session;
-using UmbHost.Licensing.Services;
+using UmbHost.Licencing.Services;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Scoping;
 using Umbraco.Cms.Core.Web;
@@ -29,7 +29,7 @@ namespace UmbCheckout.Core.Services
         private readonly IConfigurationService _configurationService;
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
 
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IUmbracoContextAccessor umbracoContextAccessor)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenceService licenseService, IUmbracoContextAccessor umbracoContextAccessor)
         {
             _dataProtectionProvider = dataProtectionProvider;
             _contextAccessor = contextAccessor;
@@ -38,7 +38,7 @@ namespace UmbCheckout.Core.Services
             _coreScopeProvider = coreScopeProvider;
             _configurationService = configurationService;
             _umbracoContextAccessor = umbracoContextAccessor;
-            licenseService.RunLicenseCheck();
+            licenseService.RunLicenceCheck();
         }
 
         /// <summary>

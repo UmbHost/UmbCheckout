@@ -1,4 +1,5 @@
-﻿using Umbraco.Cms.Core.PropertyEditors;
+﻿#if NET8_0
+using Umbraco.Cms.Core.PropertyEditors;
 
 namespace UmbCheckout.Backoffice.PropertyEditors
 {
@@ -19,3 +20,4 @@ namespace UmbCheckout.Backoffice.PropertyEditors
         }
     }
 }
+#endif

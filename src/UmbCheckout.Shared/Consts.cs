@@ -18,6 +18,12 @@
         public const string TreeGroup = "umbCheckoutGroup";
 
         public const string TelemetryUrl = "https://telemetry.umbcheckout.net/api/telemetry/";
+
+#if NET9_0
+        public const string ApiName = "umbcheckout";
+        public const string ApiVersion = "v1.0";
+#endif
+
         //public const string TelemetryUrl = "http://127.0.0.1:8787/api/telemetry/";
         public static class PropertyAlias
         {

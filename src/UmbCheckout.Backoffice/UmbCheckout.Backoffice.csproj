@@ -33,9 +33,13 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="UmbHost.Licensing" Version="1.4.0" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<ProjectReference Include="..\..\UmbLicensing\UmbHost.Licencing.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<PackageReference Include="UmbHost.Licensing" Version="2.0.0" />
+	</ItemGroup>
 
 	<ItemGroup>
     <SupportedPlatform Include="browser" />
