@@ -37,7 +37,7 @@ namespace UmbCheckout.Core.Services
                 using var scope = _scopeProvider.CreateScope(autoComplete: true);
                 var result = await scope.Database.QueryAsync<UmbCheckoutConfiguration>().SingleOrDefault();
 
-                if (!UmbCheckoutSettings.IsLicensed)
+                if (!UmbCheckoutSettings.IsLicenced)
                 {
                     if (result != null)
                     {
@@ -60,7 +60,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!UmbCheckoutSettings.IsLicensed)
+                if (!UmbCheckoutSettings.IsLicenced)
                 {
                     configuration.StoreBasketInDatabase = false;
                     configuration.StoreBasketInCookie = false;
@@ -109,7 +109,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!UmbCheckoutSettings.IsLicensed)
+                if (!UmbCheckoutSettings.IsLicenced)
                 {
                     configuration.StoreBasketInDatabase = false;
                     configuration.StoreBasketInCookie = false;

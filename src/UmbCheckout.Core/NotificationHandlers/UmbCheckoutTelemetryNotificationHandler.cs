@@ -65,17 +65,9 @@ namespace UmbCheckout.Core.NotificationHandlers
                     return;
                 }
 
-#if NET8_0
-                var installedCheckoutPackages = _packagingService.GetAllInstalledPackages()
-                    .Where(x => !string.IsNullOrEmpty(x.PackageName) && x.PackageName.StartsWith("UmbCheckout."));
-
-#endif
-
-#if NET9_0
                 var installedPackages = await _packagingService.GetAllInstalledPackagesAsync();
                 var installedCheckoutPackages = installedPackages
                     .Where(x => !string.IsNullOrEmpty(x.PackageName) && x.PackageName.StartsWith("UmbCheckout."));
-#endif
 
                 var data = new
                 {
@@ -83,7 +75,7 @@ namespace UmbCheckout.Core.NotificationHandlers
                     umbracoVersion = _umbracoVersion.SemanticVersion.ToSemanticStringWithoutBuild(),
                     umbCheckoutVersion = UmbCheckoutVersion.SemanticVersion.ToString(),
                     installedPackages = JsonSerializer.Serialize(installedCheckoutPackages),
-                    isLicensed = UmbCheckoutSettings.IsLicensed.ToString(),
+                    isLicensed = UmbCheckoutSettings.IsLicenced.ToString(),
                     isDevelopmentLicense = UmbCheckoutSettings.LicenseDetails.IsDevelopmentLicense.ToString(),
                     environmentName = _webHostEnvironment.EnvironmentName
                 };

@@ -1,12 +1,19 @@
 ﻿using UmbCheckout.Backoffice.ValueConverters;
 using Xunit;
-using Umbraco.Cms.Infrastructure.Serialization;
 using UmbCheckout.Backoffice.Models;
+using Umbraco.Cms.Core.Serialization;
 
 namespace UmbCheckout.Tests
 {
     public class MetaDataPropertyEditorTests
     {
+        private readonly IJsonSerializer _jsonSerializer;
+
+        public MetaDataPropertyEditorTests(IJsonSerializer jsonSerializer)
+        {
+            _jsonSerializer = jsonSerializer;
+        }
+
         [Fact]
         public void JsonValueConverterTests()
         {
@@ -31,7 +38,7 @@ namespace UmbCheckout.Tests
 ]";
 
             //Act
-            var converter = new MetaDataValueConverter(new JsonNetSerializer());
+            var converter = new MetaDataValueConverter(_jsonSerializer);
             var result = converter.ConvertSourceToIntermediate(null, null, jsonString, false);
 
             // Assert
@@ -62,11 +69,10 @@ namespace UmbCheckout.Tests
                 { "Dictionary Key 2", "Dictionary Value 2" }
             };
 
-            var jsonSerializer = new JsonNetSerializer();
-            var jsonString = jsonSerializer.Serialize(metaData);
+            var jsonString = _jsonSerializer.Serialize(metaData);
 
             //Act
-            var converter = new MetaDataValueConverter(new JsonNetSerializer());
+            var converter = new MetaDataValueConverter(_jsonSerializer);
             var result = converter.ConvertSourceToIntermediate(null, null, jsonString, false);
 
             // Assert

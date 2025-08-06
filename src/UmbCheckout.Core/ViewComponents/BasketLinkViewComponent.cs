@@ -2,7 +2,6 @@
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.ViewModels;
 using UmbCheckout.Shared.Enums;
-using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
 

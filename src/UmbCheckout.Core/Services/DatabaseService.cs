@@ -30,7 +30,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!UmbCheckoutSettings.IsLicensed)
+                if (!UmbCheckoutSettings.IsLicenced)
                 {
                     return null;
                 }

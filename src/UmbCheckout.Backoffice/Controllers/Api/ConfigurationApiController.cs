@@ -1,19 +1,23 @@
-using System.Globalization;
-using System.Text.Json;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Globalization;
+using System.Text.Json;
 using UmbCheckout.Backoffice.Models;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared;
 using UmbCheckout.Shared.Extensions;
 using UmbCheckout.Shared.Models;
-using UmbHost.Licensing.Models;
-using UmbHost.Licensing.Services;
+using UmbHost.Licencing.Models;
+using UmbHost.Licencing.Services;
+using Umbraco.Cms.Api.Common.Attributes;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Cms.Web.Common.Attributes;
+using Umbraco.Cms.Web.Common.Authorization;
+using Umbraco.Cms.Web.Common.Routing;
 
 namespace UmbCheckout.Backoffice.Controllers.Api
 {
@@ -21,19 +25,25 @@ namespace UmbCheckout.Backoffice.Controllers.Api
     /// UmbracoAuthorizedApiController to retrieve the configuration settings for the backoffice
     /// </summary>
     [PluginController(Consts.PackageName)]
-    public class ConfigurationApiController : UmbracoAuthorizedApiController
+    [ApiController]
+    [BackOfficeRoute($"{Consts.ApiName}/{Consts.ApiVersion}/configurationapi")]
+    [Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
+    [Authorize(Policy = AuthorizationPolicies.SectionAccessSettings)]
+    [MapToApi(Consts.ApiName)]
+    [ApiVersion("1.0")]
+    public class ConfigurationApiController : ControllerBase
     {
         private readonly IConfigurationService _configuration;
         private readonly ILocalizedTextService _localizedTextService;
         private readonly ILogger<ConfigurationApiController> _logger;
         private readonly WebRoutingSettings _umbracoWebRoutingSettings;
 
-        public ConfigurationApiController(IConfigurationService configuration, ILogger<ConfigurationApiController> logger, LicenseService licenseService, ILocalizedTextService localizedTextService, IOptions<WebRoutingSettings> umbracoWebRoutingSettings)
+        public ConfigurationApiController(IConfigurationService configuration, ILogger<ConfigurationApiController> logger, LicenceService licenseService, ILocalizedTextService localizedTextService, IOptions<WebRoutingSettings> umbracoWebRoutingSettings)
         {
             _configuration = configuration;
             _logger = logger;
             _localizedTextService = localizedTextService;
-            licenseService.RunLicenseCheck();
+            licenseService.RunLicenceCheck();
             _umbracoWebRoutingSettings = umbracoWebRoutingSettings.Value;
         }
 
@@ -83,7 +93,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                 var enableShipping =
                     configValues.EnableShipping.ToBoolean();
 
-                if (!UmbCheckoutSettings.IsLicensed)
+                if (!UmbCheckoutSettings.IsLicenced)
                 {
                     storeBasketInCookie = false;
                     storeBasketInDatabase = false;
@@ -136,7 +146,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
             {
                 var storeBasketInCookieDescription = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketCookieDescription, CultureInfo.CurrentUICulture);
                 var storeBasketInDatabaseDescription = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketDatabaseDescription, CultureInfo.CurrentUICulture);
-                if (!UmbCheckoutSettings.IsLicensed)
+                if (!UmbCheckoutSettings.IsLicenced)
                 {
                     storeBasketInCookieDescription += Environment.NewLine + _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.DisabledUnlicensed, CultureInfo.CurrentUICulture);
                     storeBasketInDatabaseDescription += Environment.NewLine + _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.DisabledUnlicensed, CultureInfo.CurrentUICulture);
@@ -209,7 +219,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                     },
                 };
 
-                if (UmbCheckoutSettings.IsLicensed)
+                if (UmbCheckoutSettings.IsLicenced)
                 {
                     backOfficeProperties.Add(new Property
                     {
