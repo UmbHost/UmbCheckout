@@ -42,6 +42,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Umbraco.Cms.Api.Management" Version="16.1.1" />
+	</ItemGroup>
+
+	<ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 

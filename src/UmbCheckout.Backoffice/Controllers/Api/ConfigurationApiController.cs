@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,8 @@ using UmbCheckout.Shared.Models;
 using UmbHost.Licencing.Models;
 using UmbHost.Licencing.Services;
 using Umbraco.Cms.Api.Common.Attributes;
+using Umbraco.Cms.Api.Common.Filters;
+using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Web.Common.Attributes;
@@ -26,12 +29,14 @@ namespace UmbCheckout.Backoffice.Controllers.Api
     /// </summary>
     [PluginController(Consts.PackageName)]
     [ApiController]
-    [BackOfficeRoute($"{Consts.ApiName}/{Consts.ApiVersion}/configurationapi")]
+    [BackOfficeRoute($"{Consts.ApiName}/{Consts.ApiVersion}/configuration-api")]
     [Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
     [Authorize(Policy = AuthorizationPolicies.SectionAccessSettings)]
+    [JsonOptionsName(Constants.JsonOptionsNames.BackOffice)]
     [MapToApi(Consts.ApiName)]
     [ApiVersion("1.0")]
-    public class ConfigurationApiController : ControllerBase
+    [ApiExplorerSettings(GroupName = "Configuration")]
+    public class ConfigurationApiController : Controller
     {
         private readonly IConfigurationService _configuration;
         private readonly ILocalizedTextService _localizedTextService;
@@ -51,7 +56,10 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         /// Gets the configuration properties
         /// </summary>
         /// <returns>The configuration properties in JSON</returns>
-        [HttpGet]
+        [HttpGet("get-configuration")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetConfiguration()
         {
             try
@@ -71,6 +79,10 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         /// Gets whether the Umbraco Application Url configuration has been set
         /// </summary>
         /// <returns>True if the Umbraco Application Url has been set, false if not</returns>
+        [HttpGet("has-umbraco-application-url-set")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public bool HasUmbracoApplicationUrlSet()
         {
             return !string.IsNullOrWhiteSpace(_umbracoWebRoutingSettings.UmbracoApplicationUrl);
@@ -81,7 +93,10 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         /// </summary>
         /// <param name="configValues">The configuration values</param>
         /// <returns>The updated configuration properties in JSON</returns>
-        [HttpPatch]
+        [HttpPatch("update-configuration")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateConfiguration([FromBody] ConfigurationValue configValues)
         {
             try

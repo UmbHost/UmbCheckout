@@ -107,10 +107,37 @@
         "resolved": "1.12.1",
         "contentHash": "SP6/2Y26CXtxjXn0Wwsom9Ek35SNWKHEu/IWhNEFejBSSVWWXPRSlpqpBSYWv1SQhYFnwMO01xVbEdK3iRR4hg=="
       },
+      "Humanizer.Core": {
+        "type": "Transitive",
+        "resolved": "2.14.1",
+        "contentHash": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw=="
+      },
       "J2N": {
         "type": "Transitive",
         "resolved": "2.1.0",
         "contentHash": "Vooz1wbnnqWuS+u93tADXK5Owxo8vLJhSrZ9Ac+KpgDF3GJq9TybXXTF1TFcWILgEtRThc8AOBENEzB0TQH1JA=="
+      },
+      "Json.More.Net": {
+        "type": "Transitive",
+        "resolved": "2.1.0",
+        "contentHash": "qtwsyAsL55y2vB2/sK4Pjg3ZyVzD5KKSpV3lOAMHlnjFfsjQ/86eHJfQT9aV1YysVXzF4+xyHOZbh7Iu3YQ7Lg=="
+      },
+      "JsonPatch.Net": {
+        "type": "Transitive",
+        "resolved": "3.3.0",
+        "contentHash": "GIcMMDtzfzVfIpQgey8w7dhzcw6jG5nD4DDAdQCTmHfblkCvN7mI8K03to8YyUhKMl4PTR6D6nLSvWmyOGFNTg==",
+        "dependencies": {
+          "JsonPointer.Net": "5.2.0"
+        }
+      },
+      "JsonPointer.Net": {
+        "type": "Transitive",
+        "resolved": "5.2.0",
+        "contentHash": "qe1F7Tr/p4mgwLPU9P60MbYkp+xnL2uCPnWXGgzfR/AZCunAZIC0RZ32dLGJJEhSuLEfm0YF/1R3u5C7mEVq+w==",
+        "dependencies": {
+          "Humanizer.Core": "2.14.1",
+          "Json.More.Net": "2.1.0"
+        }
       },
       "K4os.Compression.LZ4": {
         "type": "Transitive",
@@ -2310,6 +2337,18 @@
           "Umbraco.Cms.Web.Common": "[16.1.1, 17.0.0)"
         }
       },
+      "Umbraco.Cms.Api.Management": {
+        "type": "Transitive",
+        "resolved": "16.1.1",
+        "contentHash": "mJRMA9maV2Rm3H+voH7WebUAukg3SEs3WddTRwUq92m0TXtnDWRGA1Pe7FZZ3679aEi+hyIXHrpArU9si9FJMQ==",
+        "dependencies": {
+          "JsonPatch.Net": "3.3.0",
+          "Swashbuckle.AspNetCore": "8.1.1",
+          "Umbraco.Cms.Api.Common": "[16.1.1, 17.0.0)",
+          "Umbraco.Cms.Infrastructure": "[16.1.1, 17.0.0)",
+          "Umbraco.Cms.PublishedCache.HybridCache": "[16.1.1, 17.0.0)"
+        }
+      },
       "Umbraco.Cms.Core": {
         "type": "Transitive",
         "resolved": "16.1.1",
@@ -2411,6 +2450,7 @@
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
           "UmbHost.Licencing": "[2.0.0, )",
+          "Umbraco.Cms.Api.Management": "[16.1.1, )",
           "Umbraco.Cms.Core": "[16.1.1, 16.9999.9999)"
         }
       },

@@ -23,6 +23,8 @@
 
         public const string ApiVersion = "v1.0";
 
+        public const string ApiTitle = "UmbCheckout API";
+
         //public const string TelemetryUrl = "http://127.0.0.1:8787/api/telemetry/";
         public static class PropertyAlias
         {
