@@ -1,0 +1,14 @@
+{
+  "id": "UmbCheckout.Backoffice",
+  "name": "UmbCheckout.Backoffice",
+  "version": "2.0.0",
+  "allowTelemetry": true,
+  "extensions": [
+    {
+      "name": "UmbCheckout.Backoffice.Bundle",
+      "alias": "UmbCheckout.Backoffice.Bundle",
+      "type": "bundle",
+      "js": "/App_Plugins/UmbCheckout/umbraco-backoffice.js"
+    }
+  ]
+}

@@ -59,4 +59,8 @@
     <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Client\" />
+  </ItemGroup>
+
 </Project>
