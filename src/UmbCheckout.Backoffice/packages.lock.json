@@ -2466,6 +2466,7 @@
         "type": "Project",
         "dependencies": {
           "Umbraco.Cms.Api.Common": "[16.1.1, 16.9999.9999)",
+          "Umbraco.Cms.Api.Management": "[16.1.1, )",
           "Umbraco.Cms.Infrastructure": "[16.1.1, 16.9999.9999)",
           "Umbraco.Cms.Web.Common": "[16.1.1, 16.9999.9999)"
         }

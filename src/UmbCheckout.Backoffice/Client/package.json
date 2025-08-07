@@ -6,7 +6,8 @@
   "scripts": {
     "watch": "tsc && vite build --watch",
     "build": "tsc && vite build",
-    "generate-client": "node scripts/generate-openapi.js https://localhost:44390/umbraco/swagger/umbcheckout/swagger.json"
+    "generate-backoffice-client": "node scripts/generate-openapi.js https://localhost:44390/umbraco/swagger/umbcheckout/swagger.json src/api/backoffice",
+    "generate-licencing-client": "node scripts/generate-openapi.js https://localhost:44390/umbraco/swagger/umbhost-licencing/swagger.json src/api/licencing"
   },
   "devDependencies": {
     "@hey-api/client-fetch": "^0.12.0",

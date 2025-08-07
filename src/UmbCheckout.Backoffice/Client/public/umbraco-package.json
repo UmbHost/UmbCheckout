@@ -8,7 +8,7 @@
       "name": "UmbCheckout.Backoffice.Bundle",
       "alias": "UmbCheckout.Backoffice.Bundle",
       "type": "bundle",
-      "js": "/App_Plugins/UmbCheckout/umbraco-backoffice.js"
+      "js": "/App_Plugins/UmbCheckout/umbcheckout-backoffice.js"
     }
   ]
 }

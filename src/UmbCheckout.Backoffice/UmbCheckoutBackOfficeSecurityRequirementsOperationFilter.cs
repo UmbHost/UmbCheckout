@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using UmbCheckout.Shared;
+using Umbraco.Cms.Api.Common.OpenApi;
 using Umbraco.Cms.Api.Management.OpenApi;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
@@ -27,6 +28,9 @@ namespace UmbCheckout.Backoffice
     public class UmbCheckoutSwaggerComposer : IComposer
     {
         public void Compose(IUmbracoBuilder builder)
-            => builder.Services.ConfigureOptions<UmbCheckoutConfigureSwaggerGenOptions>();
+        {
+            builder.Services.AddSingleton<IOperationIdHandler, UmbCheckoutCustomOperationHandler>();
+            builder.Services.ConfigureOptions<UmbCheckoutConfigureSwaggerGenOptions>();
+        }
     }
 }

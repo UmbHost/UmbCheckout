@@ -21,7 +21,7 @@
 
         public const string ApiName = "umbcheckout";
 
-        public const string ApiVersion = "v1.0";
+        public const string ApiVersion = "v2.0";
 
         public const string ApiTitle = "UmbCheckout API";
 
