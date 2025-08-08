@@ -16,12 +16,14 @@ export const onInit: UmbEntryPointOnInit = (_host, _extensionRegistry) => {
     const config = auth?.getOpenApiConfiguration();
 
     backofficeClient.setConfig({
+        throwOnError: true,
         auth: config?.token ?? undefined,
         baseUrl: config?.base ?? "",
         credentials: config?.credentials ?? "same-origin",
      });
 
     licencingClient.setConfig({
+        throwOnError: true,
         auth: config?.token ?? undefined,
         baseUrl: config?.base ?? "",
         credentials: config?.credentials ?? "same-origin",

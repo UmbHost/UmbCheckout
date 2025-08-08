@@ -114,6 +114,7 @@
             public const string AllowPromotionalCodesOnRecoveredCartsLabel = "allow_promotional_codes_on_recovered_carts_label";
             public const string FirstPage = "first_page";
             public const string NextPage = "next_page";
+            public const string CurrencyCodeRegExMessage = "currency_code_regex_message";
         }
     }
 }

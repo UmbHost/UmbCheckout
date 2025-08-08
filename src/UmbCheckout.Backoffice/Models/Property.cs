@@ -19,14 +19,14 @@ namespace UmbCheckout.Backoffice.Models
         [JsonProperty(PropertyName = "value")]
         public object Value { get; set; } = string.Empty;
 
-        [JsonProperty(PropertyName = "view")]
-        public string View { get; set; } = string.Empty;
-
         [JsonProperty(PropertyName = "validation")]
         public Validation Validation { get; set; } = new();
 
         [JsonProperty("config")]
         public Config? Config { get; set; }
+
+        [JsonProperty("editorUiAlias")]
+        public string EditorUiAlias { get; set; } = string.Empty;
     }
 
     internal class Validation
@@ -37,11 +37,11 @@ namespace UmbCheckout.Backoffice.Models
         [JsonProperty(PropertyName = "mandatoryMessage")]
         public string MandatoryMessage { get; set; } = string.Empty;
 
-        [JsonProperty(PropertyName = "pattern")]
-        public string? Pattern { get; set; }
+        [JsonProperty(PropertyName = "regEx")]
+        public string RegEx { get; set; } = string.Empty;
 
-        [JsonProperty(PropertyName = "patternMessage")]
-        public string PatternMessage { get; set; } = string.Empty;
+        [JsonProperty(PropertyName = "regExMessage")]
+        public string RegExMessage { get; set; } = string.Empty;
     }
 
     internal class Config

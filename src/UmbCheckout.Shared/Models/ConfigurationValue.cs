@@ -17,18 +17,18 @@ namespace UmbCheckout.Shared.Models
         public IEnumerable<MultiUrlPicker> CancelPageUrl { get; set; } = Enumerable.Empty<MultiUrlPicker>();
 
         [JsonPropertyName("storeBasketInCookie")]
-        public string StoreBasketInCookie { get; set; } = "False";
+        public bool StoreBasketInCookie { get; set; } = false;
 
         [JsonPropertyName("basketInCookieExpiry")]
         public int BasketInCookieExpiry { get; set; } = 30;
 
         [JsonPropertyName("storeBasketInDatabase")]
-        public string StoreBasketInDatabase { get; set; } = "False";
+        public bool StoreBasketInDatabase { get; set; } = false;
 
         [JsonPropertyName("basketInDatabaseExpiry")]
         public int BasketInDatabaseExpiry { get; set; } = 30;
 
         [JsonPropertyName("enableShipping")] 
-        public string EnableShipping { get; set; } = "False";
+        public bool EnableShipping { get; set; } = false;
     }
 }

@@ -13,11 +13,11 @@ export type ConfigurationValue = {
     successPageUrl: Array<MultiUrlPicker>;
     currencyCode: string;
     cancelPageUrl: Array<MultiUrlPicker>;
-    storeBasketInCookie: string;
+    storeBasketInCookie: boolean;
     basketInCookieExpiry: number;
-    storeBasketInDatabase: string;
+    storeBasketInDatabase: boolean;
     basketInDatabaseExpiry: number;
-    enableShipping: string;
+    enableShipping: boolean;
 };
 
 export enum EventMessageTypeModel {
@@ -48,9 +48,9 @@ export type Property = {
     description: string;
     label: string;
     value: unknown;
-    view: string;
     validation: Validation;
     config?: Config | null;
+    editorUiAlias: string;
 };
 
 export type RefundPayment = {
@@ -84,8 +84,8 @@ export type TaxRate = {
 export type Validation = {
     mandatory: boolean;
     mandatoryMessage: string;
-    pattern?: string | null;
-    patternMessage: string;
+    regEx: string;
+    regExMessage: string;
 };
 
 export type GetConfigurationData = {
