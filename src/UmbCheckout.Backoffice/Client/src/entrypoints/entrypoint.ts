@@ -2,7 +2,7 @@ import type {
   UmbEntryPointOnInit,
   UmbEntryPointOnUnload,
 } from "@umbraco-cms/backoffice/extension-api";
-import { manifests as workspaces } from "../workspaces/manifest.ts";
+import { manifests as workspaces } from "../workspaces/manifests.ts";
 import { manifests as localizations } from "../localization/manifest.ts";
 import { manifests as menus } from "../trees/manifest.ts";
 import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";

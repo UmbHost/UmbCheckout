@@ -4,7 +4,7 @@ import type { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
 import { UmbPropertyValueData } from '@umbraco-cms/backoffice/property';
 import { UMB_NOTIFICATION_CONTEXT, UmbNotificationContext, UmbNotificationDefaultData } from '@umbraco-cms/backoffice/notification';
 import { UmbLocalizationController } from '@umbraco-cms/backoffice/localization-api';
-import { ConfigurationService, MultiUrlPicker, UpdateConfigurationData } from '../api/backoffice';
+import { ConfigurationService, MultiUrlPicker, UpdateConfigurationData } from '../../api/backoffice';
 import { UmbServerModelValidatorContext, UmbValidationContext } from '@umbraco-cms/backoffice/validation';
 
 export class UmbCheckoutOverviewWorkspaceContextElement extends UmbContextBase {
@@ -44,19 +44,13 @@ export class UmbCheckoutOverviewWorkspaceContextElement extends UmbContextBase {
                 storeBasketInDatabase: this.propertyEditorsData.find((pe) => pe.alias === 'storeBasketInDatabase')?.value as boolean,
             }
         }
-        try {
-            await ConfigurationService.updateConfiguration(updateData);
+        await ConfigurationService.updateConfiguration(updateData).then(() => {
             const data: UmbNotificationDefaultData = { headline: this.#localize.term("umbcheckout_configuration_saved_title"), message: this.#localize.term("umbcheckout_configuration_saved_message") };
             this._notificationContext?.peek('positive', { data });
-        } catch (error: any) {
-            if (error?.status === 400) {
-                const data: UmbNotificationDefaultData = { headline: this.#localize.term("umbcheckout_configuration_failed_save_title"), message: this.#localize.term("umbcheckout_configuration_bad_request_message") };
-                this._notificationContext?.peek('danger', { data });
-                return Promise.reject(error);
-            }
+        }).catch((error) => {
             const data: UmbNotificationDefaultData = { headline: this.#localize.term("umbcheckout_configuration_failed_save_title"), message: this.#localize.term("umbcheckout_configuration_failed_save_message") };
-            this._notificationContext?.peek('danger', { data });
-        }
+            this._notificationContext?.peek('danger', { data: data });
+        });
         }, () => {
             const data: UmbNotificationDefaultData = { headline: this.#localize.term("umbcheckout_configuration_failed_save_title"), message: this.#localize.term("umbcheckout_configuration_failed_save_message") };
             this._notificationContext?.peek('danger', { data: data });

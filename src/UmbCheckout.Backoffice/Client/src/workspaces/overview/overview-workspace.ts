@@ -1,9 +1,9 @@
 import { LitElement, html, customElement, css, state, when, repeat, nothing } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
-import { UmbCheckoutTextStyles } from "../style/text-style.style";
-import { CheckLicenceResponse, LicenceStatusResponseReadable, LicencingService } from "../api/licencing";
-import { ConfigurationService, Property } from "../api/backoffice";
+import { UmbCheckoutTextStyles } from "../../style/text-style.style";
+import { CheckLicenceResponse, LicenceStatusResponseReadable, LicencingService } from "../../api/licencing";
+import { ConfigurationService, Property } from "../../api/backoffice";
 import { UMB_NOTIFICATION_CONTEXT, UmbNotificationContext, UmbNotificationDefaultData } from "@umbraco-cms/backoffice/notification";
 import { UUIButtonState } from "@umbraco-ui/uui-button";
 import { UmbLocalizationController } from "@umbraco-cms/backoffice/localization-api";

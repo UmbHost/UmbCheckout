@@ -1,11 +1,11 @@
 var F = Object.defineProperty;
 var G = (e, r, t) => r in e ? F(e, r, { enumerable: !0, configurable: !0, writable: !0, value: t }) : e[r] = t;
-var x = (e, r, t) => G(e, typeof r != "symbol" ? r + "" : r, t);
+var $ = (e, r, t) => G(e, typeof r != "symbol" ? r + "" : r, t);
 import { UMB_WORKSPACE_CONDITION_ALIAS as k } from "@umbraco-cms/backoffice/workspace";
 import { UMB_SETTINGS_SECTION_ALIAS as V } from "@umbraco-cms/backoffice/settings";
 import { UmbElementMixin as X } from "@umbraco-cms/backoffice/element-api";
 import { umbExtensionsRegistry as K } from "@umbraco-cms/backoffice/extension-registry";
-import { LitElement as Q, html as $, property as Y, state as I, customElement as Z } from "@umbraco-cms/backoffice/external/lit";
+import { LitElement as Q, html as x, property as Y, state as I, customElement as Z } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_SECTION_CONTEXT as ee } from "@umbraco-cms/backoffice/section";
 import { UMB_AUTH_CONTEXT as te } from "@umbraco-cms/backoffice/auth";
 const re = {
@@ -27,7 +27,7 @@ const re = {
   type: "workspaceView",
   alias: "umbcheckout-overview-workspace",
   name: "UmbCheckout Overview",
-  element: () => import("./overview-workspace-BM3u-Ucy.js"),
+  element: () => import("./overview-workspace-DyM_5J9W.js"),
   elementName: "umbcheckout-overview-workspace",
   meta: {
     label: "#umbcheckout_overview",
@@ -44,7 +44,7 @@ const re = {
   type: "workspaceContext",
   name: "UmbCheckout Overview Workspace Context",
   alias: "umbcheckout-overview-workspace-context",
-  api: () => import("./overview-workspace-context-C02XPIdh.js").then((e) => e.o),
+  api: () => import("./overview-workspace-context-C797DZyv.js").then((e) => e.o),
   conditions: [
     {
       alias: k,
@@ -69,7 +69,7 @@ const re = {
   name: "UmbCheckout Save Workspace Action",
   alias: "umbcheckout-workspace-save-action",
   weight: 1e3,
-  api: () => import("./workspace-save-action-JTJqXcLR.js"),
+  api: () => import("./workspace-save-action-Bv43UAjJ.js"),
   meta: {
     label: "#buttons_save",
     look: "primary",
@@ -81,13 +81,15 @@ const re = {
       match: "umbcheckout-workspace"
     }
   ]
-}, W = [
+}, ie = [
   re,
   ae,
   ne,
   oe,
   se
-], ie = {
+], W = [
+  ...ie
+], le = {
   type: "localization",
   alias: "umbcheckout-localize-en",
   name: "UmbCheckout Localization",
@@ -96,15 +98,15 @@ const re = {
   },
   js: () => import("./en-DD9rt2y4.js")
 }, q = [
-  ie
+  le
 ];
-var le = Object.defineProperty, ce = Object.getOwnPropertyDescriptor, R = (e) => {
+var ce = Object.defineProperty, ue = Object.getOwnPropertyDescriptor, R = (e) => {
   throw TypeError(e);
 }, _ = (e, r, t, o) => {
-  for (var s = o > 1 ? void 0 : o ? ce(r, t) : r, i = e.length - 1, n; i >= 0; i--)
+  for (var s = o > 1 ? void 0 : o ? ue(r, t) : r, i = e.length - 1, n; i >= 0; i--)
     (n = e[i]) && (s = (o ? n(r, t, s) : n(s)) || s);
-  return o && s && le(r, t, s), s;
-}, U = (e, r, t) => r.has(e) || R("Cannot " + t), A = (e, r, t) => (U(e, r, "read from private field"), r.get(e)), T = (e, r, t) => r.has(e) ? R("Cannot add the same private member more than once") : r instanceof WeakSet ? r.add(e) : r.set(e, t), ue = (e, r, t, o) => (U(e, r, "write to private field"), r.set(e, t), t), me = (e, r, t) => (U(e, r, "access private method"), t), y, g, z;
+  return o && s && ce(r, t, s), s;
+}, U = (e, r, t) => r.has(e) || R("Cannot " + t), A = (e, r, t) => (U(e, r, "read from private field"), r.get(e)), T = (e, r, t) => r.has(e) ? R("Cannot add the same private member more than once") : r instanceof WeakSet ? r.add(e) : r.set(e, t), me = (e, r, t, o) => (U(e, r, "write to private field"), r.set(e, t), t), pe = (e, r, t) => (U(e, r, "access private method"), t), y, g, z;
 let h = class extends X(Q) {
   constructor() {
     super(), T(this, g), T(this, y), this.hasChildren = !1, K.byType("umbcheckout-menuItem").subscribe((e) => {
@@ -113,14 +115,14 @@ let h = class extends X(Q) {
       this.observe(
         e == null ? void 0 : e.pathname,
         (r) => {
-          ue(this, y, r), me(this, g, z).call(this);
+          me(this, y, r), pe(this, g, z).call(this);
         },
         "observePathname"
       );
     });
   }
   render() {
-    return $`<umb-menu-item-layout
+    return x`<umb-menu-item-layout
 			label=${this.localize.term(this.manifest.meta.label) ?? this.manifest.name}
 			icon-name=${this.manifest.meta.icon ?? "icon-bug"}
 			.href=${this.itemPath}
@@ -129,7 +131,7 @@ let h = class extends X(Q) {
 		</umb-menu-item-layout>`;
   }
   renderChildren() {
-    return $`<umb-extension-slot
+    return x`<umb-extension-slot
 			type="usync-menuItem"
 			default-element="umb-menu-item-default"></umb-extension-slot>`;
   }
@@ -165,7 +167,7 @@ const p = {
     icon: p.icon,
     entityType: p.rootElement
   }
-}, pe = {
+}, he = {
   type: "menuItem",
   alias: "umbcheckout.menu.item",
   name: "UmbCheckout menu item",
@@ -176,7 +178,7 @@ const p = {
     entityType: "umbcheckout",
     menus: [p.alias]
   }
-}, he = {
+}, de = {
   type: "sectionSidebarApp",
   kind: "menu",
   alias: "umbcheckout-sidebar-menu",
@@ -194,13 +196,13 @@ const p = {
   ]
 }, P = [
   N,
-  he,
-  pe
+  de,
+  he
 ];
-var de = async (e, r) => {
+var fe = async (e, r) => {
   let t = typeof r == "function" ? await r(e) : r;
   if (t) return e.scheme === "bearer" ? `Bearer ${t}` : e.scheme === "basic" ? `Basic ${btoa(t)}` : t;
-}, fe = { bodySerializer: (e) => JSON.stringify(e, (r, t) => typeof t == "bigint" ? t.toString() : t) }, be = (e) => {
+}, be = { bodySerializer: (e) => JSON.stringify(e, (r, t) => typeof t == "bigint" ? t.toString() : t) }, ye = (e) => {
   switch (e) {
     case "label":
       return ".";
@@ -211,7 +213,7 @@ var de = async (e, r) => {
     default:
       return "&";
   }
-}, ye = (e) => {
+}, we = (e) => {
   switch (e) {
     case "form":
       return ",";
@@ -222,7 +224,7 @@ var de = async (e, r) => {
     default:
       return ",";
   }
-}, we = (e) => {
+}, ve = (e) => {
   switch (e) {
     case "label":
       return ".";
@@ -235,7 +237,7 @@ var de = async (e, r) => {
   }
 }, M = ({ allowReserved: e, explode: r, name: t, style: o, value: s }) => {
   if (!r) {
-    let a = (e ? s : s.map((l) => encodeURIComponent(l))).join(ye(o));
+    let a = (e ? s : s.map((l) => encodeURIComponent(l))).join(we(o));
     switch (o) {
       case "label":
         return `.${a}`;
@@ -247,7 +249,7 @@ var de = async (e, r) => {
         return `${t}=${a}`;
     }
   }
-  let i = be(o), n = s.map((a) => o === "label" || o === "simple" ? e ? a : encodeURIComponent(a) : C({ allowReserved: e, name: t, value: a })).join(i);
+  let i = ye(o), n = s.map((a) => o === "label" || o === "simple" ? e ? a : encodeURIComponent(a) : C({ allowReserved: e, name: t, value: a })).join(i);
   return o === "label" || o === "matrix" ? i + n : n;
 }, C = ({ allowReserved: e, name: r, value: t }) => {
   if (t == null) return "";
@@ -272,10 +274,10 @@ var de = async (e, r) => {
         return l;
     }
   }
-  let i = we(o), n = Object.entries(s).map(([a, l]) => C({ allowReserved: e, name: o === "deepObject" ? `${t}[${a}]` : a, value: l })).join(i);
+  let i = ve(o), n = Object.entries(s).map(([a, l]) => C({ allowReserved: e, name: o === "deepObject" ? `${t}[${a}]` : a, value: l })).join(i);
   return o === "label" || o === "matrix" ? i + n : n;
-}, ve = /\{[^{}]+\}/g, ke = ({ path: e, url: r }) => {
-  let t = r, o = r.match(ve);
+}, ke = /\{[^{}]+\}/g, _e = ({ path: e, url: r }) => {
+  let t = r, o = r.match(ke);
   if (o) for (let s of o) {
     let i = !1, n = s.substring(1, s.length - 1), a = "simple";
     n.endsWith("*") && (i = !0, n = n.substring(0, n.length - 1)), n.startsWith(".") ? (n = n.substring(1), a = "label") : n.startsWith(";") && (n = n.substring(1), a = "matrix");
@@ -313,7 +315,7 @@ var de = async (e, r) => {
     }
   }
   return s.join("&");
-}, _e = (e) => {
+}, Ce = (e) => {
   var t;
   if (!e) return "stream";
   let r = (t = e.split(";")[0]) == null ? void 0 : t.trim();
@@ -323,9 +325,9 @@ var de = async (e, r) => {
     if (["application/", "audio/", "image/", "video/"].some((o) => r.startsWith(o))) return "blob";
     if (r.startsWith("text/")) return "text";
   }
-}, Ce = async ({ security: e, ...r }) => {
+}, Se = async ({ security: e, ...r }) => {
   for (let t of e) {
-    let o = await de(t, r.auth);
+    let o = await fe(t, r.auth);
     if (!o) continue;
     let s = t.name ?? "Authorization";
     switch (t.in) {
@@ -342,9 +344,9 @@ var de = async (e, r) => {
     }
     return;
   }
-}, j = (e) => Se({ baseUrl: e.baseUrl, path: e.path, query: e.query, querySerializer: typeof e.querySerializer == "function" ? e.querySerializer : B(e.querySerializer), url: e.url }), Se = ({ baseUrl: e, path: r, query: t, querySerializer: o, url: s }) => {
+}, j = (e) => ge({ baseUrl: e.baseUrl, path: e.path, query: e.query, querySerializer: typeof e.querySerializer == "function" ? e.querySerializer : B(e.querySerializer), url: e.url }), ge = ({ baseUrl: e, path: r, query: t, querySerializer: o, url: s }) => {
   let i = s.startsWith("/") ? s : `/${s}`, n = (e ?? "") + i;
-  r && (n = ke({ path: r, url: n }));
+  r && (n = _e({ path: r, url: n }));
   let a = t ? o(t) : "";
   return a.startsWith("?") && (a = a.substring(1)), a && (n += `?${a}`), n;
 }, E = (e, r) => {
@@ -363,7 +365,7 @@ var de = async (e, r) => {
   return r;
 }, S = class {
   constructor() {
-    x(this, "_fns");
+    $(this, "_fns");
     this._fns = [];
   }
   clear() {
@@ -387,10 +389,10 @@ var de = async (e, r) => {
   use(e) {
     return this._fns = [...this._fns, e], this._fns.length - 1;
   }
-}, ge = () => ({ error: new S(), request: new S(), response: new S() }), Ue = B({ allowReserved: !1, array: { explode: !0, style: "form" }, object: { explode: !0, style: "deepObject" } }), Oe = { "Content-Type": "application/json" }, O = (e = {}) => ({ ...fe, headers: Oe, parseAs: "auto", querySerializer: Ue, ...e }), L = (e = {}) => {
-  let r = E(O(), e), t = () => ({ ...r }), o = (n) => (r = E(r, n), t()), s = ge(), i = async (n) => {
+}, Ue = () => ({ error: new S(), request: new S(), response: new S() }), Oe = B({ allowReserved: !1, array: { explode: !0, style: "form" }, object: { explode: !0, style: "deepObject" } }), $e = { "Content-Type": "application/json" }, O = (e = {}) => ({ ...be, headers: $e, parseAs: "auto", querySerializer: Oe, ...e }), L = (e = {}) => {
+  let r = E(O(), e), t = () => ({ ...r }), o = (n) => (r = E(r, n), t()), s = Ue(), i = async (n) => {
     let a = { ...r, ...n, fetch: n.fetch ?? r.fetch ?? globalThis.fetch, headers: H(r.headers, n.headers) };
-    a.security && await Ce({ ...a, security: a.security }), a.body && a.bodySerializer && (a.body = a.bodySerializer(a.body)), (a.body === void 0 || a.body === "") && a.headers.delete("Content-Type");
+    a.security && await Se({ ...a, security: a.security }), a.body && a.bodySerializer && (a.body = a.bodySerializer(a.body)), (a.body === void 0 || a.body === "") && a.headers.delete("Content-Type");
     let l = j(a), d = { redirect: "follow", ...a }, m = new Request(l, d);
     for (let u of s.request._fns) u && (m = await u(m, a));
     let J = a.fetch, c = await J(m);
@@ -398,7 +400,7 @@ var de = async (e, r) => {
     let w = { request: m, response: c };
     if (c.ok) {
       if (c.status === 204 || c.headers.get("Content-Length") === "0") return a.responseStyle === "data" ? {} : { data: {}, ...w };
-      let u = (a.parseAs === "auto" ? _e(c.headers.get("Content-Type")) : a.parseAs) ?? "json";
+      let u = (a.parseAs === "auto" ? Ce(c.headers.get("Content-Type")) : a.parseAs) ?? "json";
       if (u === "stream") return a.responseStyle === "data" ? c.body : { data: c.body, ...w };
       let b = await c[u]();
       return u === "json" && (a.responseValidator && await a.responseValidator(b), a.responseTransformer && (b = await a.responseTransformer(b))), a.responseStyle === "data" ? b : { data: b, ...w };
@@ -416,11 +418,10 @@ var de = async (e, r) => {
   return { buildUrl: j, connect: (n) => i({ ...n, method: "CONNECT" }), delete: (n) => i({ ...n, method: "DELETE" }), get: (n) => i({ ...n, method: "GET" }), getConfig: t, head: (n) => i({ ...n, method: "HEAD" }), interceptors: s, options: (n) => i({ ...n, method: "OPTIONS" }), patch: (n) => i({ ...n, method: "PATCH" }), post: (n) => i({ ...n, method: "POST" }), put: (n) => i({ ...n, method: "PUT" }), request: i, setConfig: o, trace: (n) => i({ ...n, method: "TRACE" }) };
 };
 const xe = L(O({
-  baseUrl: "https://localhost:44390",
-  throwOnError: !0
-})), $e = L(O({
   baseUrl: "https://localhost:44390"
-})), Ae = (e, r) => {
+})), Ae = L(O({
+  baseUrl: "https://localhost:44390"
+})), Te = (e, r) => {
   e.consumeContext(te, (t) => {
     const o = t == null ? void 0 : t.getOpenApiConfiguration();
     xe.setConfig({
@@ -428,7 +429,7 @@ const xe = L(O({
       auth: (o == null ? void 0 : o.token) ?? void 0,
       baseUrl: (o == null ? void 0 : o.base) ?? "",
       credentials: (o == null ? void 0 : o.credentials) ?? "same-origin"
-    }), $e.setConfig({
+    }), Ae.setConfig({
       throwOnError: !0,
       auth: (o == null ? void 0 : o.token) ?? void 0,
       baseUrl: (o == null ? void 0 : o.base) ?? "",
@@ -439,20 +440,20 @@ const xe = L(O({
       ...W
     ]);
   });
-}, Te = (e, r) => {
+}, je = (e, r) => {
   r.unregisterMany([
     ...P.map((t) => t.alias),
     ...q.map((t) => t.alias),
     ...W.map((t) => t.alias)
   ]);
-}, Pe = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  onInit: Ae,
-  onUnload: Te
+  onInit: Te,
+  onUnload: je
 }, Symbol.toStringTag, { value: "Module" }));
 export {
   xe as a,
-  $e as c,
-  Pe as e
+  Ae as c,
+  Me as e
 };
-//# sourceMappingURL=entrypoint-BuHY9PxI.js.map
+//# sourceMappingURL=entrypoint-C4Z0gcPx.js.map

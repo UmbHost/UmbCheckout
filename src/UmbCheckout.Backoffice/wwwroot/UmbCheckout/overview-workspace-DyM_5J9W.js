@@ -2,8 +2,8 @@ import { css as U, LitElement as B, when as p, repeat as x, nothing as W, html a
 import { UmbElementMixin as I } from "@umbraco-cms/backoffice/element-api";
 import { UmbTextStyles as M } from "@umbraco-cms/backoffice/style";
 import { UUITextStyles as V } from "@umbraco-cms/backoffice/external/uui";
-import { c as S } from "./entrypoint-BuHY9PxI.js";
-import { U as N, C } from "./overview-workspace-context-C02XPIdh.js";
+import { c as S } from "./entrypoint-C4Z0gcPx.js";
+import { U as N, C } from "./overview-workspace-context-C797DZyv.js";
 import { UMB_NOTIFICATION_CONTEXT as H } from "@umbraco-cms/backoffice/notification";
 import { UmbLocalizationController as K } from "@umbraco-cms/backoffice/localization-api";
 const R = U`
@@ -261,4 +261,4 @@ o = n([
 export {
   o as default
 };
-//# sourceMappingURL=overview-workspace-BM3u-Ucy.js.map
+//# sourceMappingURL=overview-workspace-DyM_5J9W.js.map

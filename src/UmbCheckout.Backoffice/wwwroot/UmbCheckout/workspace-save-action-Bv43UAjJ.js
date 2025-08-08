@@ -1,5 +1,5 @@
 import { UmbWorkspaceActionBase as e } from "@umbraco-cms/backoffice/workspace";
-import { U as o } from "./overview-workspace-context-C02XPIdh.js";
+import { U as o } from "./overview-workspace-context-C797DZyv.js";
 class a extends e {
   // This method is executed
   async execute() {
@@ -14,4 +14,4 @@ export {
   a as UmbCheckoutSaveWorkspaceAction,
   s as api
 };
-//# sourceMappingURL=workspace-save-action-JTJqXcLR.js.map
+//# sourceMappingURL=workspace-save-action-Bv43UAjJ.js.map
