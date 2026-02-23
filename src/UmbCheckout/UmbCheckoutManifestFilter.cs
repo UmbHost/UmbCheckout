@@ -1,7 +1,9 @@
-﻿using UmbCheckout.Shared;
+using Microsoft.Extensions.DependencyInjection;
+using UmbCheckout.Shared;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Manifest;
+using Umbraco.Cms.Infrastructure.Manifest;
 
 namespace UmbCheckout
 {
@@ -9,31 +11,26 @@ namespace UmbCheckout
     {
         public void Compose(IUmbracoBuilder builder)
         {
-            builder.ManifestFilters().Append<UmbCheckoutManifestFilter>();
+            builder.Services.AddSingleton<IPackageManifestReader, UmbCheckoutReader>();
         }
     }
 
-    public class UmbCheckoutManifestFilter : IManifestFilter
+    internal sealed class UmbCheckoutReader : IPackageManifestReader
     {
-        public void Filter(List<PackageManifest> manifests)
+        public Task<IEnumerable<PackageManifest>> ReadPackageManifestsAsync()
         {
-            manifests.Add(new PackageManifest
-            {
-                PackageName = Consts.PackageName,
-                Version = UmbCheckoutVersion.Version.ToString(3),
-                AllowPackageTelemetry = true,
-                BundleOptions = BundleOptions.None,
-                Scripts = new []
+            IEnumerable<PackageManifest> manifests =
+            [
+                new PackageManifest
                 {
-                    "/App_Plugins/UmbCheckout/js/umbcheckout.metadata.propertyeditor.controller.js",
-                    "/App_Plugins/UmbCheckout/js/umbcheckout.resources.js",
-                    "/App_Plugins/UmbCheckout/js/umbcheckout.controller.js"
-                },
-                Stylesheets = new []
-                {
-                    "/App_Plugins/UmbCheckout/css/umbcheckout.css"
+                    Id = Consts.PackageName,
+                    Name = Consts.PackageName,
+                    Version = UmbCheckoutVersion.Version.ToString(3),
+                    AllowTelemetry = true,
+                    Extensions = []
                 }
-            });
+            ];
+            return Task.FromResult(manifests);
         }
     }
 }
