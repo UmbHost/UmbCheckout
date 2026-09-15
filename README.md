@@ -8,7 +8,7 @@ Only long term support (LTS) versions for Umbraco are officially supported.
 
 Community contributions for short term support versions (STS) are welcome.
 
-Currently it has been officially tested against Umbraco v10 and v13.
+This version targets Umbraco v17 (LTS) on .NET 10. Umbraco v10 - v13 are supported by the previous major version of UmbCheckout.
 
 ## Documentation
 
@@ -52,13 +52,23 @@ There are a number of addon features available with a paid license.
 
 ## Getting started with the TestSite
 
-Run the test site for the Umbraco version you wish to test against:
-
-Umbraco 10 - UmbCheckout.TestSite.v10
-Umbraco 11 - UmbCheckout.TestSite.v11
-Umbraco 13 - UmbCheckout.TestSite.v13
+Run the test site for Umbraco 17: `src/UmbCheckout.TestSite.v17` (uses SQLite).
 
 Install the test site, discard any Git Changes and then Import Everything using uSync
+
+Stripe API keys for testing can be added to `appsettings.Development.json` under `UmbCheckout:Stripe`.
+
+## Building the backoffice
+
+The backoffice UI is built with Lit, TypeScript and Vite against `@umbraco-cms/backoffice`. The compiled output is committed to `wwwroot`, so you only need to rebuild it when changing the client source:
+
+```bash
+cd src/UmbCheckout.Backoffice/Client
+npm install
+npm run build
+```
+
+The Stripe payment provider has its own client in `src/UmbCheckout.Stripe/Client`, which is built the same way. Use `npm run watch` to rebuild on changes.
 
 ### Contribution guidelines
 

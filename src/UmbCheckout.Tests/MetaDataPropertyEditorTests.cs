@@ -31,7 +31,7 @@ namespace UmbCheckout.Tests
 ]";
 
             //Act
-            var converter = new MetaDataValueConverter(new JsonNetSerializer());
+            var converter = new MetaDataValueConverter(new SystemTextJsonSerializer(new DefaultJsonSerializerEncoderFactory()));
             var result = converter.ConvertSourceToIntermediate(null, null, jsonString, false);
 
             // Assert
@@ -62,11 +62,11 @@ namespace UmbCheckout.Tests
                 { "Dictionary Key 2", "Dictionary Value 2" }
             };
 
-            var jsonSerializer = new JsonNetSerializer();
+            var jsonSerializer = new SystemTextJsonSerializer(new DefaultJsonSerializerEncoderFactory());
             var jsonString = jsonSerializer.Serialize(metaData);
 
             //Act
-            var converter = new MetaDataValueConverter(new JsonNetSerializer());
+            var converter = new MetaDataValueConverter(new SystemTextJsonSerializer(new DefaultJsonSerializerEncoderFactory()));
             var result = converter.ConvertSourceToIntermediate(null, null, jsonString, false);
 
             // Assert

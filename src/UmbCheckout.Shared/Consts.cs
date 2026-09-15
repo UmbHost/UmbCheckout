@@ -13,11 +13,19 @@
 
         public const string SessionMode = "payment";
 
-        public const string TreeAlias = "umbCheckout";
-
-        public const string TreeGroup = "umbCheckoutGroup";
-
         public const string TelemetryUrl = "https://telemetry.umbcheckout.net/api/telemetry/";
+
+        /// <summary>
+        /// The name of the backoffice Management API (used for routing and the OpenAPI document)
+        /// </summary>
+        public const string ApiName = "umbcheckout";
+
+        public static class PropertyEditors
+        {
+            public const string MetaDataAlias = "umbCheckoutMetaData";
+
+            public const string MetaDataUiAlias = "UmbCheckout.PropertyEditorUi.MetaData";
+        }
         //public const string TelemetryUrl = "http://127.0.0.1:8787/api/telemetry/";
         public static class PropertyAlias
         {

@@ -5,8 +5,8 @@ using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using UmbCheckout.Shared;
 using UmbCheckout.Shared.Notifications.Configuration;
-using UmbHost.Licensing.Models;
-using UmbHost.Licensing.Notifications;
+// using UmbHost.Licensing.Models;
+// using UmbHost.Licensing.Notifications;
 using Umbraco.Cms.Core.Configuration;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Events;
@@ -18,7 +18,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace UmbCheckout.Core.NotificationHandlers
 {
-    public class UmbCheckoutTelemetryNotificationHandler : INotificationAsyncHandler<OnConfigurationSavedNotification>, INotificationAsyncHandler<OnLicenseCheckCompletedNotification>
+    public class UmbCheckoutTelemetryNotificationHandler : INotificationAsyncHandler<OnConfigurationSavedNotification> /*, INotificationAsyncHandler<OnLicenseCheckCompletedNotification> */
     {
         private readonly UmbCheckoutAppSettings _umbCheckoutConfiguration;
         private readonly GlobalSettings _globalSettings;
@@ -43,10 +43,11 @@ namespace UmbCheckout.Core.NotificationHandlers
             await PingTelemetryServer(cancellationToken);
         }
 
-        public async Task HandleAsync(OnLicenseCheckCompletedNotification notification, CancellationToken cancellationToken)
-        {
-            await PingTelemetryServer(cancellationToken);
-        }
+        // TODO: UmbHost.Licensing - re-enable once a Umbraco 17 compatible version of UmbHost.Licensing is available
+        //public async Task HandleAsync(OnLicenseCheckCompletedNotification notification, CancellationToken cancellationToken)
+        //{
+        //    await PingTelemetryServer(cancellationToken);
+        //}
 
         private async Task PingTelemetryServer(CancellationToken cancellationToken)
         {
@@ -66,7 +67,7 @@ namespace UmbCheckout.Core.NotificationHandlers
                     return;
                 }
 
-                var installedPackages = _packagingService.GetAllInstalledPackages()
+                var installedPackages = (await _packagingService.GetAllInstalledPackagesAsync())
                     .Where(x => !string.IsNullOrEmpty(x.PackageName) && x.PackageName.StartsWith("UmbCheckout."));
 
                 var data = new
@@ -75,8 +76,10 @@ namespace UmbCheckout.Core.NotificationHandlers
                     umbracoVersion = _umbracoVersion.SemanticVersion.ToSemanticStringWithoutBuild(),
                     umbCheckoutVersion = UmbCheckoutVersion.SemanticVersion.ToString(),
                     installedPackages = JsonSerializer.Serialize(installedPackages),
-                    isLicensed = UmbCheckoutSettings.IsLicensed.ToString(),
-                    isDevelopmentLicense = UmbCheckoutSettings.LicenseDetails.IsDevelopmentLicense.ToString(),
+                    // TODO: UmbHost.Licensing - re-enable once a Umbraco 17 compatible version of UmbHost.Licensing is available
+                    //isLicensed = UmbCheckoutSettings.IsLicensed.ToString(),
+                    //isDevelopmentLicense = UmbCheckoutSettings.LicenseDetails.IsDevelopmentLicense.ToString(),
+                    isLicensed = false.ToString(),
                     environmentName = _webHostEnvironment.EnvironmentName
                 };
 

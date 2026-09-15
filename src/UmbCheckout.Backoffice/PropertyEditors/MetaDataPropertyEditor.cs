@@ -1,16 +1,15 @@
-﻿using Umbraco.Cms.Core.PropertyEditors;
+using UmbCheckout.Shared;
+using Umbraco.Cms.Core.PropertyEditors;
 
 namespace UmbCheckout.Backoffice.PropertyEditors
 {
     /// <summary>
     /// The MetaData property editor
     /// </summary>
-    [DataEditor(
-        alias: "umbCheckoutMetaData",
-        name: "Meta Data",
-        view: "~/App_Plugins/UmbCheckout/propertyeditors/metaData.html",
-        Group = "eCommerce",
-        Icon = "icon-ordered-list")]
+    /// <remarks>
+    /// The backoffice UI for this editor is registered as the UmbCheckout.PropertyEditorUi.MetaData extension
+    /// </remarks>
+    [DataEditor(Consts.PropertyEditors.MetaDataAlias)]
     public class MetaDataPropertyEditor : DataEditor
     {
         public MetaDataPropertyEditor(IDataValueEditorFactory dataValueEditorFactory)

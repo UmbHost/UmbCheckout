@@ -1,4 +1,4 @@
-﻿using UmbCheckout.Core.Migrations;
+using UmbCheckout.Core.Migrations;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Migrations;
@@ -13,7 +13,7 @@ namespace UmbCheckout.Core.NotificationHandlers
     /// <summary>
     /// Handles the migration of the Configuration table
     /// </summary>
-    internal class RunUmbCheckoutConfigurationMigration : INotificationHandler<UmbracoApplicationStartingNotification>
+    internal class RunUmbCheckoutConfigurationMigration : INotificationAsyncHandler<UmbracoApplicationStartingNotification>
     {
         private readonly IMigrationPlanExecutor _migrationPlanExecutor;
         private readonly ICoreScopeProvider _coreScopeProvider;
@@ -28,7 +28,7 @@ namespace UmbCheckout.Core.NotificationHandlers
             _runtimeState = runtimeState;
         }
 
-        public void Handle(UmbracoApplicationStartingNotification notification)
+        public async Task HandleAsync(UmbracoApplicationStartingNotification notification, CancellationToken cancellationToken)
         {
             if (_runtimeState.Level < RuntimeLevel.Run)
             {
@@ -42,9 +42,11 @@ namespace UmbCheckout.Core.NotificationHandlers
                 .To<AddUmbCheckoutKey>("a877baa5-644d-4367-a1c0-5dccda876f79");
             migrationPlan.From("a877baa5-644d-4367-a1c0-5dccda876f79")
                 .To<AddUmbCheckoutCurrencyCode>("943bb809-80f8-4435-8c94-c6717e54a808");
+            migrationPlan.From("943bb809-80f8-4435-8c94-c6717e54a808")
+                .To<SetMetaDataPropertyEditorUiAlias>("3b1f7d5e-6c2a-4f0e-9a8d-2e5b7c4d1f90");
 
             var upgrader = new Upgrader(migrationPlan);
-            upgrader.Execute(
+            await upgrader.ExecuteAsync(
                 _migrationPlanExecutor,
                 _coreScopeProvider,
                 _keyValueService);

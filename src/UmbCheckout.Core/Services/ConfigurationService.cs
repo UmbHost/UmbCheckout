@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared.Notifications.Configuration;
-using UmbHost.Licensing.Models;
-using UmbHost.Licensing.Services;
+// using UmbHost.Licensing.Models;
+// using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Mapping;
 using Umbraco.Cms.Core.Scoping;
 using IScopeProvider = Umbraco.Cms.Infrastructure.Scoping.IScopeProvider;
@@ -20,13 +20,14 @@ namespace UmbCheckout.Core.Services
         private readonly IUmbracoMapper _mapper;
         private readonly ILogger<ConfigurationService> _logger;
 
-        public ConfigurationService(IScopeProvider scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, ICoreScopeProvider coreScopeProvider, LicenseService licenseService)
+        public ConfigurationService(IScopeProvider scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, ICoreScopeProvider coreScopeProvider /*, LicenseService licenseService */)
         {
             _scopeProvider = scopeProvider;
             _logger = logger;
             _mapper = mapper;
             _coreScopeProvider = coreScopeProvider;
-            licenseService.RunLicenseCheck();
+            // TODO: UmbHost.Licensing - re-enable once a Umbraco 17 compatible version of UmbHost.Licensing is available
+            //licenseService.RunLicenseCheck();
         }
 
         /// <inheritdoc />
@@ -37,7 +38,9 @@ namespace UmbCheckout.Core.Services
                 using var scope = _scopeProvider.CreateScope(autoComplete: true);
                 var result = await scope.Database.QueryAsync<UmbCheckoutConfiguration>().SingleOrDefault();
 
-                if (!UmbCheckoutSettings.IsLicensed)
+                // TODO: UmbHost.Licensing - re-enable once a Umbraco 17 compatible version of UmbHost.Licensing is available
+                //if (!UmbCheckoutSettings.IsLicensed)
+                if (true)
                 {
                     if (result != null)
                     {
@@ -60,7 +63,9 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!UmbCheckoutSettings.IsLicensed)
+                // TODO: UmbHost.Licensing - re-enable once a Umbraco 17 compatible version of UmbHost.Licensing is available
+                //if (!UmbCheckoutSettings.IsLicensed)
+                if (true)
                 {
                     configuration.StoreBasketInDatabase = false;
                     configuration.StoreBasketInCookie = false;
@@ -109,7 +114,9 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!UmbCheckoutSettings.IsLicensed)
+                // TODO: UmbHost.Licensing - re-enable once a Umbraco 17 compatible version of UmbHost.Licensing is available
+                //if (!UmbCheckoutSettings.IsLicensed)
+                if (true)
                 {
                     configuration.StoreBasketInDatabase = false;
                     configuration.StoreBasketInCookie = false;

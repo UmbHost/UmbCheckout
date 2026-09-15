@@ -12,7 +12,7 @@ namespace UmbCheckout.Core.Composers
     {
         public void Compose(IUmbracoBuilder builder)
         {
-            builder.AddNotificationHandler<UmbracoApplicationStartingNotification, RunUmbCheckoutConfigurationMigration>();
+            builder.AddNotificationAsyncHandler<UmbracoApplicationStartingNotification, RunUmbCheckoutConfigurationMigration>();
         }
     }
 }

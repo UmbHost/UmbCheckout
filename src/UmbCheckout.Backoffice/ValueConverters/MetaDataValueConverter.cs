@@ -16,7 +16,7 @@ public class MetaDataValueConverter : PropertyValueConverterBase
     public MetaDataValueConverter(IJsonSerializer jsonSerializer) => _jsonSerializer = jsonSerializer;
 
     public override bool IsConverter(IPublishedPropertyType propertyType)
-        => propertyType.EditorAlias.InvariantEquals("umbCheckoutMetaData");
+        => propertyType.EditorAlias.InvariantEquals(Shared.Consts.PropertyEditors.MetaDataAlias);
 
     public override Type GetPropertyValueType(IPublishedPropertyType propertyType)
         => typeof(IEnumerable<string>);

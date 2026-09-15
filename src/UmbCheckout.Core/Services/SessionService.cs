@@ -7,7 +7,8 @@ using UmbCheckout.Shared;
 using UmbCheckout.Shared.Helpers;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Session;
-using UmbHost.Licensing.Services;
+// using UmbHost.Licensing.Helpers;
+// using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Scoping;
 using Umbraco.Cms.Core.Web;
@@ -29,7 +30,7 @@ namespace UmbCheckout.Core.Services
         private readonly IConfigurationService _configurationService;
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
 
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IUmbracoContextAccessor umbracoContextAccessor)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, /* LicenseService licenseService, */ IUmbracoContextAccessor umbracoContextAccessor)
         {
             _dataProtectionProvider = dataProtectionProvider;
             _contextAccessor = contextAccessor;
@@ -38,7 +39,8 @@ namespace UmbCheckout.Core.Services
             _coreScopeProvider = coreScopeProvider;
             _configurationService = configurationService;
             _umbracoContextAccessor = umbracoContextAccessor;
-            licenseService.RunLicenseCheck();
+            // TODO: UmbHost.Licensing - re-enable once a Umbraco 17 compatible version of UmbHost.Licensing is available
+            //licenseService.RunLicenseCheck();
         }
 
         /// <summary>
@@ -76,7 +78,9 @@ namespace UmbCheckout.Core.Services
                     }
                 };
 
-                var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(session.Basket), _dataProtectionProvider);
+                // TODO: UmbHost.Licensing - re-enable once a Umbraco 17 compatible version of UmbHost.Licensing is available
+                //var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(session.Basket), _dataProtectionProvider);
+                var encryptedBasket = string.Empty;
 
                 _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey + siteRootCulture, session);
 
@@ -153,7 +157,9 @@ namespace UmbCheckout.Core.Services
 
                 _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey + siteRootCulture, session);
 
-                var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(basket), _dataProtectionProvider);
+                // TODO: UmbHost.Licensing - re-enable once a Umbraco 17 compatible version of UmbHost.Licensing is available
+                //var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(basket), _dataProtectionProvider);
+                var encryptedBasket = string.Empty;
                 scope.Notifications.Publish(new OnSessionUpdatedNotification(_contextAccessor.HttpContext, sessionId, basket, encryptedBasket, configuration));
 
                 return session;

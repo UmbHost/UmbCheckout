@@ -35,7 +35,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void AddProductToBasket()
+    public async Task AddProductToBasket()
     {
         // Arrange
         var product = new LineItem
@@ -55,7 +55,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void IncreaseProductQuantityInBasket()
+    public async Task IncreaseProductQuantityInBasket()
     {
         // Arrange
         var product = new LineItem
@@ -80,7 +80,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void ReduceProductQuantityInBasket()
+    public async Task ReduceProductQuantityInBasket()
     {
         // Arrange
         var product = new LineItem
@@ -105,7 +105,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void RemoveProductFromBasket()
+    public async Task RemoveProductFromBasket()
     {
         // Arrange
         var product = new LineItem
@@ -130,7 +130,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void ClearBasket()
+    public async Task ClearBasket()
     {
         // Arrange
         var product = new LineItem
@@ -154,7 +154,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void TotalItemsInBasket()
+    public async Task TotalItemsInBasket()
     {
         // Arrange
         var product = new LineItem
@@ -176,7 +176,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void BasketSubtotal()
+    public async Task BasketSubtotal()
     {
         var products = new List<LineItem>
         {
@@ -205,7 +205,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void BasketServiceSubtotal()
+    public async Task BasketServiceSubtotal()
     {
         var products = new List<LineItem>
         {
@@ -234,7 +234,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void GetEmptyBasket()
+    public async Task GetEmptyBasket()
     {
         // Act
         var result = await _basketService.Get();

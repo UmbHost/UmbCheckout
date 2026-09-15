@@ -4,13 +4,13 @@ using Umbraco.Cms.Infrastructure.Migrations;
 
 namespace UmbCheckout.Core.Migrations
 {
-    internal class AddUmbCheckoutKey : MigrationBase
+    internal class AddUmbCheckoutKey : AsyncMigrationBase
     {
         public AddUmbCheckoutKey(IMigrationContext context) : base(context)
         {
         }
 
-        protected override void Migrate()
+        protected override Task MigrateAsync()
         {
             Logger.LogDebug("Running migration {MigrationStep}", "UmbCheckoutAddConfigurationKey");
 
@@ -22,6 +22,7 @@ namespace UmbCheckout.Core.Migrations
             {
                 Logger.LogDebug("The database table {DbTable} already exists, skipping", "UmbCheckoutConfigurationKey");
             }
+            return Task.CompletedTask;
         }
     }
 }

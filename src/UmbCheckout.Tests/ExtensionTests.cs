@@ -1,4 +1,5 @@
-﻿using UmbCheckout.Shared.Extensions;
+﻿using System.Globalization;
+using UmbCheckout.Shared.Extensions;
 using Xunit;
 
 namespace UmbCheckout.Tests
@@ -29,7 +30,21 @@ namespace UmbCheckout.Tests
             const decimal amount = 1.99m;
 
             Assert.Equal("£1.99", amount.FormatCurrency("GBP"));
-            Assert.Equal("1.99", amount.FormatCurrency("Z"));
+
+            // The "Z" currency code is unrecognised, so FormatCurrency falls back to
+            // amount.ToString("F"), which is formatted using CultureInfo.CurrentCulture.
+            // Pin the culture for the duration of this assertion so the test is
+            // deterministic regardless of the machine/CI locale (e.g. "," vs "." decimal separator).
+            var originalCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+                Assert.Equal("1.99", amount.FormatCurrency("Z"));
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
     }
 }

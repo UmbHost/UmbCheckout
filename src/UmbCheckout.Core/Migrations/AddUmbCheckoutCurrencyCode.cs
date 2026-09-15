@@ -8,13 +8,13 @@ namespace UmbCheckout.Core.Migrations
     /// <summary>
     /// Adds the configuration table
     /// </summary>
-    internal class AddUmbCheckoutConfigurationTable : MigrationBase
+    internal class AddUmbCheckoutConfigurationTable : AsyncMigrationBase
     {
         public AddUmbCheckoutConfigurationTable(IMigrationContext context) : base(context)
         {
         }
 
-        protected override void Migrate()
+        protected override Task MigrateAsync()
         {
             Logger.LogDebug("Running migration {MigrationStep}", "UmbCheckoutConfigurationTable");
 
@@ -26,6 +26,7 @@ namespace UmbCheckout.Core.Migrations
             {
                 Logger.LogDebug("The database table {DbTable} already exists, skipping", "UmbCheckoutConfiguration");
             }
+            return Task.CompletedTask;
         }
 
         [TableName("UmbCheckoutConfiguration")]
