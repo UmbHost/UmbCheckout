@@ -10,3 +10,6 @@
 [submodule "src/UmbCheckout.Stripe.Forms"]
 	path = src/UmbCheckout.Stripe.Forms
 	url = https://github.com/UmbHost/UmbCheckout.Stripe.Forms.git
+[submodule "src/UmbCheckout.StarterKit.Stripe"]
+	path = src/UmbCheckout.StarterKit.Stripe
+	url = https://github.com/patrickdemooij9/UmbCheckout.StarterKit.Stripe.git

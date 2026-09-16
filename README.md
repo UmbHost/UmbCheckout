@@ -52,11 +52,15 @@ There are a number of addon features available with a paid license.
 
 ## Getting started with the TestSite
 
-Run the test site for Umbraco 17: `src/UmbCheckout.TestSite.v17` (uses SQLite).
+The test site is the [UmbCheckout Starter Kit for Stripe](https://github.com/UmbHost/UmbCheckout.StarterKit.Stripe), included as a git submodule in `src/UmbCheckout.StarterKit.Stripe`. When checked out inside this repository it references the UmbCheckout projects directly instead of the NuGet packages.
 
-Install the test site, discard any Git Changes and then Import Everything using uSync
+```bash
+git submodule update --init --recursive
+```
 
-Stripe API keys for testing can be added to `appsettings.Development.json` under `UmbCheckout:Stripe`.
+Run `src/UmbCheckout.StarterKit.Stripe/UmbCheckout.StarterKit.Web` (uses SQLite). The starter kit content is imported by uSync on first boot. The UmbCheckout configuration can't be imported until the UmbCheckout tables exist, so run Import Everything using uSync once the site has been installed.
+
+Stripe API keys for testing can be added to `appsettings.Local.json` (git ignored) under `UmbCheckout:Stripe`.
 
 ## Building the backoffice
 
