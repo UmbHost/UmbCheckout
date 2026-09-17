@@ -1,0 +1,146 @@
+name: Acceptance Tests
+
+on:
+  push:
+    branches: [ main, develop* ]
+  pull_request:
+    branches: [ main, develop* ]
+  workflow_dispatch:
+
+env:
+  # CI-only credentials for a throwaway Umbraco install.
+  UMBRACO_USER_LOGIN: 'acceptance@umbcheckout.local'
+  UMBRACO_USER_PASSWORD: 'UmbCheckoutAcceptance1234!'
+  SITE_URL: 'https://localhost:5001'
+  # Kestrel needs a cert to serve HTTPS. Playwright ignores validation errors, so a throwaway dev cert is enough.
+  DEV_CERT_PASSWORD: 'AcceptanceCert1234!'
+  TESTS_DIR: tests/UmbCheckout.AcceptanceTests
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # The payment providers and the starter kit test site are submodules
+          submodules: 'recursive'
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ env.TESTS_DIR }}/.nvmrc
+          cache: npm
+          cache-dependency-path: ${{ env.TESTS_DIR }}/package-lock.json
+
+      # The backoffice bundles are committed to wwwroot, so unlike SeoToolkit there is no frontend build here.
+      - name: Publish the starter kit
+        run: dotnet publish ./src/UmbCheckout.StarterKit.Stripe/UmbCheckout.StarterKit.Web -c Release -o ./publish
+
+      - name: Verify backoffice bundles were published
+        run: |
+          missing=0
+          for file in UmbCheckout/umbcheckout.js UmbCheckout.Stripe/umbcheckout-stripe.js; do
+            if [ ! -s "./publish/wwwroot/App_Plugins/$file" ]; then
+              echo "::error::Missing backoffice bundle wwwroot/App_Plugins/$file"
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Create a development HTTPS certificate
+        run: dotnet dev-certs https -ep "$GITHUB_WORKSPACE/devcert.pfx" -p "$DEV_CERT_PASSWORD"
+
+      - name: Write the site environment
+        # Shared by both boots below. Written to a file so the Stripe key never ends up on a command line.
+        env:
+          STRIPE_TEST_API_KEY: ${{ secrets.STRIPE_TEST_API_KEY }}
+        run: |
+          {
+            # Umbraco backoffice auth REQUIRES HTTPS: the __Host-umbPkceCode cookie is never sent back over HTTP.
+            echo "export ASPNETCORE_URLS='$SITE_URL'"
+            echo "export Kestrel__Certificates__Default__Path='$GITHUB_WORKSPACE/devcert.pfx'"
+            echo "export Kestrel__Certificates__Default__Password='$DEV_CERT_PASSWORD'"
+            # The starter kit uses SQLite (umbraco/Data in the publish folder), which Umbraco creates itself.
+            echo "export Umbraco__CMS__Unattended__InstallUnattended=true"
+            echo "export Umbraco__CMS__Unattended__UnattendedUserName='Acceptance Tests'"
+            echo "export Umbraco__CMS__Unattended__UnattendedUserEmail='$UMBRACO_USER_LOGIN'"
+            echo "export Umbraco__CMS__Unattended__UnattendedUserPassword='$UMBRACO_USER_PASSWORD'"
+            echo "export Umbraco__CMS__Unattended__PackageMigrationsUnattended=true"
+            echo "export UmbCheckout__Stripe__Test__ApiKey='$STRIPE_TEST_API_KEY'"
+          } > "$RUNNER_TEMP/site.env"
+
+      - name: First boot - install Umbraco and import the starter kit
+        # MUST run from inside the publish folder: ASP.NET Core resolves the content root (wwwroot, Views, uSync,
+        # umbraco/Data) from the working directory, not from the dll location.
+        working-directory: ./publish
+        run: |
+          source "$RUNNER_TEMP/site.env"
+          nohup dotnet ./UmbCheckout.StarterKit.Web.dll > "$GITHUB_WORKSPACE/site.log" 2>&1 &
+          echo $! > "$GITHUB_WORKSPACE/site.pid"
+          echo "Started site, pid $(cat "$GITHUB_WORKSPACE/site.pid")"
+
+      - name: Wait for the first boot
+        run: bash "$TESTS_DIR/scripts/wait-for-site.sh" "$SITE_URL" ./publish site.pid 1
+
+      - name: Second boot - import the UmbCheckout configuration
+        # uSync's first boot import runs before the UmbCheckout package migrations have created their tables,
+        # so the UmbCheckout configuration and the Stripe shipping rate fail to import ("no such table").
+        # Restarting with ImportAtStartup=All imports them now that the tables exist.
+        working-directory: ./publish
+        run: |
+          kill "$(cat "$GITHUB_WORKSPACE/site.pid")"
+          while kill -0 "$(cat "$GITHUB_WORKSPACE/site.pid")" 2>/dev/null; do sleep 1; done
+
+          source "$RUNNER_TEMP/site.env"
+          export uSync__Settings__ImportAtStartup=All
+          nohup dotnet ./UmbCheckout.StarterKit.Web.dll >> "$GITHUB_WORKSPACE/site.log" 2>&1 &
+          echo $! > "$GITHUB_WORKSPACE/site.pid"
+          echo "Restarted site, pid $(cat "$GITHUB_WORKSPACE/site.pid")"
+
+      - name: Wait for the second boot
+        run: bash "$TESTS_DIR/scripts/wait-for-site.sh" "$SITE_URL" ./publish site.pid 2
+
+      - name: Install acceptance test dependencies
+        working-directory: ${{ env.TESTS_DIR }}
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: ${{ env.TESTS_DIR }}
+        run: npx playwright install --with-deps chromium
+
+      - name: Run acceptance tests
+        working-directory: ${{ env.TESTS_DIR }}
+        run: npx playwright test
+        env:
+          URL: ${{ env.SITE_URL }}
+          STORAGE_STATE_PATH: 'playwright/.auth/user.json'
+          # Secrets are not available to pull requests from forks, the Stripe Checkout tests are skipped there
+          STRIPE_CONFIGURED: ${{ secrets.STRIPE_TEST_API_KEY != '' }}
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            ${{ env.TESTS_DIR }}/playwright-report/
+            ${{ env.TESTS_DIR }}/test-results/
+          retention-days: 7
+
+      - name: Upload site and Umbraco logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-logs
+          path: |
+            site.log
+            publish/umbraco/Logs/
+          if-no-files-found: warn
+          retention-days: 7

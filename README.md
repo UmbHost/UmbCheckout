@@ -62,6 +62,10 @@ Run `src/UmbCheckout.StarterKit.Stripe/UmbCheckout.StarterKit.Web` (uses SQLite)
 
 Stripe API keys for testing can be added to `appsettings.Local.json` (git ignored) under `UmbCheckout:Stripe`.
 
+## Acceptance tests
+
+Playwright tests covering the backoffice pages, the basket and Stripe Checkout against the starter kit live in `tests/UmbCheckout.AcceptanceTests`, see its [README](tests/UmbCheckout.AcceptanceTests/README.md).
+
 ## Building the backoffice
 
 The backoffice UI is built with Lit, TypeScript and Vite against `@umbraco-cms/backoffice`. The compiled output is committed to `wwwroot`, so you only need to rebuild it when changing the client source:
