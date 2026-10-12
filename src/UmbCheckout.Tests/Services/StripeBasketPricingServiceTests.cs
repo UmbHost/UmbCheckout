@@ -29,6 +29,15 @@ namespace UmbCheckout.Tests.Services
         private static Basket Basket(params LineItem[] lines) => new() { CurrencyCode = "GBP", LineItems = lines };
 
         [Fact]
+        public async Task A_basket_price_lowered_after_loading_is_charged_at_the_published_price()
+        {
+            // A basket Loaded handler may change what is shown; checkout re-prices every line from published content.
+            var result = await Service().RepriceAsync(Basket(Line(1m, new LineItemPrice(10m, "GBP"))));
+
+            Assert.Equal(10m, result.Basket.LineItems.Single().Price);
+        }
+
+        [Fact]
         public async Task RepriceAsync_LeavesAnUnchangedBasketAlone()
         {
             var result = await Service().RepriceAsync(Basket(Line(10m, new LineItemPrice(10m, "GBP"))));
