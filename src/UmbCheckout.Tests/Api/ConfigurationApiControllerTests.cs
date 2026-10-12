@@ -100,6 +100,20 @@ namespace UmbCheckout.Tests.Api
         }
 
         [Fact]
+        public async Task A_cancelled_save_is_a_400_with_the_handlers_message()
+        {
+            var service = new Mock<IConfigurationService>();
+            service.Setup(s => s.UpdateConfigurationAsync(It.IsAny<UmbCheckoutConfiguration>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+            var result = await CancelledRequest.With(CreateController(service), "Currency changes are frozen")
+                .UpdateConfiguration(new UpdateConfigurationRequestModel { CurrencyCode = "GBP" });
+
+            var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+            Assert.Equal(400, objectResult.StatusCode);
+            Assert.Equal("Currency changes are frozen", Assert.IsType<ProblemDetails>(objectResult.Value).Title);
+        }
+
+        [Fact]
         public async Task Put_UnknownPageKey_Returns400ProblemDetails()
         {
             var service = new Mock<IConfigurationService>();

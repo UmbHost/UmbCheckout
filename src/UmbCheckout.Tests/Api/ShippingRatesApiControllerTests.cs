@@ -94,5 +94,65 @@ namespace UmbCheckout.Tests.Api
 
             Assert.Equal(404, result.StatusCode);
         }
+
+        [Fact]
+        public async Task A_cancelled_create_is_a_400_with_the_handlers_message()
+        {
+            _db.Setup(s => s.GetShippingRateAsync("shr_1", It.IsAny<CancellationToken>())).ReturnsAsync((ShippingRate?)null);
+            _db.Setup(s => s.CreateShippingRateAsync(It.IsAny<ShippingRate>(), It.IsAny<CancellationToken>())).ReturnsAsync((ShippingRate?)null);
+
+            var result = Assert.IsAssignableFrom<ObjectResult>(await CancelledRequest.With(Controller, "Rates are locked")
+                .CreateShippingRate(new CreateShippingRateRequestModel { Name = "A", Value = "shr_1" }));
+
+            Assert.Equal(400, result.StatusCode);
+            Assert.Equal("Rates are locked", Assert.IsType<ProblemDetails>(result.Value).Title);
+        }
+
+        [Fact]
+        public async Task A_cancelled_update_is_a_400_with_the_handlers_message()
+        {
+            var key = Guid.NewGuid();
+            _db.Setup(s => s.GetShippingRateAsync(key, It.IsAny<CancellationToken>())).ReturnsAsync(new ShippingRate { Key = key, Name = "A", Value = "shr_1" });
+            _db.Setup(s => s.UpdateShippingRateAsync(It.IsAny<ShippingRate>(), It.IsAny<CancellationToken>())).ReturnsAsync((ShippingRate?)null);
+
+            var result = Assert.IsAssignableFrom<ObjectResult>(await CancelledRequest.With(Controller, "Rates are locked")
+                .UpdateShippingRate(key, new UpdateShippingRateRequestModel { Name = "B", Value = "shr_1" }));
+
+            Assert.Equal(400, result.StatusCode);
+            Assert.Equal("Rates are locked", Assert.IsType<ProblemDetails>(result.Value).Title);
+        }
+
+        [Fact]
+        public async Task A_cancelled_delete_is_a_400_not_a_404()
+        {
+            _db.Setup(s => s.DeleteShippingRateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+            var result = Assert.IsAssignableFrom<ObjectResult>(await CancelledRequest.With(Controller, "Rates are locked").DeleteShippingRate(Guid.NewGuid()));
+
+            Assert.Equal(400, result.StatusCode);
+            Assert.Equal("Rates are locked", Assert.IsType<ProblemDetails>(result.Value).Title);
+        }
+
+        [Fact]
+        public async Task A_duplicate_without_a_cancel_keeps_todays_response()
+        {
+            _db.Setup(s => s.GetShippingRateAsync("shr_1", It.IsAny<CancellationToken>())).ReturnsAsync(new ShippingRate { Key = Guid.NewGuid(), Value = "shr_1" });
+
+            var result = Assert.IsAssignableFrom<ObjectResult>(await CancelledRequest.With(Controller, null)
+                .CreateShippingRate(new CreateShippingRateRequestModel { Name = "A", Value = "shr_1" }));
+
+            Assert.Equal(400, result.StatusCode);
+            Assert.Equal("A shipping rate with this Stripe ID already exists", Assert.IsType<ProblemDetails>(result.Value).Title);
+        }
+
+        [Fact]
+        public async Task A_failed_delete_without_a_cancel_is_still_a_404()
+        {
+            _db.Setup(s => s.DeleteShippingRateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+            var result = Assert.IsAssignableFrom<ObjectResult>(await CancelledRequest.With(Controller, null).DeleteShippingRate(Guid.NewGuid()));
+
+            Assert.Equal(404, result.StatusCode);
+        }
     }
 }

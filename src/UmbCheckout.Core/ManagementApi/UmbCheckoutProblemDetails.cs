@@ -9,5 +9,8 @@ namespace UmbCheckout.Core.ManagementApi
         public const string StripeNotConfiguredTitle = "Stripe is not configured";
         public const string StripeUnreachableTitle = "Stripe could not be reached";
         public const string InvalidValueTitle = "Invalid value";
+
+        /// <summary>The ProblemDetails type of a save or delete a notification handler cancelled; the title is the handler's message.</summary>
+        public const string CancelledType = "urn:umbcheckout:cancelled";
     }
 }

@@ -44,5 +44,21 @@ namespace UmbCheckout.Tests.Api
             Assert.Equal(400, result.StatusCode);
             Assert.IsType<ProblemDetails>(result.Value);
         }
+
+        [Fact]
+        public async Task A_cancelled_save_is_a_400_with_the_handlers_message()
+        {
+            var service = new Mock<IStripeSettingsService>();
+            service.Setup(s => s.UpdateStripeSettingsAsync(It.IsAny<UmbCheckoutStripeSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+            var result = Assert.IsAssignableFrom<ObjectResult>(await CancelledRequest.With(new StripeSettingsApiController(service.Object), "Live mode needs approval")
+                .UpdateStripeSettings(new UpdateStripeSettingsRequestModel()));
+
+            Assert.Equal(400, result.StatusCode);
+            var problem = Assert.IsType<ProblemDetails>(result.Value);
+            Assert.Equal("Live mode needs approval", problem.Title);
+            // The settings screen has its own failure toast; the type tells it to show the handler's message instead.
+            Assert.Equal(UmbCheckout.Core.ManagementApi.UmbCheckoutProblemDetails.CancelledType, problem.Type);
+        }
     }
 }

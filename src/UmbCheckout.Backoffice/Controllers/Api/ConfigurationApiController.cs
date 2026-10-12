@@ -72,7 +72,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
             var configuration = ConfigurationModelMapper.ToConfiguration(model, successPage, cancelPage);
             var updated = await _configurationService.UpdateConfigurationAsync(configuration, HttpContext?.RequestAborted ?? default);
 
-            return updated ? Ok() : ConfigurationOperationStatusResult(ConfigurationOperationStatus.SaveFailed);
+            return updated ? Ok() : UmbCheckoutCancellation.Result(HttpContext) ?? ConfigurationOperationStatusResult(ConfigurationOperationStatus.SaveFailed);
         }
 
         [HttpGet("application-url")]
