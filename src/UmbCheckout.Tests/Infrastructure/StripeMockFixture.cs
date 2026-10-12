@@ -44,10 +44,18 @@ namespace UmbCheckout.Tests.Infrastructure
     {
         public List<string> RequestUris { get; } = [];
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        /// <summary>URL-decoded form bodies, e.g. "line_items[0][price_data][unit_amount]=500".</summary>
+        public List<string> RequestBodies { get; } = [];
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             RequestUris.Add(Uri.UnescapeDataString(request.RequestUri!.ToString()));
-            return base.SendAsync(request, cancellationToken);
+            if (request.Content != null)
+            {
+                RequestBodies.Add(Uri.UnescapeDataString(await request.Content.ReadAsStringAsync(cancellationToken)));
+            }
+
+            return await base.SendAsync(request, cancellationToken);
         }
     }
 }
