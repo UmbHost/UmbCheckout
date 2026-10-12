@@ -24,7 +24,7 @@ Technical support is included in the first year of a paid licence and can be ren
 
 | FREE | Paid | Hosted |
 |------|--------|--------|
-| [Free forever](https://github.com/UmbHost/UmbCheckout) | [One off payment of £50](https://my.umbhost.net/store/umbraco-packages) | [Included with hosting from £10 per month](https://umbhost.net/hosting/cloud-umbraco-hosting) |
+| [Free forever](https://github.com/UmbHost/UmbCheckout) | [One off payment of £50](https://www.umbpanel.io) | [Included with hosting from £10 per month](https://umbhost.net/hosting/cloud-umbraco-hosting) |
 | Stripe & community payment providers | All official payment providers | All official payment providers | 
 | Unlimited updates | Install on one Umbraco instance | Install on one Umbraco instance |
 | Basket stored in session | Basket stored in session | Basket stored in session |
@@ -33,7 +33,7 @@ Technical support is included in the first year of a paid licence and can be ren
 |        | All addon features | All addon features |
 |        | 12 months support desk access, £50 per year thereafter | Ongoing support desk access |
 
-[Licenses can be purchased via UmbHost Limited here](https://my.umbhost.net/store/umbraco-packages) alternatively the license is included with all hosting packages purchased via UmbHost limited, you can [compare the packages here](https://umbhost.net/hosting/cloud-umbraco-hosting), licenses which with hosting include ongoing technical support for the lifetime of the hosting subscription.
+[Licenses can be purchased via UmbHost Limited here](https://www.umbpanel.io) alternatively the license is included with all hosting packages purchased via UmbHost limited, you can [compare the packages here](https://umbhost.net/hosting/cloud-umbraco-hosting), licenses which with hosting include ongoing technical support for the lifetime of the hosting subscription.
 
 ## Addon features
 
