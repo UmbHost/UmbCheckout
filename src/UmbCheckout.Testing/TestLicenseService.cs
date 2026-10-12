@@ -30,6 +30,7 @@ public static class TestLicenseService
             Options.Create(new WebRoutingSettings()),
             null,
             TimeProvider.System,
+            null,
             null
         ]);
     }
