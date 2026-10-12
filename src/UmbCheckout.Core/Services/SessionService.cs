@@ -41,7 +41,6 @@ namespace UmbCheckout.Core.Services
             _coreScopeProvider = coreScopeProvider;
             _configurationService = configurationService;
             _basketContext = basketContext;
-            licenseService.RunLicenseCheck();
         }
 
         [Obsolete("Use the constructor that takes an IEventMessagesFactory. Scheduled for removal in the next major version.")]

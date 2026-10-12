@@ -46,6 +46,9 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
     /// </summary>
     protected virtual bool ShouldMigrate() => true;
 
+    /// <summary>Asynchronous form of <see cref="ShouldMigrate"/>, for decisions that need I/O (e.g. evaluating the licence at boot).</summary>
+    protected virtual Task<bool> ShouldMigrateAsync(CancellationToken cancellationToken) => Task.FromResult(ShouldMigrate());
+
     public async Task HandleAsync(UmbracoApplicationStartingNotification notification, CancellationToken cancellationToken)
     {
         if (!RuntimeMigrationGate.CanMigrate(_runtimeState))
@@ -67,7 +70,7 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
 
     public async Task MigrateAsync(CancellationToken cancellationToken = default)
     {
-        if (!ShouldMigrate())
+        if (!await ShouldMigrateAsync(cancellationToken))
         {
             return;
         }
