@@ -6,6 +6,9 @@
 	<PropertyGroup>
 		<!-- Possible nulls fail the build -->
 		<WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
+
+		<!-- Obsolete APIs fail the build (Quality Phase 6). Test projects call obsolete members on purpose to keep them working. -->
+		<WarningsAsErrors Condition="!$(MSBuildProjectName.Contains('Test'))">$(WarningsAsErrors);CS0618;CS0612;CS0672</WarningsAsErrors>
 	</PropertyGroup>
 
 	<!--
