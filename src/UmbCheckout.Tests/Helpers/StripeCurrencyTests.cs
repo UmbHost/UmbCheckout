@@ -39,5 +39,44 @@ namespace UmbCheckout.Tests.Helpers
         [Fact]
         public void MinorUnitDigits_DefaultsToTwo()
             => Assert.Equal(2, StripeCurrency.MinorUnitDigits("eur"));
+
+        [Theory]
+        [InlineData("gbp", "1.995", "2.00")]   // half away from zero (commercial rounding)
+        [InlineData("gbp", "1.994", "1.99")]
+        [InlineData("usd", "10", "10")]
+        [InlineData("jpy", "500.5", "501")]    // zero-decimal
+        [InlineData("isk", "5.50", "6")]       // whole units only ("You can't charge fractions of ISK")
+        [InlineData("ugx", "5.49", "5")]
+        [InlineData("kwd", "1.2345", "1.235")] // three-decimal
+        public void Round_RoundsToTheCurrencysChargeableDigits(string currency, string amount, string expected)
+            => Assert.Equal(
+                decimal.Parse(expected, System.Globalization.CultureInfo.InvariantCulture),
+                StripeCurrency.Round(decimal.Parse(amount, System.Globalization.CultureInfo.InvariantCulture), currency));
+
+        [Theory]
+        [InlineData("isk")]
+        [InlineData("ugx")]
+        public void ToMinorUnits_RefusesFractionsOfWholeUnitCurrencies(string currency)
+            // 5.50 ISK would be sent as 550, which Stripe cannot charge.
+            => Assert.Throws<ArgumentException>(() => StripeCurrency.ToMinorUnits(5.50m, currency));
+
+        [Theory]
+        [InlineData("GBP", "gbp")]
+        [InlineData("jpy", "jpy")]
+        public void ApiCode_IsLowercase(string currency, string expected)
+            => Assert.Equal(expected, StripeCurrency.ApiCode(currency));
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("GB")]
+        [InlineData("G1P")]
+        [InlineData("GBPX")]
+        [InlineData("£££")]
+        public void ApiCode_RejectsInvalidCodes(string currency)
+            => Assert.Throws<ArgumentException>(() => StripeCurrency.ApiCode(currency));
+
+        [Fact]
+        public void IsCurrencyCode_RejectsNull()
+            => Assert.False(StripeCurrency.IsCurrencyCode(null));
     }
 }
