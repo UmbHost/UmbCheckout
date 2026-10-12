@@ -7,7 +7,21 @@ import { client as licensingClient } from "../api/licensing/client.gen.js";
 import { whenUmbCheckoutClientReady } from "../core/api-client.js";
 import { UMBCHECKOUT_LICENSE_CONTEXT } from "./license.context-token.js";
 
-export type UmbCheckoutLicenseStatus = { status: string; isValid: boolean; isDevelopmentLicense: boolean; expiryDateTime: string };
+export type UmbCheckoutLicenseAddon = { name: string; status: string; nextDueDate: string };
+
+export type UmbCheckoutLicenseStatus = {
+  status: string;
+  isValid: boolean;
+  isDevelopmentLicense: boolean;
+  regDate: string;
+  expiryDateTime: string;
+  validDomains: string;
+  validPaths: string;
+  addons: Array<UmbCheckoutLicenseAddon>;
+};
+
+/** Result of a re-check request: accepted, or refused with the seconds to wait before retrying. */
+export type UmbCheckoutLicenseCheckResult = { accepted: boolean; retryAfterSeconds?: number | null };
 
 export class UmbCheckoutLicenseContext extends UmbContextBase {
   #status = new UmbObjectState<UmbCheckoutLicenseStatus | undefined>(undefined);
@@ -28,14 +42,20 @@ export class UmbCheckoutLicenseContext extends UmbContextBase {
         status: data.status,
         isValid: data.isValid,
         isDevelopmentLicense: data.isDevelopmentLicense,
+        regDate: data.regDate,
         expiryDateTime: data.expiryDateTime,
+        validDomains: data.validDomains,
+        validPaths: data.validPaths,
+        addons: (data.addons ?? []).map((a) => ({ name: a.name, status: a.status, nextDueDate: a.nextDueDate })),
       });
     }
   }
 
-  async requestCheck() {
-    await tryExecute(this, LicenseService.checkLicence());
-    await this.#load();
+  /** Asks the licence server to re-check, then reloads the status when the check was accepted. */
+  async requestCheck(): Promise<UmbCheckoutLicenseCheckResult | undefined> {
+    const { data } = await tryExecute(this, LicenseService.checkLicence());
+    if (data?.accepted) await this.#load();
+    return data ? { accepted: data.accepted, retryAfterSeconds: data.retryAfterSeconds } : undefined;
   }
 }
 

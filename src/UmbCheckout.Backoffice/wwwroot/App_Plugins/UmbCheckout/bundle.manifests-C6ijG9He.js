@@ -1,28 +1,21 @@
-import { a as i, U as e, b as o } from "./constants-UFch91IU.js";
-import { UmbSubmitWorkspaceAction as n } from "@umbraco-cms/backoffice/workspace";
-const s = [
+import { b as o } from "./constants-EivlDXmp.js";
+import { UmbSubmitWorkspaceAction as i } from "@umbraco-cms/backoffice/workspace";
+const a = [
   {
     name: "UmbCheckout Entrypoint",
     alias: "UmbCheckout.Entrypoint",
     type: "backofficeEntryPoint",
     js: () => import("./entrypoint-0n_KMTGo.js")
   }
-], m = [
+], n = [
   {
     type: "localization",
     alias: "UmbCheckout.Localization.En",
     name: "UmbCheckout English",
-    js: () => import("./en-C6sqOqnp.js"),
+    js: () => import("./en-ZS5XRzzO.js"),
     meta: { culture: "en" }
   }
-], c = [
-  {
-    type: "section",
-    alias: e,
-    name: "UmbCheckout Section",
-    weight: 50,
-    meta: { label: "#umbcheckout_section", pathname: i }
-  },
+], s = [
   {
     type: "menu",
     alias: o,
@@ -34,53 +27,43 @@ const s = [
     alias: "UmbCheckout.SectionSidebarApp.Settings",
     name: "UmbCheckout Settings Sidebar",
     weight: 100,
-    meta: { label: "#umbcheckout_menu_settings", menu: o },
-    conditions: [{ alias: "Umb.Condition.SectionAlias", match: e }]
+    meta: { label: "#umbcheckout_section", menu: o },
+    conditions: [{ alias: "Umb.Condition.SectionAlias", match: "Umb.Section.Settings" }]
   }
-], r = [
+], m = [
   {
     type: "globalContext",
     alias: "UmbCheckout.GlobalContext.License",
     name: "UmbCheckout License Context",
-    api: () => import("./license.context-fIjwuSaP.js")
+    api: () => import("./license.context-BJZfb2-5.js")
   }
-], u = [
-  {
-    type: "dashboard",
-    alias: "UmbCheckout.Dashboard.Status",
-    name: "UmbCheckout Status Dashboard",
-    weight: 10,
-    element: () => import("./status-dashboard.element-BnUdR4xT.js"),
-    meta: { label: "#umbcheckout_status", pathname: "status" },
-    conditions: [{ alias: "Umb.Condition.SectionAlias", match: e }]
-  }
-], a = "umbcheckout-configuration", S = "configuration", C = "UmbCheckout.Repository.Configuration", p = "UmbCheckout.Store.Configuration", t = "UmbCheckout.Workspace.Configuration", U = [
+], e = "umbcheckout-configuration", h = "configuration", c = "UmbCheckout.Repository.Configuration", r = "UmbCheckout.Store.Configuration", t = "UmbCheckout.Workspace.Configuration", u = [
   {
     type: "repository",
-    alias: C,
+    alias: c,
     name: "UmbCheckout Configuration Repository",
-    api: () => import("./configuration.repository-BKpP-ga5.js")
+    api: () => import("./configuration.repository-X5L2Mra9.js")
   },
   {
     type: "store",
-    alias: p,
+    alias: r,
     name: "UmbCheckout Configuration Store",
     api: () => import("./configuration.store-BlabXKVF.js")
   }
-], b = [
+], C = [
   {
     type: "workspace",
     kind: "routable",
     alias: t,
     name: "UmbCheckout Configuration Workspace",
-    api: () => import("./configuration-workspace.context-A-edM_DJ.js"),
-    meta: { entityType: a }
+    api: () => import("./configuration-workspace.context-DFnUPXqh.js"),
+    meta: { entityType: e }
   },
   {
     type: "workspaceView",
     alias: "UmbCheckout.WorkspaceView.Configuration",
     name: "UmbCheckout Configuration View",
-    element: () => import("./configuration-workspace-view.element-BeT_lNG1.js"),
+    element: () => import("./configuration-workspace-view.element-CeAoUs8j.js"),
     weight: 100,
     meta: { label: "#umbcheckout_configuration", pathname: "settings", icon: "icon-settings" },
     conditions: [{ alias: "Umb.Condition.WorkspaceAlias", match: t }]
@@ -90,11 +73,11 @@ const s = [
     kind: "default",
     alias: "UmbCheckout.WorkspaceAction.Configuration.Save",
     name: "Save UmbCheckout Configuration",
-    api: n,
+    api: i,
     meta: { look: "primary", color: "positive", label: "#buttons_save" },
     conditions: [{ alias: "Umb.Condition.WorkspaceAlias", match: t }]
   }
-], l = [
+], p = [
   {
     type: "menuItem",
     alias: "UmbCheckout.MenuItem.Configuration",
@@ -103,11 +86,11 @@ const s = [
     meta: {
       label: "#umbcheckout_configuration",
       icon: "icon-settings",
-      entityType: a,
+      entityType: e,
       menus: [o]
     }
   }
-], h = [...U, ...b, ...l], k = [
+], U = [...u, ...C, ...p], b = [
   {
     type: "propertyEditorUi",
     alias: "UmbCheckout.PropertyEditorUi.MetaData",
@@ -121,12 +104,12 @@ const s = [
       supportsReadOnly: !0
     }
   }
-], y = [...s, ...m, ...c, ...r, ...u, ...h, ...k];
+], f = [...a, ...n, ...s, ...m, ...U, ...b];
 export {
-  S as U,
-  a,
-  C as b,
+  h as U,
+  e as a,
+  c as b,
   t as c,
-  y as m
+  f as m
 };
-//# sourceMappingURL=bundle.manifests-CZ-eisen.js.map
+//# sourceMappingURL=bundle.manifests-C6ijG9He.js.map

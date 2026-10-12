@@ -23,6 +23,8 @@ export type LicenseStatusResponseModel = {
     isDevelopmentLicense: boolean;
     expiryDateTime: string;
     validDomains: string;
+    regDate: string;
+    validPaths: string;
     addons: Array<LicenseAddonResponseModel>;
 };
 
