@@ -63,6 +63,30 @@ public sealed class StripeMigrationTests(SqlServerContainerFixture sqlServer)
 
     [Theory]
     [MemberData(nameof(Providers))]
+    public async Task Legacy_shipping_rates_without_a_key_get_their_own_key_so_the_backoffice_can_reach_them(TestProvider provider)
+    {
+        await using var database = await NewDatabase(provider, sqlServer);
+        await database.ExecuteSqlFileAsync(Fixture(provider));
+        await database.ExecuteSqlAsync("INSERT INTO UmbCheckoutStripeShipping (Name, Value, \"Key\") VALUES ('Old', 'shr_old', NULL)");
+        await database.ExecuteSqlAsync("INSERT INTO UmbCheckoutStripeSettings (\"Key\", UseLiveApiDetails, ShippingAllowedCountries, CollectPhoneNumber, CollectPromotionalConsent, AllowPromotionalCodes, EnableAbandonedCartRecovery, AllowPromotionalCodesOnRecoveredCarts) VALUES (NULL, 0, NULL, 0, 0, 0, 0, 0)");
+        if (provider != TestProvider.SqlServer)
+        {
+            // SQLite allows several NULLs under a unique index; SQL Server allows one.
+            await database.ExecuteSqlAsync("INSERT INTO UmbCheckoutStripeShipping (Name, Value, \"Key\") VALUES ('Older', 'shr_older', NULL)");
+        }
+
+        await Migrator(database, legacy: true, new RecordingRunner()).MigrateAsync();
+
+        await using var db = database.CreateContext();
+        var keys = await db.ShippingRates.Select(x => x.Key).ToListAsync();
+        Assert.All(keys, key => Assert.True(key is { } k && k != Guid.Empty));
+        Assert.Equal(keys.Count, keys.Distinct().Count());
+        Assert.NotNull(await db.ShippingRates.SingleOrDefaultAsync(x => x.Key == keys[0]));
+        Assert.NotNull((await db.StripeSettings.SingleAsync()).Key);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
     public async Task Legacy_install_runs_both_plans_adopts_once_and_keeps_rows_and_unique_indexes(TestProvider provider)
     {
         await using var database = await NewDatabase(provider, sqlServer);
@@ -83,7 +107,7 @@ public sealed class StripeMigrationTests(SqlServerContainerFixture sqlServer)
         Assert.Equal("GB", settings.ShippingAllowedCountries);
         Assert.True(settings.CollectPhoneNumber);
         var rates = await db.ShippingRates.OrderBy(x => x.Id).ToListAsync();
-        Assert.Null(rates[0].Key);
+        Assert.NotNull(rates[0].Key); // FillMissingKeys gave the legacy row a key
         Assert.Equal(Guid.Parse("6F1D2C3B-0000-4000-8000-000000000001"), rates[1].Key);
 
         db.ShippingRates.Add(new UmbCheckout.Stripe.Pocos.UmbCheckoutStripeShipping { Name = "Dup", Value = "shr_1" });
