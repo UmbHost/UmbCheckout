@@ -5,6 +5,8 @@ using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared;
 using UmbCheckout.Shared.Extensions;
 using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.PublishedCache;
+using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
 
@@ -18,12 +20,47 @@ namespace UmbCheckout.Core.Services
         private readonly IConfigurationService _configurationService;
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
         private readonly ILogger<CurrencyService> _logger;
+        private readonly IDocumentNavigationQueryService _navigation;
+        private readonly IPublishedContentCache _contentCache;
 
-        public CurrencyService(IConfigurationService configurationService, ILogger<CurrencyService> logger, IUmbracoContextAccessor umbracoContextAccessor)
+        public CurrencyService(IConfigurationService configurationService, ILogger<CurrencyService> logger, IUmbracoContextAccessor umbracoContextAccessor, IDocumentNavigationQueryService navigation, IPublishedContentCache contentCache)
         {
             _configurationService = configurationService;
             _logger = logger;
             _umbracoContextAccessor = umbracoContextAccessor;
+            _navigation = navigation;
+            _contentCache = contentCache;
+        }
+
+        /// <inheritdoc />
+        public async Task<string?> GetCurrencyForContentAsync(IPublishedContent content)
+        {
+            var root = await GetRootAsync(content);
+            var siteCurrency = root?.GetProperty(Consts.PropertyAlias.CurrencyCode)?.GetValue() as string;
+            if (!string.IsNullOrWhiteSpace(siteCurrency))
+            {
+                return siteCurrency.Trim().ToUpperInvariant();
+            }
+
+            var configuration = await _configurationService.GetConfiguration();
+            if (!string.IsNullOrWhiteSpace(configuration?.CurrencyCode))
+            {
+                return configuration.CurrencyCode.Trim().ToUpperInvariant();
+            }
+
+            _logger.LogError("No currency is configured for content {ContentKey}: set {PropertyAlias} on its site root or the currency in UmbCheckout Configuration", content.Key, Consts.PropertyAlias.CurrencyCode);
+            return null;
+        }
+
+        private async Task<IPublishedContent?> GetRootAsync(IPublishedContent content)
+        {
+            var key = content.Key;
+            while (_navigation.TryGetParentKey(key, out var parentKey) && parentKey.HasValue)
+            {
+                key = parentKey.Value;
+            }
+
+            return key == content.Key ? content : await _contentCache.GetByIdAsync(key);
         }
 
         /// <summary>
