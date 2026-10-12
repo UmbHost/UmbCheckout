@@ -15,7 +15,7 @@ public class MetaDataValueConverter : PropertyValueConverterBase
         => propertyType.EditorUiAlias.InvariantEquals("UmbCheckout.PropertyEditorUi.MetaData");
 
     public override Type GetPropertyValueType(IPublishedPropertyType propertyType)
-        => typeof(IEnumerable<string>);
+        => typeof(Dictionary<string, string>);
 
     public override PropertyCacheLevel GetPropertyCacheLevel(IPublishedPropertyType propertyType)
         => PropertyCacheLevel.Element;
@@ -34,7 +34,7 @@ public class MetaDataValueConverter : PropertyValueConverterBase
         {
             foreach (var metaDataItem in values)
             {
-                metaDataDictionary.Add(metaDataItem.Name, metaDataItem.Value);
+                metaDataDictionary[metaDataItem.Name] = metaDataItem.Value;
             }
         }
         return metaDataDictionary;

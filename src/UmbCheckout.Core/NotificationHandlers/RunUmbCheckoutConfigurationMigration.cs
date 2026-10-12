@@ -1,4 +1,4 @@
-﻿using UmbCheckout.Core.Migrations;
+using UmbCheckout.Core.Migrations;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Migrations;
@@ -42,6 +42,10 @@ namespace UmbCheckout.Core.NotificationHandlers
                 .To<AddUmbCheckoutKey>("a877baa5-644d-4367-a1c0-5dccda876f79");
             migrationPlan.From("a877baa5-644d-4367-a1c0-5dccda876f79")
                 .To<AddUmbCheckoutCurrencyCode>("943bb809-80f8-4435-8c94-c6717e54a808");
+            migrationPlan.From("943bb809-80f8-4435-8c94-c6717e54a808")
+                .To<AddUmbCheckoutSectionAccess>("7b1c6f5e-2d4a-4c8e-9f3a-1e5d6c7b8a90");
+            migrationPlan.From("7b1c6f5e-2d4a-4c8e-9f3a-1e5d6c7b8a90")
+                .To<MigrateMetaDataToPlainJson>("4e8a2c1d-6b5f-4a3e-8d7c-9f0e1a2b3c4d");
 
             var upgrader = new Upgrader(migrationPlan);
             upgrader.Execute(
