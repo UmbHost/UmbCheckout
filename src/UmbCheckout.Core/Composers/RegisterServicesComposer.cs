@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.NotificationHandlers;
 using UmbCheckout.Core.Services;
@@ -27,10 +27,8 @@ namespace UmbCheckout.Core.Composers
             builder.Services.AddTransient<ISessionService, SessionService>();
             builder.Services.AddTransient<IBasketService, BasketService>();
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
-            builder.Services.AddTransient<IDatabaseService, DatabaseService>();
             builder.Services.AddTransient<ICurrencyService, CurrencyService>();
             builder.Services.AddTransient<IBasketContext, UmbracoBasketContext>();
-            builder.Services.AddTransient<IDatabaseMapperService, DatabaseMapperService>();
         }
     }
 }

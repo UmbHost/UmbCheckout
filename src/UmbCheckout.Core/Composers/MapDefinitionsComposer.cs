@@ -1,4 +1,4 @@
-﻿using UmbCheckout.Core.Pocos;
+using UmbCheckout.Core.Pocos;
 using UmbCheckout.Shared.Models;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
@@ -26,8 +26,6 @@ namespace UmbCheckout.Core.Composers
         {
             mapper.Define<UmbCheckoutConfiguration, Shared.Models.UmbCheckoutConfiguration>((_, _) => new Shared.Models.UmbCheckoutConfiguration(), Map);
             mapper.Define<Shared.Models.UmbCheckoutConfiguration, UmbCheckoutConfiguration>((_, _) => new UmbCheckoutConfiguration(), Map);
-            mapper.Define<UmbCheckoutBasket, Basket>((_, _) => new Basket(), Map);
-            mapper.Define<Basket, UmbCheckoutBasket>((_, _) => new UmbCheckoutBasket(), Map);
         }
 
         private static void Map(UmbCheckoutConfiguration source, Shared.Models.UmbCheckoutConfiguration target, MapperContext context)
@@ -61,21 +59,6 @@ namespace UmbCheckout.Core.Composers
             target.StoreBasketInDatabase = source.StoreBasketInDatabase;
             target.EnableShipping = source.EnableShipping;
             target.CurrencyCode = source.CurrencyCode;
-        }
-
-        private static void Map(UmbCheckoutBasket source, Basket target, MapperContext context)
-        {
-            target.LineItems = JsonSerializer.Deserialize<IEnumerable<LineItem>>(source.LineItems) ?? Array.Empty<LineItem>();
-            if (source.MetaData != null)
-                target.MetaData = JsonSerializer.Deserialize<Dictionary<string, string>>(source.MetaData) ??
-                                  new Dictionary<string, string>();
-        }
-
-        private static void Map(Basket source, UmbCheckoutBasket target, MapperContext context)
-        {
-            target.LineItems = JsonSerializer.Serialize(source.LineItems);
-            target.MetaData = JsonSerializer.Serialize(source.MetaData);
-            target.BasketTotal = source.Total;
         }
     }
 }
