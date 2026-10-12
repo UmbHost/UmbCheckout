@@ -29,6 +29,7 @@ namespace UmbCheckout.Core.Composers
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
             builder.Services.AddTransient<IDatabaseService, DatabaseService>();
             builder.Services.AddTransient<ICurrencyService, CurrencyService>();
+            builder.Services.AddTransient<IBasketContext, UmbracoBasketContext>();
             builder.Services.AddTransient<IDatabaseMapperService, DatabaseMapperService>();
         }
     }
