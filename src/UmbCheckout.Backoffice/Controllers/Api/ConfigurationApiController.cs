@@ -69,7 +69,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                 return ConfigurationOperationStatusResult(ConfigurationOperationStatus.PageNotFound);
             }
 
-            var configuration = ConfigurationModelMapper.ToConfiguration(model, _isLicensed(), successPage, cancelPage);
+            var configuration = ConfigurationModelMapper.ToConfiguration(model, successPage, cancelPage);
             var updated = await _configurationService.UpdateConfigurationAsync(configuration, HttpContext?.RequestAborted ?? default);
 
             return updated ? Ok() : ConfigurationOperationStatusResult(ConfigurationOperationStatus.SaveFailed);

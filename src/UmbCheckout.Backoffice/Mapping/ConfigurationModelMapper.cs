@@ -23,33 +23,18 @@ namespace UmbCheckout.Backoffice.Mapping
             IsLicensed = isLicensed
         };
 
-        public static UmbCheckoutConfiguration ToConfiguration(UpdateConfigurationRequestModel model, bool isLicensed, IEnumerable<MultiUrlPicker> successPage, IEnumerable<MultiUrlPicker> cancelPage)
+        // Basket storage is a licensed add-on feature; the add-on applies its licence rules when this is saved
+        public static UmbCheckoutConfiguration ToConfiguration(UpdateConfigurationRequestModel model, IEnumerable<MultiUrlPicker> successPage, IEnumerable<MultiUrlPicker> cancelPage) => new()
         {
-            var storeBasketInCookie = model.StoreBasketInCookie;
-            var storeBasketInDatabase = model.StoreBasketInDatabase;
-
-            if (!isLicensed)
-            {
-                storeBasketInCookie = false;
-                storeBasketInDatabase = false;
-            }
-            else if (storeBasketInDatabase)
-            {
-                storeBasketInCookie = true;
-            }
-
-            return new UmbCheckoutConfiguration
-            {
-                CurrencyCode = model.CurrencyCode.ToUpperInvariant(),
-                SuccessPageUrl = successPage,
-                CancelPageUrl = cancelPage,
-                EnableShipping = model.EnableShipping,
-                StoreBasketInCookie = storeBasketInCookie,
-                BasketInCookieExpiry = model.BasketInCookieExpiry,
-                StoreBasketInDatabase = storeBasketInDatabase,
-                BasketInDatabaseExpiry = model.BasketInDatabaseExpiry
-            };
-        }
+            CurrencyCode = model.CurrencyCode.ToUpperInvariant(),
+            SuccessPageUrl = successPage,
+            CancelPageUrl = cancelPage,
+            EnableShipping = model.EnableShipping,
+            StoreBasketInCookie = model.StoreBasketInCookie,
+            BasketInCookieExpiry = model.BasketInCookieExpiry,
+            StoreBasketInDatabase = model.StoreBasketInDatabase,
+            BasketInDatabaseExpiry = model.BasketInDatabaseExpiry
+        };
 
         public static MultiUrlPicker ToPicker(Guid key, string name, string url, bool published) => new()
         {

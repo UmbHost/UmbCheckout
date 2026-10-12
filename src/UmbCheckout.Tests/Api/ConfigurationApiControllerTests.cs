@@ -60,7 +60,7 @@ namespace UmbCheckout.Tests.Api
         }
 
         [Fact]
-        public async Task Put_Unlicensed_ForcesBasketStorageOff()
+        public async Task Put_PassesBasketStorageThrough_TheAddOnAppliesTheLicence()
         {
             var service = new Mock<IConfigurationService>();
             UmbCheckoutConfiguration? saved = null;
@@ -79,30 +79,11 @@ namespace UmbCheckout.Tests.Api
             Assert.IsType<OkResult>(result);
             Assert.NotNull(saved);
             Assert.Equal("GBP", saved!.CurrencyCode);
-            Assert.False(saved.StoreBasketInCookie);
-            Assert.False(saved.StoreBasketInDatabase);
+            Assert.True(saved.StoreBasketInCookie);
+            Assert.True(saved.StoreBasketInDatabase);
             var picker = Assert.Single(saved.SuccessPageUrl);
             Assert.Equal($"umb://document/{SuccessKey:N}", picker.Udi);
             Assert.Equal("/basket/", picker.Url);
-        }
-
-        [Fact]
-        public async Task Put_LicensedDatabaseStorage_ForcesCookieOn()
-        {
-            var service = new Mock<IConfigurationService>();
-            UmbCheckoutConfiguration? saved = null;
-            service.Setup(s => s.UpdateConfigurationAsync(It.IsAny<UmbCheckoutConfiguration>(), It.IsAny<CancellationToken>()))
-                .Callback<UmbCheckoutConfiguration, CancellationToken>((c, _) => saved = c)
-                .ReturnsAsync(true);
-
-            await CreateController(service).UpdateConfiguration(new UpdateConfigurationRequestModel
-            {
-                CurrencyCode = "USD",
-                StoreBasketInCookie = false,
-                StoreBasketInDatabase = true
-            });
-
-            Assert.True(saved!.StoreBasketInCookie);
         }
 
         [Fact]

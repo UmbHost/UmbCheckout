@@ -2291,6 +2291,32 @@
           "ncrontab": "3.4.0"
         }
       },
+      "uSync.BackOffice": {
+        "type": "Transitive",
+        "resolved": "17.0.0",
+        "contentHash": "xjPmpo/1pnl3sFzH3GuEFO1cMCCz28ijVuqtHsHPxu3/Hjll7OrT1yOgwPbTZS3ruWSKSX3JFEbvEhFwOTwFxQ==",
+        "dependencies": {
+          "uSync.Community.Contrib": "17.0.0",
+          "uSync.Core": "17.0.0"
+        }
+      },
+      "uSync.Community.Contrib": {
+        "type": "Transitive",
+        "resolved": "17.0.0",
+        "contentHash": "DsibMI8Y+hBnPvtHmTb3U4tKylAi0rdmb5EsMTxUMq8If6jCEjlhRFO78IAQNq71CiZ9x8LK2BavqbFAs00IKg==",
+        "dependencies": {
+          "uSync.Core": "17.0.0"
+        }
+      },
+      "uSync.Core": {
+        "type": "Transitive",
+        "resolved": "17.0.0",
+        "contentHash": "SF7W62C4ZVhlbSmfdXt8jmzfDnO03AnCtQlj7OFFQRGcLLizdgW70tdL0bDwxm8/WUpn+HYslgHBIwA1IKno1A==",
+        "dependencies": {
+          "Umbraco.Cms.Api.Management": "17.0.0",
+          "Umbraco.Cms.Web.Website": "17.0.0"
+        }
+      },
       "xunit.abstractions": {
         "type": "Transitive",
         "resolved": "2.0.3",
@@ -2396,6 +2422,16 @@
           "UmbCheckout.Shared": "[1.0.0, )",
           "UmbHost.Licensing": "[1.3.0, )",
           "xunit.extensibility.core": "[2.4.2, )"
+        }
+      },
+      "umbcheckout.usync": {
+        "type": "Project",
+        "dependencies": {
+          "UmbCheckout.Core": "[1.0.0, )",
+          "UmbCheckout.Shared": "[1.0.0, )",
+          "Umbraco.Cms.Core": "[17.6.0, 18.0.0)",
+          "uSync.BackOffice": "[17.0.0, 18.0.0)",
+          "uSync.Core": "[17.0.0, 18.0.0)"
         }
       },
       "umbhost.licensing": {

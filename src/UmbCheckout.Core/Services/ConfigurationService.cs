@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.Persistence;
 using UmbCheckout.Shared.Notifications.Configuration;
-using UmbHost.Licensing.Models;
 using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Mapping;
 using Umbraco.Cms.Persistence.EFCore.Scoping;
@@ -35,24 +34,12 @@ namespace UmbCheckout.Core.Services
             var entity = await scope.ExecuteWithContextAsync(db => db.Configurations.AsNoTracking().SingleOrDefaultAsync(cancellationToken));
             scope.Complete();
 
-            if (entity != null && !UmbCheckoutSettings.IsLicensed)
-            {
-                entity.StoreBasketInCookie = false;
-                entity.StoreBasketInDatabase = false;
-            }
-
             return _mapper.Map<UmbCheckoutConfiguration, Shared.Models.UmbCheckoutConfiguration>(entity);
         }
 
         /// <inheritdoc />
         public async Task<bool> UpdateConfigurationAsync(Shared.Models.UmbCheckoutConfiguration configuration, CancellationToken cancellationToken = default)
         {
-            if (!UmbCheckoutSettings.IsLicensed)
-            {
-                configuration.StoreBasketInDatabase = false;
-                configuration.StoreBasketInCookie = false;
-            }
-
             var incoming = _mapper.Map<Shared.Models.UmbCheckoutConfiguration, UmbCheckoutConfiguration>(configuration);
             if (incoming == null)
             {

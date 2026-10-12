@@ -68,8 +68,9 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
 
     [Theory]
     [MemberData(nameof(Providers))]
-    public async Task Unlicensed_sites_never_store_baskets(TestProvider provider)
+    public async Task Basket_storage_options_are_stored_as_given(TestProvider provider)
     {
+        // Whether they apply is the licensed add-on's rule, not the open service's
         var (database, service) = await Arrange(provider);
         await using var _ = database;
         using var unlicensed = LicenseState.Set(false);
@@ -77,11 +78,11 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), StoreBasketInCookie = true, StoreBasketInDatabase = true });
 
         var saved = await service.GetConfigurationAsync();
-        Assert.False(saved!.StoreBasketInCookie);
-        Assert.False(saved.StoreBasketInDatabase);
+        Assert.True(saved!.StoreBasketInCookie);
+        Assert.True(saved.StoreBasketInDatabase);
         await using var db = database.CreateContext();
         var row = await db.Configurations.SingleAsync();
-        Assert.False(row.StoreBasketInCookie);
-        Assert.False(row.StoreBasketInDatabase);
+        Assert.True(row.StoreBasketInCookie);
+        Assert.True(row.StoreBasketInDatabase);
     }
 }
