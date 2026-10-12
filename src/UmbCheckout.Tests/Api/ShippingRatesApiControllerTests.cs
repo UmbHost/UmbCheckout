@@ -59,6 +59,8 @@ namespace UmbCheckout.Tests.Api
             var result = Assert.IsAssignableFrom<ObjectResult>(await Controller.CreateShippingRate(new CreateShippingRateRequestModel { Name = "Dup", Value = "shr_1" }));
 
             Assert.Equal(400, result.StatusCode);
+            // The back-office notification shows the ProblemDetails title, so it must carry the user-facing message.
+            Assert.Equal("A shipping rate with this Stripe ID already exists", Assert.IsType<ProblemDetails>(result.Value).Title);
             _db.Verify(s => s.CreateShippingRate(It.IsAny<ShippingRate>()), Times.Never);
         }
 
