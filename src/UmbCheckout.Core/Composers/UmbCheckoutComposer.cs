@@ -20,10 +20,11 @@ namespace UmbCheckout.Core.Composers
                 options.Cookie.IsEssential = true;
             });
 
-            // Sites don't need app.UseSession() in Program.cs: the session middleware joins Umbraco's pipeline here.
+            // Sites don't need app.UseSession() in Program.cs: the session middleware joins Umbraco's pipeline here, before
+            // routing, because the success handler clears the paid basket while Umbraco routes the request.
             builder.Services.Configure<UmbracoPipelineOptions>(options => options.AddFilter(new UmbracoPipelineFilter("UmbCheckout")
             {
-                PostRouting = app => app.UseUmbCheckoutSession(),
+                PreRouting = app => app.UseUmbCheckoutSession(),
             }));
         }
     }

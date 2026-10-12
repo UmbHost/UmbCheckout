@@ -118,6 +118,15 @@ namespace UmbCheckout.Tests.Services
             _stripe.VerifyNoOtherCalls();
         }
 
+        [Fact]
+        public async Task A_failure_clearing_the_basket_is_logged_and_the_page_still_renders()
+        {
+            // e.g. the session isn't available: the customer has paid and must still see the success page.
+            _sessions.Setup(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>())).ThrowsAsync(new InvalidOperationException("Session has not been configured"));
+
+            await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = BasketMetadata() }); // no exception escapes
+        }
+
         [Theory]
         [InlineData("paid")]
         [InlineData("no_payment_required")]
