@@ -22,6 +22,16 @@ namespace UmbCheckout.Tests.Services
         private readonly Mock<ISessionService> _sessions = new();
         private readonly Mock<IUmbCheckoutSuccessPageMatcher> _matcher = new();
 
+        public StripeResponseNotificationHandlerTests() => CurrentBasketCheckedOutAs("cs_test_1");
+
+        /// <summary>The visitor's current en-GB GBP basket, recorded at checkout against a Stripe checkout session (or none).</summary>
+        private void CurrentBasketCheckedOutAs(string? checkoutSessionId)
+            => _sessions.Setup(s => s.Get("en-GB", "GBP")).ReturnsAsync(new UmbCheckout.Shared.Models.UmbCheckoutSession
+            {
+                SiteRootCulture = "en-GB",
+                Basket = new UmbCheckout.Shared.Models.Basket { SiteRootCulture = "en-GB", CurrencyCode = "GBP", CheckoutSessionId = checkoutSessionId }
+            });
+
         private Task Request(string url, bool isSuccessPage = true)
         {
             _matcher.Setup(m => m.IsSuccessPageAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(isSuccessPage);
@@ -48,12 +58,25 @@ namespace UmbCheckout.Tests.Services
         }
 
         [Fact]
-        public async Task ASessionWithoutBasketMetadataClearsItsCurrencyForTheRequest()
+        public async Task A_session_without_basket_metadata_keeps_the_basket()
         {
-            // Checkout sessions created before the upgrade carry no basket metadata.
+            // Checkout sessions created before the upgrade carry no basket metadata, so which basket they paid for is unknown.
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = new Dictionary<string, string>() });
 
-            _sessions.Verify(s => s.Clear("GBP"), Times.Once);
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>()), Times.Never);
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData("cs_test_other")] // a basket checked out again later, or a link someone else shared
+        [InlineData(null)]            // a basket never sent to checkout, e.g. one started after paying
+        public async Task A_basket_that_is_not_the_paid_one_is_kept(string? currentBasketCheckoutSessionId)
+        {
+            CurrentBasketCheckedOutAs(currentBasketCheckoutSessionId);
+
+            await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = BasketMetadata() });
+
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>()), Times.Never);
         }
 
         [Fact]
