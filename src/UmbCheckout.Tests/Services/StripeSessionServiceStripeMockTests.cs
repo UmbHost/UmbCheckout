@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using Stripe.Checkout;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Stripe.Interfaces;
@@ -28,7 +29,7 @@ namespace UmbCheckout.Tests.Services
 
         public StripeSessionServiceStripeMockTests(StripeMockFixture fixture) => _fixture = fixture;
 
-        private StripeSessionService Service(Guid productKey)
+        private StripeSessionService Service(Guid productKey, bool enableShipping = false)
         {
             var product = new Mock<IPublishedContent> { DefaultValue = DefaultValue.Mock };
             product.Setup(p => p.Key).Returns(productKey);
@@ -51,9 +52,9 @@ namespace UmbCheckout.Tests.Services
                 new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object,
                 Mock.Of<IEventAggregator>(),
                 NullLogger<StripeSessionService>.Instance,
-                Mock.Of<IConfigurationService>(),
+                Mock.Of<IConfigurationService>(c => c.GetConfiguration() == Task.FromResult<UmbCheckoutConfiguration?>(enableShipping ? new UmbCheckoutConfiguration { EnableShipping = true } : null)),
                 Mock.Of<IHttpContextAccessor>(),
-                Mock.Of<IStripeShippingOptionsService>(),
+                Mock.Of<IStripeShippingOptionsService>(s => s.GetShippingOptions(It.IsAny<Basket>()) == Task.FromResult(new List<SessionShippingOptionOptions>())),
                 licenseService,
                 stripeSettingsService.Object,
                 factory.Object);
@@ -76,6 +77,18 @@ namespace UmbCheckout.Tests.Services
             // Which basket this session pays for, so the success page clears it.
             Assert.Contains("&metadata[umbcheckout_culture]=en-GB", body);
             Assert.Contains("&metadata[umbcheckout_currency]=GBP", body);
+        }
+
+        [Fact]
+        public async Task CreateSessionAsync_WithNoShippingRateForTheBasketsCurrency_SendsNoShippingOptions()
+        {
+            // Shipping is on but no configured rate charges in this basket's currency: checkout must still go ahead.
+            var key = Guid.NewGuid();
+            var basket = new Basket { SiteRootCulture = "en-GB", CurrencyCode = "GBP", LineItems = [new LineItem { Key = key, Name = "Ping Pong Ball", Description = "Table tennis ball", Price = 2m, CurrencyCode = "GBP", Quantity = 1 }] };
+
+            await Service(key, enableShipping: true).CreateSessionAsync(basket);
+
+            Assert.DoesNotContain("shipping_options", Assert.Single(_handler.RequestBodies));
         }
     }
 }
