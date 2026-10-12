@@ -12,7 +12,7 @@ const s = [
     type: "localization",
     alias: "UmbCheckout.Localization.En",
     name: "UmbCheckout English",
-    js: () => import("./en-VaH6GnQm.js"),
+    js: () => import("./en-C6sqOqnp.js"),
     meta: { culture: "en" }
   }
 ], c = [
@@ -37,14 +37,14 @@ const s = [
     meta: { label: "#umbcheckout_menu_settings", menu: o },
     conditions: [{ alias: "Umb.Condition.SectionAlias", match: e }]
   }
-], u = [
+], r = [
   {
     type: "globalContext",
     alias: "UmbCheckout.GlobalContext.License",
     name: "UmbCheckout License Context",
     api: () => import("./license.context-fIjwuSaP.js")
   }
-], C = [
+], u = [
   {
     type: "dashboard",
     alias: "UmbCheckout.Dashboard.Status",
@@ -54,26 +54,26 @@ const s = [
     meta: { label: "#umbcheckout_status", pathname: "status" },
     conditions: [{ alias: "Umb.Condition.SectionAlias", match: e }]
   }
-], a = "umbcheckout-configuration", g = "configuration", r = "UmbCheckout.Repository.Configuration", b = "UmbCheckout.Store.Configuration", t = "UmbCheckout.Workspace.Configuration", p = [
+], a = "umbcheckout-configuration", S = "configuration", C = "UmbCheckout.Repository.Configuration", p = "UmbCheckout.Store.Configuration", t = "UmbCheckout.Workspace.Configuration", U = [
   {
     type: "repository",
-    alias: r,
+    alias: C,
     name: "UmbCheckout Configuration Repository",
-    api: () => import("./configuration.repository-DpjqzrJW.js")
+    api: () => import("./configuration.repository-BRryeB56.js")
   },
   {
     type: "store",
-    alias: b,
+    alias: p,
     name: "UmbCheckout Configuration Store",
     api: () => import("./configuration.store-BlabXKVF.js")
   }
-], U = [
+], b = [
   {
     type: "workspace",
     kind: "routable",
     alias: t,
     name: "UmbCheckout Configuration Workspace",
-    api: () => import("./configuration-workspace.context-ByZ6wxHU.js"),
+    api: () => import("./configuration-workspace.context-D_vcFVF9.js"),
     meta: { entityType: a }
   },
   {
@@ -107,12 +107,26 @@ const s = [
       menus: [o]
     }
   }
-], h = [...p, ...U, ...l], S = [...s, ...m, ...c, ...u, ...C, ...h];
+], h = [...U, ...b, ...l], k = [
+  {
+    type: "propertyEditorUi",
+    alias: "UmbCheckout.PropertyEditorUi.MetaData",
+    name: "UmbCheckout MetaData",
+    element: () => import("./metadata-editor.element-DNQL9cYi.js"),
+    meta: {
+      label: "UmbCheckout MetaData",
+      icon: "icon-ordered-list",
+      group: "eCommerce",
+      propertyEditorSchemaAlias: "Umbraco.Plain.Json",
+      supportsReadOnly: !0
+    }
+  }
+], y = [...s, ...m, ...c, ...r, ...u, ...h, ...k];
 export {
-  g as U,
+  S as U,
   a,
-  r as b,
+  C as b,
   t as c,
-  S as m
+  y as m
 };
-//# sourceMappingURL=bundle.manifests-Du2cY-aD.js.map
+//# sourceMappingURL=bundle.manifests-yQeLHgja.js.map

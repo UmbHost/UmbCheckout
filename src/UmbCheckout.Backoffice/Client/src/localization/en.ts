@@ -42,5 +42,7 @@ export default {
     menu_settings: "Settings",
     status: "Status",
     application_url_missing: "The Umbraco application URL is not set. Set Umbraco:CMS:WebRouting:UmbracoApplicationUrl so checkout URLs are correct.",
+    metadata_name: "Name",
+    metadata_value: "Value",
   },
 } satisfies UmbLocalizationDictionary;
