@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
+using UmbCheckout.Shared;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Basket;
 using Umbraco.Cms.Core.Events;
@@ -43,73 +44,85 @@ namespace UmbCheckout.Core.Services
         /// <inheritdoc />
         public async Task<Basket> Add(LineItem item)
         {
-            try
-            {
-                var basket = await Get();
+            ValidateNewLine(item);
 
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketAddStartedNotification(item, basket));
+            // A basket holds one currency: the line goes to its own currency's basket.
+            var basket = (await _sessionService.Get(item.CurrencyCode)).Basket;
 
-                var lineItems = basket.LineItems.ToList();
-                if (lineItems.Any(x => x.Key.Equals(item.Key)))
-                {
-                    var lineItem = lineItems.First(x => x.Key.Equals(item.Key));
-                    lineItem.Quantity += item.Quantity;
-                }
-                else
-                {
-                    lineItems.Add(item);
-                }
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketAddStartedNotification(item, basket));
 
-                basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
-                basket = updateResponse.Basket;
-                
-                scope.Notifications.Publish(new OnBasketAddedNotification(item, basket));
-                return basket;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            basket.LineItems = Merge(basket.LineItems, [item]);
+            basket.CurrencyCode ??= item.CurrencyCode;
+            basket = (await _sessionService.Update(basket)).Basket;
+
+            scope.Notifications.Publish(new OnBasketAddedNotification(item, basket));
+            return basket;
         }
 
         /// <inheritdoc />
         public async Task<Basket> Add(IEnumerable<LineItem> items)
         {
-            try
+            var newLines = items.ToList();
+            newLines.ForEach(ValidateNewLine);
+            var currencies = newLines.Select(item => item.CurrencyCode!.Trim().ToUpperInvariant()).Distinct().ToList();
+            if (currencies.Count != 1)
             {
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketAddManyStartedNotification(items));
+                throw new ArgumentException("Items added together must share one currency (a basket belongs to one currency).", nameof(items));
+            }
 
-                var basket = await Get();
-                var lineItems = basket.LineItems.ToList();
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketAddManyStartedNotification(newLines));
 
-                foreach (var item in items)
+            var basket = (await _sessionService.Get(currencies[0])).Basket;
+            basket.LineItems = Merge(basket.LineItems, newLines);
+            basket.CurrencyCode ??= currencies[0];
+            basket = (await _sessionService.Update(basket)).Basket;
+
+            scope.Notifications.Publish(new OnBasketAddedManyNotification(newLines, basket));
+            return basket;
+        }
+
+        /// <summary>Adds each new line's quantity to an existing line for the same product, or appends it; the latest price wins.</summary>
+        private static List<LineItem> Merge(IEnumerable<LineItem> existing, IEnumerable<LineItem> newLines)
+        {
+            var lineItems = existing.ToList();
+            foreach (var item in newLines)
+            {
+                var lineItem = lineItems.FirstOrDefault(x => x.Key.Equals(item.Key));
+                if (lineItem == null)
                 {
-                    if (lineItems.Any(x => x.Key.Equals(item.Key)))
+                    if (lineItems.Count >= Consts.MaxLineItems)
                     {
-                        var lineItem = lineItems.First(x => x.Key.Equals(item.Key));
-                        lineItem.Quantity++;
+                        throw new ArgumentException($"A basket can hold at most {Consts.MaxLineItems} different products (Stripe Checkout's line item limit).", nameof(newLines));
                     }
-                    else
-                    {
-                        lineItems.Add(item);
-                    }
+
+                    lineItems.Add(item);
+                    continue;
                 }
 
-                basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
-                basket = updateResponse.Basket;
+                if (lineItem.Quantity + item.Quantity > Consts.MaxLineQuantity)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(newLines), lineItem.Quantity + item.Quantity, $"A basket line can hold at most {Consts.MaxLineQuantity}.");
+                }
 
-                scope.Notifications.Publish(new OnBasketAddedManyNotification(items, basket));
-                return basket;
+                lineItem.Quantity += item.Quantity;
+                lineItem.Price = item.Price;
             }
-            catch (Exception ex)
+
+            return lineItems;
+        }
+
+        private static void ValidateNewLine(LineItem item)
+        {
+            if (string.IsNullOrWhiteSpace(item.CurrencyCode))
             {
-                _logger.LogError(ex, ex.Message);
-                throw;
+                throw new ArgumentException("A basket line needs a currency.", nameof(item));
+            }
+
+            if (item.Quantity < 1 || item.Quantity > Consts.MaxLineQuantity)
+            {
+                throw new ArgumentOutOfRangeException(nameof(item), item.Quantity, $"Quantity must be between 1 and {Consts.MaxLineQuantity}.");
             }
         }
 
@@ -128,7 +141,7 @@ namespace UmbCheckout.Core.Services
                 {
                     var lineItem = lineItems.First(x => x.Key.Equals(key));
                     lineItem.Quantity--;
-                    if (lineItem.Quantity == 0)
+                    if (lineItem.Quantity <= 0)
                     {
                         lineItems.Remove(lineItem);
                     }

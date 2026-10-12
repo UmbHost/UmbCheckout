@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Microsoft.Extensions.Logging;
 using Moq;
 using UmbCheckout.Core.Interfaces;
@@ -14,6 +14,7 @@ namespace UmbCheckout.Tests;
 public class BasketServiceTests
 {
     private readonly IBasketService _basketService;
+    private readonly Mock<ISessionService> _sessionService = new();
 
     public BasketServiceTests()
     {
@@ -21,21 +22,21 @@ public class BasketServiceTests
         var eventAggregator = new Mock<IEventAggregator>();
         var coreScopeProvider = new Mock<ICoreScopeProvider>();
 
-        var sessionService = new Mock<ISessionService>();
         var checkoutSession = new UmbCheckoutSession();
-        sessionService.Setup(x => x.Get()).ReturnsAsync(checkoutSession);
-        sessionService.Setup(x => x.Update(It.IsAny<Basket>())).ReturnsAsync(checkoutSession);
+        _sessionService.Setup(x => x.Get()).ReturnsAsync(checkoutSession);
+        _sessionService.Setup(x => x.Get(It.IsAny<string?>())).ReturnsAsync(checkoutSession);
+        _sessionService.Setup(x => x.Update(It.IsAny<Basket>())).ReturnsAsync(checkoutSession);
 
         var mockScope = new Mock<IScope>();
         mockScope.Setup(x => x.Notifications).Returns(new Mock<IScopedNotificationPublisher>().Object);
         coreScopeProvider.Setup(x => x.CreateCoreScope(IsolationLevel.Unspecified, RepositoryCacheMode.Unspecified, null, null, null, false, true))
             .Returns(mockScope.Object);
 
-        _basketService = new BasketService(sessionService.Object, logger.Object, eventAggregator.Object, coreScopeProvider.Object);
+        _basketService = new BasketService(_sessionService.Object, logger.Object, eventAggregator.Object, coreScopeProvider.Object);
     }
 
     [Fact]
-    public async void AddProductToBasket()
+    public async Task AddProductToBasket()
     {
         // Arrange
         var product = new LineItem
@@ -43,7 +44,8 @@ public class BasketServiceTests
             Key = Guid.NewGuid(),
             Quantity = 1,
             Name = "Test Product",
-            Price = 10.00m
+            Price = 10.00m,
+            CurrencyCode = "GBP"
         };
 
         // Act
@@ -55,7 +57,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void IncreaseProductQuantityInBasket()
+    public async Task IncreaseProductQuantityInBasket()
     {
         // Arrange
         var product = new LineItem
@@ -63,7 +65,8 @@ public class BasketServiceTests
             Key = Guid.NewGuid(),
             Quantity = 1,
             Name = "Test Product",
-            Price = 10.00m
+            Price = 10.00m,
+            CurrencyCode = "GBP"
         };
 
         // Act
@@ -80,7 +83,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void ReduceProductQuantityInBasket()
+    public async Task ReduceProductQuantityInBasket()
     {
         // Arrange
         var product = new LineItem
@@ -88,7 +91,8 @@ public class BasketServiceTests
             Key = Guid.NewGuid(),
             Quantity = 2,
             Name = "Test Product",
-            Price = 10.00m
+            Price = 10.00m,
+            CurrencyCode = "GBP"
         };
 
         // Act
@@ -105,7 +109,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void RemoveProductFromBasket()
+    public async Task RemoveProductFromBasket()
     {
         // Arrange
         var product = new LineItem
@@ -113,7 +117,8 @@ public class BasketServiceTests
             Key = Guid.NewGuid(),
             Quantity = 2,
             Name = "Test Product",
-            Price = 10.00m
+            Price = 10.00m,
+            CurrencyCode = "GBP"
         };
 
         // Act
@@ -130,7 +135,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void ClearBasket()
+    public async Task ClearBasket()
     {
         // Arrange
         var product = new LineItem
@@ -138,7 +143,8 @@ public class BasketServiceTests
             Key = Guid.NewGuid(),
             Quantity = 2,
             Name = "Test Product",
-            Price = 10.00m
+            Price = 10.00m,
+            CurrencyCode = "GBP"
         };
 
         // Act
@@ -154,7 +160,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void TotalItemsInBasket()
+    public async Task TotalItemsInBasket()
     {
         // Arrange
         var product = new LineItem
@@ -162,7 +168,8 @@ public class BasketServiceTests
             Key = Guid.NewGuid(),
             Quantity = 2,
             Name = "Test Product",
-            Price = 10.00m
+            Price = 10.00m,
+            CurrencyCode = "GBP"
         };
 
         // Act
@@ -176,7 +183,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void BasketSubtotal()
+    public async Task BasketSubtotal()
     {
         var products = new List<LineItem>
         {
@@ -185,14 +192,16 @@ public class BasketServiceTests
                 Key = Guid.NewGuid(),
                 Quantity = 2,
                 Name = "Test Product",
-                Price = 10.00m
+                Price = 10.00m,
+                CurrencyCode = "GBP"
             },
             new()
             {
                 Key = Guid.NewGuid(),
                 Quantity = 1,
                 Name = "Test Product 2",
-                Price = 20.00m
+                Price = 20.00m,
+                CurrencyCode = "GBP"
             }
         };
 
@@ -205,7 +214,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void BasketServiceSubtotal()
+    public async Task BasketServiceSubtotal()
     {
         var products = new List<LineItem>
         {
@@ -214,14 +223,16 @@ public class BasketServiceTests
                 Key = Guid.NewGuid(),
                 Quantity = 2,
                 Name = "Test Product",
-                Price = 10.00m
+                Price = 10.00m,
+                CurrencyCode = "GBP"
             },
             new()
             {
                 Key = Guid.NewGuid(),
                 Quantity = 1,
                 Name = "Test Product 2",
-                Price = 20.00m
+                Price = 20.00m,
+                CurrencyCode = "GBP"
             }
         };
 
@@ -234,7 +245,7 @@ public class BasketServiceTests
     }
 
     [Fact]
-    public async void GetEmptyBasket()
+    public async Task GetEmptyBasket()
     {
         // Act
         var result = await _basketService.Get();
@@ -242,5 +253,81 @@ public class BasketServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.False(result.LineItems.Any());
+    }
+
+    private static LineItem Gbp(long quantity = 1, Guid? key = null) => new() { Key = key ?? Guid.NewGuid(), Name = "Test Product", Price = 10.00m, CurrencyCode = "GBP", Quantity = quantity };
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(1_000_000)]
+    public async Task Add_RefusesAQuantityOutsideOneToTheCap(long quantity)
+        => await Assert.ThrowsAnyAsync<ArgumentException>(() => _basketService.Add(Gbp(quantity)));
+
+    [Fact]
+    public async Task Add_RefusesWhenTheMergedQuantityPassesTheCap()
+    {
+        var key = Guid.NewGuid();
+        await _basketService.Add(Gbp(999_990, key));
+
+        await Assert.ThrowsAnyAsync<ArgumentException>(() => _basketService.Add(Gbp(10, key)));
+    }
+
+    [Fact]
+    public async Task Add_RefusesAHundredAndFirstProduct()
+    {
+        // Stripe Checkout takes at most 100 line items; the 101st must be refused here, not at checkout.
+        (await _basketService.Get()).LineItems = Enumerable.Range(0, 100).Select(_ => Gbp()).ToList();
+
+        await Assert.ThrowsAnyAsync<ArgumentException>(() => _basketService.Add(Gbp()));
+    }
+
+    [Fact]
+    public async Task Add_MoreOfAProductAlreadyInAFullBasketIsAllowed()
+    {
+        var key = Guid.NewGuid();
+        (await _basketService.Get()).LineItems = Enumerable.Range(0, 99).Select(_ => Gbp()).Append(Gbp(1, key)).ToList();
+
+        var basket = await _basketService.Add(Gbp(1, key));
+
+        Assert.Equal(2, basket.LineItems.Single(l => l.Key == key).Quantity);
+    }
+
+    [Fact]
+    public async Task Add_RefusesALineWithoutACurrency()
+        => await Assert.ThrowsAnyAsync<ArgumentException>(() => _basketService.Add(new LineItem { Key = Guid.NewGuid(), Quantity = 1, Price = 1m }));
+
+    [Fact]
+    public async Task Add_GoesToTheLinesOwnCurrencyBasket()
+    {
+        await _basketService.Add(new LineItem { Key = Guid.NewGuid(), Quantity = 1, Price = 1m, CurrencyCode = "USD" });
+
+        _sessionService.Verify(s => s.Get("USD"), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddMany_AddsTheRequestedQuantities()
+    {
+        var key = Guid.NewGuid();
+        await _basketService.Add([Gbp(2, key)]);
+        var basket = await _basketService.Add([Gbp(3, key)]);
+
+        Assert.Equal(5, Assert.Single(basket.LineItems, l => l.Key == key).Quantity);
+    }
+
+    [Fact]
+    public async Task AddMany_RefusesMixedCurrencies()
+        => await Assert.ThrowsAnyAsync<ArgumentException>(() => _basketService.Add([Gbp(), new LineItem { Key = Guid.NewGuid(), Quantity = 1, CurrencyCode = "USD" }]));
+
+    [Fact]
+    public async Task Reduce_RemovesALineAtOrBelowZero()
+    {
+        // A basket saved before quantities were validated can hold a 0 line; reducing it must remove it, not go negative.
+        var key = Guid.NewGuid();
+        (await _basketService.Get()).LineItems = [Gbp(0, key)];
+
+        var basket = await _basketService.Reduce(key);
+
+        Assert.DoesNotContain(basket.LineItems, l => l.Key == key);
     }
 }

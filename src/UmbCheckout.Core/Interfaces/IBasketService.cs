@@ -1,4 +1,4 @@
-﻿using UmbCheckout.Shared.Models;
+using UmbCheckout.Shared.Models;
 
 namespace UmbCheckout.Core.Interfaces
 {
@@ -18,6 +18,7 @@ namespace UmbCheckout.Core.Interfaces
         /// </summary>
         /// <param name="item">Item to be added to the Basket</param>
         /// <returns>The updated Basket</returns>
+        /// <exception cref="ArgumentException">A line has no currency, a quantity outside 1–<see cref="Shared.Consts.MaxLineQuantity"/>, a product beyond <see cref="Shared.Consts.MaxLineItems"/>, or (for several items) more than one currency.</exception>
         Task<Basket> Add(LineItem item);
 
         /// <summary>
@@ -25,6 +26,7 @@ namespace UmbCheckout.Core.Interfaces
         /// </summary>
         /// <param name="items">Items to be added to the Basket</param>
         /// <returns>The updated Basket</returns>
+        /// <exception cref="ArgumentException">A line has no currency, a quantity outside 1–<see cref="Shared.Consts.MaxLineQuantity"/>, a product beyond <see cref="Shared.Consts.MaxLineItems"/>, or (for several items) more than one currency.</exception>
         Task<Basket> Add(IEnumerable<LineItem> items);
 
         /// <summary>
