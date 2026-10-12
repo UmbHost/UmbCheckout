@@ -16,6 +16,14 @@ The documentation can be found on the docs site:
 
 [https://docs.umbcheckout.net](https://docs.umbcheckout.net)
 
+## Stripe webhook
+
+Add a webhook endpoint in Stripe pointing at `https://<your site>/umbraco/api/stripewebhookapi/checkoutevents`, and put its signing secret in configuration as `UmbCheckout:Stripe:Test:WebHookSecret` (and `UmbCheckout:Stripe:Live:WebHookSecret` for live mode), in user secrets or environment variables, never in a committed settings file. Without the secret for the active mode, UmbCheckout logs an error and answers 500 so Stripe keeps retrying.
+
+UmbCheckout uses Stripe.net 50.x, which is pinned to Stripe API version `2026-01-28.clover`. Create the endpoint on that version where you can (the Stripe API and CLI accept an `api_version`; the Dashboard may only offer your account's default). Events on another version are still handled, with a warning in the log once per version.
+
+Stripe delivers each event at least once and retries for up to 3 days. UmbCheckout handles each event once: a redelivery is acknowledged without running your notification handlers, and if a handler throws, the webhook answers 500 so Stripe's retry runs it again.
+
 ## Pricing comparison
 
 UmbCheckout can be used for FREE forever with the basket stored in .NET sessions, for a small fee of £50 you can purchase a license which unlocks cookie and database storing of the database, as well as all existing / future addon features and lifetime updates.
