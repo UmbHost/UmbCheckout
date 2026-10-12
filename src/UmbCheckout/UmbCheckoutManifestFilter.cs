@@ -25,7 +25,7 @@ namespace UmbCheckout
                 {
                     Id = Consts.PackageName,
                     Name = Consts.PackageName,
-                    Version = UmbCheckoutVersion.Version.ToString(3),
+                    Version = UmbCheckoutVersion.PackageVersion,
                     AllowTelemetry = true,
                     Extensions =
                     [
