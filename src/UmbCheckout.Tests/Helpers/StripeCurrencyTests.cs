@@ -78,5 +78,19 @@ namespace UmbCheckout.Tests.Helpers
         [Fact]
         public void IsCurrencyCode_RejectsNull()
             => Assert.False(StripeCurrency.IsCurrencyCode(null));
+
+        [Theory]
+        [InlineData("GBP", true)]
+        [InlineData("kwd", true)]
+        [InlineData("isk", true)]
+        [InlineData("XYZ", false)]   // three letters, but not a currency Stripe charges
+        [InlineData("GPB", false)]   // a typo of GBP on the site root
+        [InlineData(null, false)]
+        public void IsSupported_OnlyStripePresentmentCurrencies(string? currency, bool expected)
+            => Assert.Equal(expected, StripeCurrency.IsSupported(currency));
+
+        [Fact]
+        public void ApiCode_RejectsUnsupportedCurrencies()
+            => Assert.Throws<ArgumentException>(() => StripeCurrency.ApiCode("XYZ"));
     }
 }

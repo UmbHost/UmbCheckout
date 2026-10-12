@@ -30,13 +30,14 @@ namespace UmbCheckout.Tests.Services
                 => Levels.Add(logLevel);
         }
 
-        private IPublishedContent Product(object? price, string? currency)
+        private IPublishedContent Product(object? price, string? currency, bool hasValue = true)
         {
             var product = new Mock<IPublishedContent>();
             product.Setup(p => p.Key).Returns(Guid.NewGuid());
             if (price != null)
             {
                 var property = new Mock<IPublishedProperty>();
+                property.Setup(p => p.HasValue(It.IsAny<string?>(), It.IsAny<string?>())).Returns(hasValue);
                 property.Setup(p => p.GetValue(It.IsAny<string?>(), It.IsAny<string?>())).Returns(price);
                 product.Setup(p => p.GetProperty(Consts.PropertyAlias.PriceAlias)).Returns(property.Object);
             }
@@ -78,12 +79,25 @@ namespace UmbCheckout.Tests.Services
         }
 
         [Fact]
+        public async Task GetPriceAsync_EmptyPriceField_ReturnsNull()
+        {
+            // Umbraco's Decimal converter turns an empty field into 0m; a variant left without a price must not sell at 0.00.
+            Assert.Null(await Service().GetPriceAsync(Product(0m, "GBP", hasValue: false)));
+            VerifyLogged(LogLevel.Error);
+        }
+
+        [Fact]
+        public async Task GetPriceAsync_ATypedZeroIsAFreeProduct()
+            => Assert.Equal(0m, (await Service().GetPriceAsync(Product(0m, "GBP")))?.Price);
+
+        [Fact]
         public async Task GetPriceAsync_NegativePrice_ReturnsNull()
             => Assert.Null(await Service().GetPriceAsync(Product(-1m, "GBP")));
 
         [Theory]
         [InlineData(null)]
         [InlineData("G1P")]
+        [InlineData("XYZ")]
         public async Task GetPriceAsync_NoValidCurrency_ReturnsNull(string? currency)
             => Assert.Null(await Service().GetPriceAsync(Product(10m, currency)));
 
