@@ -1,112 +1,98 @@
-﻿//using System.Data;
-//using Microsoft.AspNetCore.DataProtection;
-//using Microsoft.Extensions.Logging;
-//using Moq;
-//using UmbCheckout.Core.Interfaces;
-//using UmbCheckout.Core.Services;
-//using UmbCheckout.Shared.Models;
-//using UmbHost.Licensing.Services;
-//using Umbraco.Cms.Core.Events;
-//using Umbraco.Cms.Core.Scoping;
-//using Xunit;
-//using HttpContextAccessor = UmbCheckout.Tests.Helpers.HttpContextAccessor;
-//using IScope = Umbraco.Cms.Infrastructure.Scoping.IScope;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Moq;
+using UmbCheckout.Core.Interfaces;
+using UmbCheckout.Core.Services;
+using UmbCheckout.Shared.Helpers;
+using UmbCheckout.Shared.Models;
+using UmbCheckout.Tests.Infrastructure;
+using UmbHost.Licensing.Services;
+using Umbraco.Cms.Core.Configuration.Models;
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Scoping;
+using Umbraco.Cms.Core.Services;
+using Xunit;
 
-//namespace UmbCheckout.Tests;
+namespace UmbCheckout.Tests
+{
+    /// <summary>A basket belongs to exactly one currency: one session basket per site root culture and currency.</summary>
+    public class SessionServiceTests
+    {
+        private readonly InMemorySession _session = new();
+        private readonly Mock<IBasketContext> _basketContext = new();
 
-//public class SessionServiceTests
-//{
-//    private readonly ISessionService _sessionService;
+        private SessionService Service()
+        {
+            var httpContext = new DefaultHttpContext { Session = _session };
+            _basketContext.Setup(b => b.SiteRootCulture).Returns("en-GB");
+            var licenseService = new LicenseService(null!, NullLogger<LicenseService>.Instance, null!, Options.Create(new UmbHost.Licensing.Models.UmbCheckoutAppSettings()), null!, Mock.Of<IRuntimeState>(), Options.Create(new WebRoutingSettings()), null!);
 
-//    private readonly Microsoft.AspNetCore.Http.HttpContextAccessor _httpContextAccessor =
-//        HttpContextAccessor.GetHttpContext("/testpage", "test.com");
+            return new SessionService(
+                new EphemeralDataProtectionProvider(),
+                Mock.Of<IHttpContextAccessor>(a => a.HttpContext == httpContext),
+                NullLogger<SessionService>.Instance,
+                Mock.Of<IEventAggregator>(),
+                new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object,
+                Mock.Of<IConfigurationService>(),
+                licenseService,
+                _basketContext.Object);
+        }
 
-//    public SessionServiceTests()
-//    {
-//        var logger = new Mock<ILogger<SessionService>>();
-//        var eventAggregator = new Mock<IEventAggregator>();
-//        var coreScopeProvider = new Mock<ICoreScopeProvider>();
-//        var dataProtectionProvider = new EphemeralDataProtectionProvider();
-//        var databaseService = new Mock<IDatabaseService>();
-//        var licenseService = new Mock<LicenseService>();
+        private static LineItem Line(string currency) => new() { Key = Guid.NewGuid(), CurrencyCode = currency, Price = 1m, Quantity = 1 };
 
-//        var mockScope = new Mock<IScope>();
-//        mockScope.Setup(x => x.Notifications).Returns(new Mock<IScopedNotificationPublisher>().Object);
-//        coreScopeProvider.Setup(x => x.CreateCoreScope(IsolationLevel.Unspecified, RepositoryCacheMode.Unspecified, null, null, null, false, true))
-//            .Returns(mockScope.Object);
+        [Fact]
+        public async Task Get_KeepsASeparateBasketPerCurrency()
+        {
+            var service = Service();
+            var gbp = Line("GBP");
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [gbp] });
 
-//        var mockConfiguration = new Mock<IConfigurationService>();
-//        var umbCheckoutConfiguration = new UmbCheckoutConfiguration
-//        {
-//            EnableShipping = true,
-//            Id = 1,
-//            CancelPageUrl = new List<MultiUrlPicker>
-//            {
-//                new()
-//                {
-//                    Icon = "icon-document", Name = "Checkout Cancelled", Url = "/checkout-cancelled/",
-//                    Udi = "umb://document/52ec9b32732240d4acf75d570e2753f0", Published = true, Trashed = false
-//                }
-//            },
-//            SuccessPageUrl = new List<MultiUrlPicker>
-//            {
-//                new()
-//                {
-//                    Icon = "icon-document", Name = "Checkout Success", Url = "/checkout-success/",
-//                    Udi = "umb://document/ce8d58448cca4ff7af0f6313f2b93cee", Published = true, Trashed = false
-//                }
-//            }
-//        };
-//        mockConfiguration.Setup(x => x.GetConfiguration().Result).Returns(umbCheckoutConfiguration);
+            var usd = await service.Get("USD");
+            var pounds = await service.Get("GBP");
 
-//        _sessionService = new SessionService(dataProtectionProvider, _httpContextAccessor, logger.Object, eventAggregator.Object, coreScopeProvider.Object, mockConfiguration.Object, databaseService.Object, licenseService.Object);
-//    }
+            Assert.Empty(usd.Basket.LineItems);
+            Assert.Equal("USD", usd.Basket.CurrencyCode);
+            Assert.Equal(gbp.Key, Assert.Single(pounds.Basket.LineItems).Key);
+        }
 
-//    [Fact]
-//    public async void CreateSession()
-//    {
-//        // Arrange
+        [Fact]
+        public async Task Get_UsesTheRequestsCurrencyByDefault()
+        {
+            _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("EUR");
 
-//        // Act
-//        var result = await _sessionService.Get();
+            Assert.Equal("EUR", (await Service().Get()).Basket.CurrencyCode);
+        }
 
-//        // Assert
-//        Assert.NotNull(result);
-//        Assert.NotNull(result.Basket);
-//        Assert.False(string.IsNullOrEmpty(result.Basket.SessionId));
-//    }
+        [Fact]
+        public async Task Get_SplitsALegacyBasketByCurrency()
+        {
+            var gbp = Line("GBP");
+            var usd = Line("USD");
+            _session.SetObjectAsJson(BasketKeys.LegacySession("en-GB"), new UmbCheckoutSession
+            {
+                SiteRootCulture = "en-GB",
+                Basket = new Basket { SiteRootCulture = "en-GB", LineItems = [gbp, usd, Line("")] }
+            });
+            var service = Service();
 
-//    [Fact]
-//    public async void UpdateSession()
-//    {
-//        var session = await _sessionService.Get();
-        
-//        Assert.NotNull(session);
-//        Assert.False(string.IsNullOrEmpty(session.Basket.SessionId));
+            Assert.Equal(gbp.Key, Assert.Single((await service.Get("GBP")).Basket.LineItems).Key);
+            Assert.Equal(usd.Key, Assert.Single((await service.Get("USD")).Basket.LineItems).Key);
+            Assert.DoesNotContain(BasketKeys.LegacySession("en-GB"), _session.Keys);
+        }
 
-//        // Arrange
-//        var basket = new Basket
-//        {
-//            Id = session.Basket.Id,
-//            SessionId = session.Basket.SessionId,
-//            Total = session.Basket.Total,
-//            LineItems = new List<LineItem>
-//            {
-//                new()
-//                {
-//                    Id = Guid.NewGuid(),
-//                    Quantity = 1,
-//                    Name = "Test Product",
-//                    Price = 10.00m
-//                }
-//            }
-//        };
-//        // Act
-//        var result = await _sessionService.Update(basket);
+        [Fact]
+        public async Task Clear_RemovesOnlyThatCurrencysBasket()
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [Line("GBP")] });
+            await service.Update(new Basket { CurrencyCode = "USD", LineItems = [Line("USD")] });
 
-//        // Assert
-//        Assert.NotNull(result);
-//        Assert.True(session.Basket.SessionId == basket.SessionId);
-//        Assert.True(result.Basket == basket);
-//    }
-//}
+            await service.Clear("GBP");
+
+            Assert.Empty((await service.Get("GBP")).Basket.LineItems);
+            Assert.Single((await service.Get("USD")).Basket.LineItems);
+        }
+    }
+}

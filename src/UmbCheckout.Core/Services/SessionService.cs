@@ -1,23 +1,20 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
-using UmbCheckout.Shared;
 using UmbCheckout.Shared.Helpers;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Session;
 using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Scoping;
-using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Web.Common.Security;
-using Umbraco.Extensions;
 
 namespace UmbCheckout.Core.Services
 {
     /// <summary>
-    /// A service to handle the Get, Update and Clearing of the Session
+    /// A service to handle the Get, Update and Clearing of the Session: one basket per site root culture and currency
     /// </summary>
     public sealed class SessionService : ISessionService
     {
@@ -27,9 +24,9 @@ namespace UmbCheckout.Core.Services
         private readonly ICoreScopeProvider _coreScopeProvider;
         private readonly ILogger<SessionService> _logger;
         private readonly IConfigurationService _configurationService;
-        private readonly IUmbracoContextAccessor _umbracoContextAccessor;
+        private readonly IBasketContext _basketContext;
 
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IUmbracoContextAccessor umbracoContextAccessor)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
         {
             _dataProtectionProvider = dataProtectionProvider;
             _contextAccessor = contextAccessor;
@@ -37,170 +34,136 @@ namespace UmbCheckout.Core.Services
             _eventAggregator = eventAggregator;
             _coreScopeProvider = coreScopeProvider;
             _configurationService = configurationService;
-            _umbracoContextAccessor = umbracoContextAccessor;
+            _basketContext = basketContext;
             licenseService.RunLicenseCheck();
         }
 
-        /// <summary>
-        /// Creates the UmbCheckout Session
-        /// </summary>
-        /// <returns>The current UmbCheckout Session</returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        private async Task<UmbCheckoutSession> Create()
+        private HttpContext HttpContext => _contextAccessor.HttpContext ?? throw new InvalidOperationException("HttpContext cannot be null");
+
+        private async Task<UmbCheckoutSession> Create(string? siteRootCulture, string? currencyCode)
         {
-            try
+            var configuration = await _configurationService.GetConfiguration();
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnSessionCreateStartedNotification());
+
+            var sessionId = HttpContext.Session.Id;
+            var session = new UmbCheckoutSession
             {
-                if (_contextAccessor.HttpContext == null)
-                    throw new InvalidOperationException("HttpContext cannot be null");
+                SiteRootCulture = siteRootCulture,
+                Basket = new Basket { SessionId = sessionId, SiteRootCulture = siteRootCulture, CurrencyCode = currencyCode }
+            };
 
-                var hasUmbracoContext = _umbracoContextAccessor.TryGetUmbracoContext(out var umbracoContext);
-                if (umbracoContext == null || !hasUmbracoContext)
-                {
-                    throw new InvalidOperationException("Umbraco Context cannot be null");
-                }
+            var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(session.Basket), _dataProtectionProvider);
+            HttpContext.Session.SetObjectAsJson(BasketKeys.Session(siteRootCulture, currencyCode), session);
 
-                var configuration = await _configurationService.GetConfiguration();
-
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnSessionCreateStartedNotification());
-
-                var sessionId = _contextAccessor.HttpContext.Session.Id;
-                var siteRootCulture = umbracoContext.PublishedRequest?.PublishedContent?.Root()?.GetCultureFromDomains();
-                var session = new UmbCheckoutSession
-                {
-                    SiteRootCulture = siteRootCulture,
-                    Basket = new Basket
-                    {
-                        SessionId = sessionId,
-                        SiteRootCulture = siteRootCulture
-                    }
-                };
-
-                var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(session.Basket), _dataProtectionProvider);
-
-                _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey + siteRootCulture, session);
-
-                scope.Notifications.Publish(new OnSessionCreatedNotification(_contextAccessor.HttpContext, sessionId, encryptedBasket, configuration));
-                return session;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            scope.Notifications.Publish(new OnSessionCreatedNotification(HttpContext, sessionId, encryptedBasket, configuration));
+            return session;
         }
 
         /// <inheritdoc />
-        public async Task<UmbCheckoutSession> Get()
+        public async Task<UmbCheckoutSession> Get() => await Get(await _basketContext.GetCurrencyAsync());
+
+        /// <inheritdoc />
+        public async Task<UmbCheckoutSession> Get(string? currencyCode)
         {
-            try
+            var configuration = await _configurationService.GetConfiguration();
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
+
+            var siteRootCulture = _basketContext.SiteRootCulture;
+            MigrateLegacyBasket(siteRootCulture, currencyCode);
+
+            var key = BasketKeys.Session(siteRootCulture, currencyCode);
+            var session = (HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null)
+                          ?? await Create(siteRootCulture, currencyCode);
+
+            scope.Notifications.Publish(new OnSessionGetNotification(HttpContext, session, configuration));
+            return session;
+        }
+
+        /// <summary>
+        /// Baskets saved before they were per currency live under the culture-only key: each currency's lines move to their own basket.
+        /// </summary>
+        private void MigrateLegacyBasket(string? siteRootCulture, string? currencyCode)
+        {
+            var legacyKey = BasketKeys.LegacySession(siteRootCulture);
+            if (string.IsNullOrWhiteSpace(currencyCode) || !HttpContext.Session.Keys.Contains(legacyKey))
             {
-                if (_contextAccessor.HttpContext == null)
-                    throw new InvalidOperationException("HttpContext cannot be null");
-
-                var hasUmbracoContext = _umbracoContextAccessor.TryGetUmbracoContext(out var umbracoContext);
-                if ( umbracoContext == null || !hasUmbracoContext)
-                {
-                    throw new InvalidOperationException("Umbraco Context cannot be null");
-                }
-
-                var configuration = await _configurationService.GetConfiguration();
-
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
-
-                var siteRootCulture = umbracoContext.PublishedRequest?.PublishedContent?.Root()?.GetCultureFromDomains();
-
-                var session = (_contextAccessor.HttpContext.Session.Keys.Contains(Consts.SessionKey + siteRootCulture) ? _contextAccessor.HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(Consts.SessionKey + siteRootCulture) :
-                    await Create()) ?? await Create();
-
-                scope.Notifications.Publish(new OnSessionGetNotification(_contextAccessor.HttpContext, session, configuration));
-
-                return session;
+                return;
             }
-            catch (Exception ex)
+
+            var legacy = HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(legacyKey);
+            HttpContext.Session.Remove(legacyKey);
+            if (legacy == null)
             {
-                _logger.LogError(ex, ex.Message);
-                throw;
+                return;
+            }
+
+            var split = BasketSplitter.ByCurrency(legacy.Basket);
+            foreach (var basket in split.Baskets)
+            {
+                var key = BasketKeys.Session(siteRootCulture, basket.CurrencyCode);
+                if (!HttpContext.Session.Keys.Contains(key))
+                {
+                    HttpContext.Session.SetObjectAsJson(key, new UmbCheckoutSession { SiteRootCulture = siteRootCulture, Basket = basket });
+                }
+            }
+
+            if (split.Dropped.Count > 0)
+            {
+                _logger.LogWarning("Dropped {LineCount} basket lines with no currency while splitting the {SiteRootCulture} basket by currency: {ProductKeys}", split.Dropped.Count, siteRootCulture, string.Join(", ", split.Dropped.Select(lineItem => lineItem.Key)));
             }
         }
 
         /// <inheritdoc />
         public async Task<UmbCheckoutSession> Update(Basket basket)
         {
-            try
-            {
-                if (_contextAccessor.HttpContext == null)
-                    throw new InvalidOperationException("HttpContext cannot be null");
+            var configuration = await _configurationService.GetConfiguration();
 
-                var hasUmbracoContext = _umbracoContextAccessor.TryGetUmbracoContext(out var umbracoContext);
-                if (umbracoContext == null || !hasUmbracoContext)
-                {
-                    throw new InvalidOperationException("Umbraco Context cannot be null");
-                }
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnSessionUpdateStartedNotification());
 
-                var configuration = await _configurationService.GetConfiguration();
+            var siteRootCulture = _basketContext.SiteRootCulture;
+            basket.SiteRootCulture = siteRootCulture;
+            basket.CurrencyCode ??= await _basketContext.GetCurrencyAsync();
+            var session = new UmbCheckoutSession { SiteRootCulture = siteRootCulture, Basket = basket };
 
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnSessionUpdateStartedNotification());
+            var sessionId = HttpContext.Session.Id;
+            HttpContext.Session.SetObjectAsJson(BasketKeys.Session(siteRootCulture, basket.CurrencyCode), session);
 
-                var session = await Get();
-                var siteRootCulture = umbracoContext.PublishedRequest?.PublishedContent?.Root()?.GetCultureFromDomains();
-                basket.SiteRootCulture = siteRootCulture;
-                session.Basket = basket;
+            var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(basket), _dataProtectionProvider);
+            scope.Notifications.Publish(new OnSessionUpdatedNotification(HttpContext, sessionId, basket, encryptedBasket, configuration));
 
-                var sessionId = _contextAccessor.HttpContext.Session.Id;
-
-                _contextAccessor.HttpContext.Session.SetObjectAsJson(Consts.SessionKey + siteRootCulture, session);
-
-                var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(basket), _dataProtectionProvider);
-                scope.Notifications.Publish(new OnSessionUpdatedNotification(_contextAccessor.HttpContext, sessionId, basket, encryptedBasket, configuration));
-
-                return session;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            return session;
         }
 
         /// <inheritdoc />
-        public async Task<bool> Clear()
+        public async Task<bool> Clear() => await Clear(await _basketContext.GetCurrencyAsync());
+
+        /// <inheritdoc />
+        public async Task<bool> Clear(string? currencyCode)
         {
-            try
+            var configuration = await _configurationService.GetConfiguration();
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnSessionClearStartedNotification());
+
+            var sessionId = HttpContext.Session.Id;
+            var siteRootCulture = _basketContext.SiteRootCulture;
+            var key = BasketKeys.Session(siteRootCulture, currencyCode);
+
+            HttpContext.Session.Remove(key);
+            await HttpContext.Session.CommitAsync();
+
+            scope.Notifications.Publish(new OnSessionClearedNotification(HttpContext, sessionId, configuration)
             {
-                if (_contextAccessor.HttpContext == null)
-                    throw new InvalidOperationException("HttpContext cannot be null");
+                SiteRootCulture = siteRootCulture,
+                CurrencyCode = currencyCode
+            });
 
-                var hasUmbracoContext = _umbracoContextAccessor.TryGetUmbracoContext(out var umbracoContext);
-                if (umbracoContext == null || !hasUmbracoContext)
-                {
-                    throw new InvalidOperationException("Umbraco Context cannot be null");
-                }
-
-                var configuration = await _configurationService.GetConfiguration();
-
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnSessionClearStartedNotification());
-
-                var sessionId = _contextAccessor.HttpContext.Session.Id;
-                var siteRootCulture = umbracoContext.PublishedRequest?.PublishedContent?.Root()?.GetCultureFromDomains();
-
-                _contextAccessor.HttpContext.Session.Clear();
-
-                await _contextAccessor.HttpContext.Session.CommitAsync();
-
-                scope.Notifications.Publish(new OnSessionClearedNotification(_contextAccessor.HttpContext, sessionId, configuration));
-
-                return _contextAccessor.HttpContext.Session.Keys.Contains(Consts.SessionKey + siteRootCulture);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            return HttpContext.Session.Keys.Contains(key);
         }
     }
 }
