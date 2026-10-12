@@ -16,7 +16,7 @@ internal sealed class UmbCheckoutDatabaseMigrator(
     ILogger<UmbCheckoutDatabaseMigrator> logger)
     : EfCoreDatabaseMigrator<UmbCheckoutDbContext>(contextFactory, runtimeState, keyValueService, legacyPlanRunner, logger)
 {
-    protected override MigrationPlan LegacyPlan => CreateLegacyPlan();
+    protected override IEnumerable<MigrationPlan> LegacyPlans => [CreateLegacyPlan()];
 
     /// <summary>The frozen pre-v17 plan, step for step (state ids unchanged).</summary>
     internal static MigrationPlan CreateLegacyPlan()

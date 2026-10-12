@@ -9,7 +9,7 @@ using Umbraco.Cms.Infrastructure.Migrations;
 namespace UmbCheckout.Shared.Persistence;
 
 /// <summary>
-/// Brings one context's tables up to date at startup. A legacy install (its NPoco plan has a state key) first finishes that plan,
+/// Brings one context's tables up to date at startup. A legacy install (one of its NPoco plans has a state key) first finishes those plans,
 /// then has Baseline recorded as applied; every install then runs the EF migrations.
 /// It works on a context from <see cref="IDbContextFactory{TContext}"/>, outside any Umbraco scope: on SQLite (Cache=Shared) EF checks
 /// for the database on a second connection, which a schema change still uncommitted in a shared scope transaction would lock out.
@@ -37,8 +37,8 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
         _logger = logger;
     }
 
-    /// <summary>The NPoco plan that created these tables before v17, or null.</summary>
-    protected abstract MigrationPlan? LegacyPlan { get; }
+    /// <summary>The NPoco plans that created these tables before v17 (none for a context that is new in v17).</summary>
+    protected abstract IEnumerable<MigrationPlan> LegacyPlans { get; }
 
     /// <summary>
     /// Whether this context's tables belong on this site. Paid add-ons override it with a licence check; it runs when the
@@ -71,9 +71,19 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
             return;
         }
 
-        if (LegacyPlan is { } plan && _keyValueService.GetValue(Constants.Conventions.Migrations.KeyValuePrefix + plan.Name) is not null)
+        // Any started legacy plan means the tables already exist: finish every started plan, then adopt them once.
+        var legacy = false;
+        foreach (var plan in LegacyPlans)
         {
-            await _legacyPlanRunner.RunAsync(plan, cancellationToken);
+            if (_keyValueService.GetValue(Constants.Conventions.Migrations.KeyValuePrefix + plan.Name) is not null)
+            {
+                await _legacyPlanRunner.RunAsync(plan, cancellationToken);
+                legacy = true;
+            }
+        }
+
+        if (legacy)
+        {
             await using var adoptContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
             await BaselineAdoption.AdoptAsync(adoptContext, cancellationToken);
         }
