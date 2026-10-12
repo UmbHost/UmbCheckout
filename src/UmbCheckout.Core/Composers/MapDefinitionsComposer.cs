@@ -33,7 +33,7 @@ namespace UmbCheckout.Core.Composers
         private static void Map(UmbCheckoutConfiguration source, Shared.Models.UmbCheckoutConfiguration target, MapperContext context)
         {
             target.Id = source.Id;
-            target.Key = source.Key;
+            target.Key = source.Key ?? Guid.Empty;
             target.BasketInCookieExpiry = source.BasketInCookieExpiry;
             target.BasketInDatabaseExpiry = source.BasketInDatabaseExpiry;
             target.CancelPageUrl = (!string.IsNullOrEmpty(source.CancelPageUrl)
@@ -46,7 +46,7 @@ namespace UmbCheckout.Core.Composers
             target.StoreBasketInCookie = source.StoreBasketInCookie;
             target.StoreBasketInDatabase = source.StoreBasketInDatabase;
             target.EnableShipping = source.EnableShipping;
-            target.CurrencyCode = source.CurrencyCode;
+            target.CurrencyCode = source.CurrencyCode ?? string.Empty;
         }
 
         private static void Map(Shared.Models.UmbCheckoutConfiguration source, UmbCheckoutConfiguration target, MapperContext context)

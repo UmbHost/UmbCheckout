@@ -29,4 +29,8 @@
       <ProjectReference Include="..\UmbCheckout.Testing\UmbCheckout.Testing.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Persistence\Fixtures\*.sql" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

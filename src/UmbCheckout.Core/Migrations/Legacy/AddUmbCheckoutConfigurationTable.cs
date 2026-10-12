@@ -3,18 +3,18 @@ using NPoco;
 using Umbraco.Cms.Infrastructure.Migrations;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
 
-namespace UmbCheckout.Core.Migrations
+namespace UmbCheckout.Core.Migrations.Legacy
 {
     /// <summary>
-    /// Adds the configuration table
+    /// Frozen pre-v17 step (adds the configuration table): only runs on installs that started the NPoco plan. Never change it.
     /// </summary>
-    internal class AddUmbCheckoutConfigurationTable : MigrationBase
+    internal class AddUmbCheckoutConfigurationTable : AsyncMigrationBase
     {
         public AddUmbCheckoutConfigurationTable(IMigrationContext context) : base(context)
         {
         }
 
-        protected override void Migrate()
+        protected override Task MigrateAsync()
         {
             Logger.LogDebug("Running migration {MigrationStep}", "UmbCheckoutConfigurationTable");
 
@@ -26,6 +26,8 @@ namespace UmbCheckout.Core.Migrations
             {
                 Logger.LogDebug("The database table {DbTable} already exists, skipping", "UmbCheckoutConfiguration");
             }
+
+            return Task.CompletedTask;
         }
 
         [TableName("UmbCheckoutConfiguration")]
