@@ -17,7 +17,7 @@ namespace UmbCheckout.Tests.Api
     {
         private static readonly Guid SuccessKey = Guid.Parse("38b08814-0307-4f92-930a-30751217a7c1");
 
-        private static ConfigurationApiController CreateController(Mock<IConfigurationService> service, bool isLicensed = true, string? appUrl = "https://localhost:44380/")
+        private static ConfigurationApiController CreateController(Mock<IConfigurationService> service, bool isLicensed = true, string appUrl = "https://localhost:44380/")
         {
             var contentCache = new Mock<IPublishedContentCache>();
             var page = new Mock<IPublishedContent>();

@@ -1,0 +1,10 @@
+<Project>
+	<!-- When this repo is built inside a parent checkout, keep the parent's shared settings too. -->
+	<Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
+	        Condition="'$([MSBuild]::GetPathOfFileAbove(`Directory.Build.props`, `$(MSBuildThisFileDirectory)../`))' != ''" />
+
+	<PropertyGroup>
+		<!-- Possible nulls fail the build -->
+		<WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
+	</PropertyGroup>
+</Project>
