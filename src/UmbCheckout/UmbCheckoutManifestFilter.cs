@@ -27,7 +27,20 @@ namespace UmbCheckout
                     Name = Consts.PackageName,
                     Version = UmbCheckoutVersion.Version.ToString(3),
                     AllowTelemetry = true,
-                    Extensions = []
+                    Extensions =
+                    [
+                        new
+                        {
+                            type = "bundle",
+                            alias = "UmbCheckout.Bundle",
+                            name = "UmbCheckout Bundle",
+                            js = "/App_Plugins/UmbCheckout/umbcheckout.js"
+                        }
+                    ],
+                    Importmap = new PackageManifestImportmap
+                    {
+                        Imports = new Dictionary<string, string> { ["@umbcheckout/core"] = "/App_Plugins/UmbCheckout/umbcheckout-core.js" }
+                    }
                 }
             ];
             return Task.FromResult(manifests);

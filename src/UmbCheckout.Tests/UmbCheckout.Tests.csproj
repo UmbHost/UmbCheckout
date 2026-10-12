@@ -23,6 +23,7 @@
       <ProjectReference Include="..\UmbCheckout.Core\UmbCheckout.Core.csproj" />
       <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
       <ProjectReference Include="..\UmbCheckout.Stripe\UmbCheckout.Stripe.csproj" />
+      <ProjectReference Include="..\UmbCheckout\UmbCheckout.csproj" />
     </ItemGroup>
 
 </Project>

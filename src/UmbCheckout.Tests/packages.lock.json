@@ -1600,6 +1600,15 @@
           "xunit.extensibility.core": "[2.4.2]"
         }
       },
+      "umbcheckout": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Components.Web": "[10.0.0, 11.0.0)",
+          "UmbCheckout.Backoffice": "[1.0.0, )",
+          "UmbCheckout.Core": "[1.0.0, )",
+          "UmbCheckout.Shared": "[1.0.0, )"
+        }
+      },
       "umbcheckout.backoffice": {
         "type": "Project",
         "dependencies": {

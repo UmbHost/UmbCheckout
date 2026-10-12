@@ -53,4 +53,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="UmbCheckout.Tests" />
+  </ItemGroup>
+
 </Project>
