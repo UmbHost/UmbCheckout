@@ -65,6 +65,17 @@ namespace UmbCheckout.Tests.Api
         }
 
         [Fact]
+        public async Task StripeRates_StripeNotConfigured_ReturnsProblemDetails()
+        {
+            _stripe.Setup(s => s.GetShippingRates()).ThrowsAsync(new UmbCheckout.Stripe.StripeNotConfiguredException(live: false));
+
+            var result = Assert.IsAssignableFrom<ObjectResult>(await Controller.GetStripeShippingRates());
+
+            Assert.Equal(400, result.StatusCode);
+            Assert.Equal(UmbCheckout.Core.ManagementApi.UmbCheckoutProblemDetails.StripeNotConfiguredTitle, Assert.IsType<ProblemDetails>(result.Value).Title);
+        }
+
+        [Fact]
         public async Task Update_UnknownId_Returns404()
         {
             _db.Setup(s => s.GetShippingRate(It.IsAny<Guid>())).ReturnsAsync((ShippingRate?)null);

@@ -6,6 +6,8 @@ namespace UmbCheckout.Core.ManagementApi
         public const string UnlicensedDetail = "This feature requires an UmbCheckout license.";
         public const string NotFoundTitle = "Not found";
         public const string StripeErrorTitle = "Stripe error";
+        public const string StripeNotConfiguredTitle = "Stripe is not configured";
+        public const string StripeUnreachableTitle = "Stripe could not be reached";
         public const string InvalidValueTitle = "Invalid value";
     }
 }

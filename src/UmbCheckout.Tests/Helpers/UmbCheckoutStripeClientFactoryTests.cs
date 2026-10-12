@@ -32,6 +32,19 @@ namespace UmbCheckout.Tests.Helpers
             => Assert.Equal("sk_live_key", ((StripeClient)await Factory(new UmbCheckoutStripeSettings { UseLiveApiDetails = true }).CreateAsync()).ApiKey);
 
         [Fact]
+        public async Task Throws_WhenTheKeyForTheModeIsEmpty()
+        {
+            var options = new Mock<IOptionsMonitor<StripeSettings>>();
+            options.Setup(o => o.CurrentValue).Returns(new StripeSettings());
+            var settingsService = new Mock<IStripeSettingsService>();
+            settingsService.Setup(s => s.GetStripeSettings()).ReturnsAsync((UmbCheckoutStripeSettings?)null);
+
+            var ex = await Assert.ThrowsAsync<UmbCheckout.Stripe.StripeNotConfiguredException>(
+                () => new UmbCheckoutStripeClientFactory(options.Object, settingsService.Object).CreateAsync());
+            Assert.False(ex.Live);
+        }
+
+        [Fact]
         public async Task UsesTheTestKey_WhenNoSettingsAreSaved()
             // Never fall through to live keys by accident.
             => Assert.Equal("sk_test_key", ((StripeClient)await Factory(null).CreateAsync()).ApiKey);
