@@ -14,7 +14,7 @@ namespace UmbCheckout.Shared.Persistence;
 /// It works on a context from <see cref="IDbContextFactory{TContext}"/>, outside any Umbraco scope: on SQLite (Cache=Shared) EF checks
 /// for the database on a second connection, which a schema change still uncommitted in a shared scope transaction would lock out.
 /// </summary>
-public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandler<UmbracoApplicationStartingNotification>
+public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandler<UmbracoApplicationStartingNotification>, IUmbCheckoutTablesMigrator
     where TContext : DbContext
 {
     private readonly IDbContextFactory<TContext> _contextFactory;
@@ -48,8 +48,9 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
 
     public async Task HandleAsync(UmbracoApplicationStartingNotification notification, CancellationToken cancellationToken)
     {
-        if (_runtimeState.Level < RuntimeLevel.Run)
+        if (!RuntimeMigrationGate.CanMigrate(_runtimeState))
         {
+            _logger.LogDebug("Not migrating the {DbContext} tables at runtime level {Level} ({Reason})", typeof(TContext).Name, _runtimeState.Level, _runtimeState.Reason);
             return;
         }
 

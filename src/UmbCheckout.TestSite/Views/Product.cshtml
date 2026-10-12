@@ -1,0 +1,62 @@
+﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Product>
+@using UmbCheckout.Core.Extensions
+@using UmbCheckout.Shared.Extensions
+@{
+    Layout = "_Master.cshtml";
+    var currencyCode = Model.Root()?.Value<string>("umbCheckoutCurrencyCode");
+}
+<!-- for the section we want to show the shop header -->
+<partial name="Partials/SectionHeader" model="@Model.Parent"/>
+
+<section class="section">
+    <div class="container">
+        @if (TempData[UmbCheckout.Shared.Consts.TempData.UmbCheckoutAddedToBasket] is Guid addedKey)
+        {
+            var lineItemContent = Umbraco.Content(addedKey);
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-success">
+                        Successfully added @(lineItemContent?.TemplateId > 0 ? lineItemContent.Name : $"{lineItemContent?.Parent?.Name} - {lineItemContent?.Name}") to basket.
+                    </div>
+                </div>
+            </div>
+        }
+        @if (TempData[UmbCheckout.Shared.Consts.TempData.UmbCheckoutAddToBasketFailed] != null)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-danger">That item could not be added to your basket.</div>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="col-md-6">
+                <div class="product-image-container">
+                    <img class="product-image" src="@Model.Photos?.Url()" alt="@Model.ProductName image" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h1>@Model.ProductName</h1>
+                <div class="product-price">@Model.UmbCheckoutPrice.FormatCurrency(currencyCode)</div>
+                <div class="product-teaser">@Model.Description</div>
+                <div class="product-button">
+                    <vc:stripe-add-to-basket-button product="Model" button-css-class="button button--border--solid" currency-code="@currencyCode"></vc:stripe-add-to-basket-button>
+                </div>
+                <div class="product-advantages">
+                    @await Html.GetBlockListHtmlAsync(Model, "features")
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section section--sand">
+    <div class="container">
+        <!-- todo: Check if grid is empty via a property value converter -->
+        @await Html.GetBlockGridHtmlAsync(Model, "bodyText")
+    </div>
+</section>
+
+<script type="application/ld+json">
+    @Model.ToProductSchema(currencyCode ?? string.Empty, imageAlias: "photos")
+</script>

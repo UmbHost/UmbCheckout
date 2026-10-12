@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
+    <!-- UmbHost.Licensing: project or package, see UmbCheckout/Directory.Build.props -->
+    <ReferenceUmbHostLicensing>true</ReferenceUmbHostLicensing>
 	  <TargetFramework>net10.0</TargetFramework>
 	  <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
 	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -33,9 +35,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\UmbLicensing\UmbHost.Licensing.csproj" />
-  </ItemGroup>
 
 	<ItemGroup>
     <SupportedPlatform Include="browser" />

@@ -20,6 +20,7 @@ namespace UmbCheckout.Core.Composers
                 (_, options, connectionString, providerName) => options.UseUmbCheckoutProvider(providerName, connectionString, UmbCheckoutDbContext.HistoryTable),
                 shareUmbracoConnection: true);
             builder.AddNotificationAsyncHandler<UmbracoApplicationStartingNotification, UmbCheckoutDatabaseMigrator>();
+            builder.Services.AddTransient<IUmbCheckoutTablesMigrator, UmbCheckoutDatabaseMigrator>();
             builder.AddNotificationAsyncHandler<UmbracoApplicationStartingNotification, UmbCheckoutSetupMigrator>();
         }
     }

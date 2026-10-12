@@ -1,4 +1,12 @@
 <Project>
+	<!-- UmbHost.Licensing: the project in the full checkout, otherwise the published package (see Directory.Build.props). -->
+	<ItemGroup Condition="'$(ReferenceUmbHostLicensing)' == 'true' And '$(UseUmbLicensingProject)' == 'true'">
+		<ProjectReference Include="$(UmbLicensingProject)" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(ReferenceUmbHostLicensing)' == 'true' And '$(UseUmbLicensingProject)' != 'true'">
+		<PackageReference Include="UmbHost.Licensing" Version="$(UmbHostLicensingVersion)" />
+	</ItemGroup>
+
 	<!-- The UmbHost banner, in every shipped assembly (not tests, test helpers or test sites). -->
 	<ItemGroup Condition="'$(IsTestProject)' != 'true' And '$(IsPackable)' != 'false' And '$(UsingMicrosoftNETSdkWeb)' != 'true'">
 		<Compile Include="$(MSBuildThisFileDirectory)build/UmbHostBanner.cs" Link="UmbHostBanner.cs" Visible="false" />

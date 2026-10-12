@@ -52,13 +52,21 @@ There are a number of addon features available with a paid license.
 
 ## Getting started with the TestSite
 
-Run the test site for the Umbraco version you wish to test against:
+`src/UmbCheckout.TestSite` is an Umbraco 17 site (The Starter Kit) with the open-source UmbCheckout packages, on SQLite at https://localhost:44381.
 
-Umbraco 10 - UmbCheckout.TestSite.v10
-Umbraco 11 - UmbCheckout.TestSite.v11
-Umbraco 13 - UmbCheckout.TestSite.v13
+On first run it installs itself and imports its content with uSync. Set the backoffice login it creates with user secrets first:
 
-Install the test site, discard any Git Changes and then Import Everything using uSync
+```bash
+cd src/UmbCheckout.TestSite
+dotnet user-secrets set "Umbraco:CMS:Unattended:UnattendedUserName" "<name>"
+dotnet user-secrets set "Umbraco:CMS:Unattended:UnattendedUserEmail" "<email>"
+dotnet user-secrets set "Umbraco:CMS:Unattended:UnattendedUserPassword" "<password>"
+dotnet run
+```
+
+The install writes an `Imaging:HMACSecretKey` into `appsettings.json`; discard that change. Stripe keys go in user secrets too, never in the settings files.
+
+UmbHost.Licensing is closed source. Inside the full UmbCheckout checkout the build uses the project next to this repository; cloned on its own it uses the `UmbHost.Licensing` NuGet package at the version in `Directory.Build.props` (`-p:UseUmbLicensingProject=false` forces the package). The lock files are written in project mode.
 
 ### Contribution guidelines
 

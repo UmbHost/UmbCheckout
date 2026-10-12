@@ -5,6 +5,7 @@ using UmbCheckout.Core.Persistence;
 using UmbCheckout.Shared.Persistence;
 using UmbCheckout.Testing;
 using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.Migrations;
 using Xunit;
@@ -27,9 +28,10 @@ public sealed class CoreMigrationTests(SqlServerContainerFixture sqlServer)
         }
     }
 
-    private static UmbCheckoutDatabaseMigrator Migrator(TestDatabase<UmbCheckoutDbContext> database, bool legacy, RecordingRunner runner)
+    private static UmbCheckoutDatabaseMigrator Migrator(TestDatabase<UmbCheckoutDbContext> database, bool legacy, RecordingRunner runner,
+        RuntimeLevel level = RuntimeLevel.Run, RuntimeLevelReason reason = RuntimeLevelReason.Run)
     {
-        var runtime = Mock.Of<IRuntimeState>(r => r.Level == RuntimeLevel.Run);
+        var runtime = Mock.Of<IRuntimeState>(r => r.Level == level && r.Reason == reason);
         var keyValues = new Mock<IKeyValueService>();
         keyValues.Setup(k => k.GetValue(Constants.Conventions.Migrations.KeyValuePrefix + "UmbCheckoutConfiguration"))
             .Returns(legacy ? "4e8a2c1d-6b5f-4a3e-8d7c-9f0e1a2b3c4d" : null);
@@ -53,6 +55,23 @@ public sealed class CoreMigrationTests(SqlServerContainerFixture sqlServer)
         await using var db = database.CreateContext();
         Assert.False(db.Database.HasPendingModelChanges());
         Assert.Empty(await db.Configurations.ToListAsync());
+    }
+
+    [Theory]
+    [InlineData(RuntimeLevel.Run, RuntimeLevelReason.Run, true)]
+    // A fresh install boots here: Umbraco's schema is in place and only package migrations (uSync's first-boot import among them) are
+    // pending, and those need the tables
+    [InlineData(RuntimeLevel.Upgrade, RuntimeLevelReason.UpgradePackageMigrations, true)]
+    [InlineData(RuntimeLevel.Upgrade, RuntimeLevelReason.UpgradeMigrations, false)]
+    [InlineData(RuntimeLevel.Install, RuntimeLevelReason.InstallEmptyDatabase, false)]
+    public async Task Startup_migrates_once_umbracos_own_schema_is_current(RuntimeLevel level, RuntimeLevelReason reason, bool migrates)
+    {
+        await using var database = await TestDatabase.CreateAsync<UmbCheckoutDbContext>(TestProvider.Sqlite, sqlServer, o => new UmbCheckoutDbContext(o), UmbCheckoutDbContext.HistoryTable);
+
+        await Migrator(database, legacy: false, new RecordingRunner(), level, reason)
+            .HandleAsync(new UmbracoApplicationStartingNotification(level, isRestarting: false), CancellationToken.None);
+
+        Assert.Equal(migrates, (await database.AppliedMigrationsAsync()).Any());
     }
 
     [Theory]

@@ -7,4 +7,15 @@
 		<!-- Possible nulls fail the build -->
 		<WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
 	</PropertyGroup>
+
+	<!--
+		UmbHost.Licensing (closed source) lives next to this repo in the full checkout. Projects that set
+		ReferenceUmbHostLicensing=true get the project there, or the published NuGet package when this repo is cloned on its own.
+		Force package mode with -p:UseUmbLicensingProject=false.
+	-->
+	<PropertyGroup>
+		<UmbLicensingProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../UmbLicensing/UmbHost.Licensing.csproj'))</UmbLicensingProject>
+		<UseUmbLicensingProject Condition="'$(UseUmbLicensingProject)' == '' And Exists('$(UmbLicensingProject)')">true</UseUmbLicensingProject>
+		<UmbHostLicensingVersion>1.4.0</UmbHostLicensingVersion>
+	</PropertyGroup>
 </Project>

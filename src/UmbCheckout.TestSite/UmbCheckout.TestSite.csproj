@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <UserSecretsId>7f34e682-c8e9-4da1-b0ff-960ee5c8b2bb</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Umbraco.Cms" Version="17.6.2" />
+    <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" Version="17.6.2" />
+    <PackageReference Include="Umbraco.TheStarterKit" Version="17.0.0" />
+    <PackageReference Include="uSync" Version="17.0.0" />
+  </ItemGroup>
+
+  <!--
+    The open-source packages only. UmbHost.Licensing comes through UmbCheckout.Core (project or NuGet package, see
+    Directory.Build.props). The site with every package, add-ons included, is UmbCheckout.TestSite.v17 in the parent repo.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\UmbCheckout.Backoffice\UmbCheckout.Backoffice.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Core\UmbCheckout.Core.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Stripe.uSync\UmbCheckout.Stripe.uSync.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Stripe\UmbCheckout.Stripe.csproj" />
+    <ProjectReference Include="..\UmbCheckout.uSync\UmbCheckout.uSync.csproj" />
+    <ProjectReference Include="..\UmbCheckout\UmbCheckout.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Razor files are needed for the backoffice to work correctly -->
+    <CopyRazorGenerateFilesToPublishDirectory>true</CopyRazorGenerateFilesToPublishDirectory>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Remove RazorCompileOnBuild and RazorCompileOnPublish when not using ModelsMode InMemoryAuto -->
+    <RazorCompileOnBuild>false</RazorCompileOnBuild>
+    <RazorCompileOnPublish>false</RazorCompileOnPublish>
+  </PropertyGroup>
+
+</Project>

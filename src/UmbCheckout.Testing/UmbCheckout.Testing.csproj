@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- UmbHost.Licensing: project or package, see UmbCheckout/Directory.Build.props -->
+    <ReferenceUmbHostLicensing>true</ReferenceUmbHostLicensing>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -21,7 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
-    <ProjectReference Include="..\..\..\UmbLicensing\UmbHost.Licensing.csproj" />
   </ItemGroup>
 
 </Project>
