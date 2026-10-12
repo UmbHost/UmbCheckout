@@ -1,275 +1,111 @@
-using System.Globalization;
-using System.Text.Json;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using UmbCheckout.Backoffice.Models;
+using UmbCheckout.Backoffice.Mapping;
+using UmbCheckout.Backoffice.Models.Api;
 using UmbCheckout.Core.Interfaces;
-using UmbCheckout.Shared;
-using UmbCheckout.Shared.Extensions;
+using UmbCheckout.Core.ManagementApi;
 using UmbCheckout.Shared.Models;
 using UmbHost.Licensing.Models;
-using UmbHost.Licensing.Services;
-using Umbraco.Cms.Core.Configuration.Models;
-using Umbraco.Cms.Core.Services;
-using Asp.Versioning;
-using Microsoft.AspNetCore.Authorization;
+using Umbraco.Cms.Api.Common.Attributes;
 using Umbraco.Cms.Api.Management.Controllers;
 using Umbraco.Cms.Api.Management.Routing;
-using Umbraco.Cms.Web.Common.Authorization;
+using Umbraco.Cms.Core.Configuration.Models;
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.PublishedCache;
+using Umbraco.Cms.Core.Routing;
 
 namespace UmbCheckout.Backoffice.Controllers.Api
 {
-    /// <summary>
-    /// ManagementApiControllerBase to retrieve the configuration settings for the backoffice
-    /// </summary>
     [ApiVersion("1.0")]
-    [ApiExplorerSettings(GroupName = "UmbCheckout")]
-    [Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
     [VersionedApiBackOfficeRoute("umbcheckout/configuration")]
+    [ApiExplorerSettings(GroupName = "Configuration")]
+    [MapToApi(UmbCheckoutApiComposer.DocumentName)]
     public class ConfigurationApiController : ManagementApiControllerBase
     {
-        private readonly IConfigurationService _configuration;
-        private readonly ILocalizedTextService _localizedTextService;
-        private readonly ILogger<ConfigurationApiController> _logger;
-        private readonly WebRoutingSettings _umbracoWebRoutingSettings;
+        private readonly IConfigurationService _configurationService;
+        private readonly IPublishedContentCache _contentCache;
+        private readonly IPublishedUrlProvider _urlProvider;
+        private readonly WebRoutingSettings _webRoutingSettings;
+        private readonly Func<bool> _isLicensed;
 
-        public ConfigurationApiController(IConfigurationService configuration, ILogger<ConfigurationApiController> logger, LicenseService licenseService, ILocalizedTextService localizedTextService, IOptions<WebRoutingSettings> umbracoWebRoutingSettings)
+        [ActivatorUtilitiesConstructor]
+        public ConfigurationApiController(IConfigurationService configurationService, IPublishedContentCache contentCache, IPublishedUrlProvider urlProvider, IOptions<WebRoutingSettings> webRoutingSettings, UmbHost.Licensing.Services.LicenseService licenseService)
+            : this(configurationService, contentCache, urlProvider, webRoutingSettings, () => UmbCheckoutSettings.IsLicensed)
         {
-            _configuration = configuration;
-            _logger = logger;
-            _localizedTextService = localizedTextService;
             licenseService.RunLicenseCheck();
-            _umbracoWebRoutingSettings = umbracoWebRoutingSettings.Value;
         }
 
-        /// <summary>
-        /// Gets the configuration properties
-        /// </summary>
-        /// <returns>The configuration properties in JSON</returns>
+        internal ConfigurationApiController(IConfigurationService configurationService, IPublishedContentCache contentCache, IPublishedUrlProvider urlProvider, IOptions<WebRoutingSettings> webRoutingSettings, Func<bool> isLicensed)
+        {
+            _configurationService = configurationService;
+            _contentCache = contentCache;
+            _urlProvider = urlProvider;
+            _webRoutingSettings = webRoutingSettings.Value;
+            _isLicensed = isLicensed;
+        }
+
         [HttpGet]
+        [ProducesResponseType(typeof(ConfigurationResponseModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetConfiguration()
         {
-            try
-            {
-                var backOfficeProperties = await GetConfigurationProperties();
-
-                return new JsonResult(backOfficeProperties, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            var configuration = await _configurationService.GetConfiguration() ?? new UmbCheckoutConfiguration();
+            return Ok(ConfigurationModelMapper.ToResponse(configuration, _isLicensed()));
         }
 
-        /// <summary>
-        /// Gets whether the Umbraco Application Url configuration has been set
-        /// </summary>
-        /// <returns>True if the Umbraco Application Url has been set, false if not</returns>
-        [HttpGet("has-url-set")]
-        public bool HasUmbracoApplicationUrlSet()
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateConfiguration([FromBody] UpdateConfigurationRequestModel model)
         {
-            return !string.IsNullOrWhiteSpace(_umbracoWebRoutingSettings.UmbracoApplicationUrl);
+            if (!TryResolvePage(model.SuccessPageKey, out var successPage) || !TryResolvePage(model.CancelPageKey, out var cancelPage))
+            {
+                return ConfigurationOperationStatusResult(ConfigurationOperationStatus.PageNotFound);
+            }
+
+            var configuration = ConfigurationModelMapper.ToConfiguration(model, _isLicensed(), successPage, cancelPage);
+            var updated = await _configurationService.UpdateConfiguration(configuration);
+
+            return updated ? Ok() : ConfigurationOperationStatusResult(ConfigurationOperationStatus.SaveFailed);
         }
 
-        /// <summary>
-        /// Updates the configuration
-        /// </summary>
-        /// <param name="configValues">The configuration values</param>
-        /// <returns>The updated configuration properties in JSON</returns>
-        [HttpPatch]
-        public async Task<IActionResult> UpdateConfiguration([FromBody] ConfigurationValue configValues)
+        [HttpGet("application-url")]
+        [ProducesResponseType(typeof(ApplicationUrlStatusResponseModel), StatusCodes.Status200OK)]
+        public IActionResult GetApplicationUrlStatus()
+            => Ok(new ApplicationUrlStatusResponseModel { IsSet = !string.IsNullOrWhiteSpace(_webRoutingSettings.UmbracoApplicationUrl) });
+
+        private bool TryResolvePage(Guid? key, out IEnumerable<MultiUrlPicker> picker)
         {
-            try
+            picker = Enumerable.Empty<MultiUrlPicker>();
+            if (key is null)
             {
-                var storeBasketInCookie =
-                    configValues.StoreBasketInCookie.ToBoolean();
-                var storeBasketInDatabase =
-                    configValues.StoreBasketInDatabase.ToBoolean();
-                var enableShipping =
-                    configValues.EnableShipping.ToBoolean();
-
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    storeBasketInCookie = false;
-                    storeBasketInDatabase = false;
-                }
-                else
-                {
-                    if (storeBasketInDatabase)
-                    {
-                        storeBasketInCookie = true;
-                    }
-                }
-
-                var configuration = new Shared.Models.UmbCheckoutConfiguration
-                {
-                    BasketInCookieExpiry = configValues.BasketInCookieExpiry,
-                    BasketInDatabaseExpiry = configValues.BasketInDatabaseExpiry,
-                    StoreBasketInCookie = storeBasketInCookie,
-                    StoreBasketInDatabase = storeBasketInDatabase,
-                    SuccessPageUrl = configValues.SuccessPageUrl,
-                    CancelPageUrl = configValues.CancelPageUrl,
-                    EnableShipping = enableShipping,
-                    CurrencyCode = configValues.CurrencyCode.ToUpper()
-                };
-
-                var updated = await _configuration.UpdateConfiguration(configuration);
-
-                if (updated)
-                {
-                    var backOfficeProperties = await GetConfigurationProperties();
-
-                    return new JsonResult(backOfficeProperties, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-                }
-
-                return BadRequest();
+                return true;
             }
-            catch (Exception ex)
+
+            IPublishedContent? page = _contentCache.GetById(key.Value);
+            if (page is null)
             {
-                _logger.LogError(ex, ex.Message);
-                throw;
+                return false;
             }
+
+            // The stored URL is the checkout fallback used by StripeSessionService when the page URL cannot be resolved at runtime.
+            picker = [ConfigurationModelMapper.ToPicker(page.Key, page.Name, _urlProvider.GetUrl(page, UrlMode.Default, null, null), true)];
+            return true;
         }
 
-        /// <summary>
-        /// Converts the configuration properties to a JSON string
-        /// </summary>
-        /// <returns>The configuration properties in JSON</returns>
-        private async Task<List<Property>> GetConfigurationProperties()
-        {
-            try
+        private IActionResult ConfigurationOperationStatusResult(ConfigurationOperationStatus status) =>
+            OperationStatusResult(status, problemDetails => status switch
             {
-                var storeBasketInCookieDescription = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketCookieDescription, CultureInfo.CurrentUICulture);
-                var storeBasketInDatabaseDescription = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketDatabaseDescription, CultureInfo.CurrentUICulture);
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    storeBasketInCookieDescription += Environment.NewLine + _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.DisabledUnlicensed, CultureInfo.CurrentUICulture);
-                    storeBasketInDatabaseDescription += Environment.NewLine + _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.DisabledUnlicensed, CultureInfo.CurrentUICulture);
-                }
-
-                var configurationDb = await _configuration.GetConfiguration();
-                var backOfficeProperties = new List<Property>
-                {
-                    new()
-                    {
-                        Alias = "successPageUrl",
-                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.SuccessPageUrlDescription, CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.SuccessPageUrlLabel, CultureInfo.CurrentUICulture),
-                        Value = configurationDb != null ? configurationDb.SuccessPageUrl : string.Empty,
-                        View = "multiurlpicker",
-                        Config = new Config
-                        {
-                            HideAnchor = false,
-                            IgnoreUserStartNodes = false,
-                            MaxNumber = 1,
-                            MinNumber = 1,
-                        },
-                        Validation = new Validation
-                        {
-                            Mandatory = true
-                        }
-                    },
-                    new()
-                    {
-                        Alias = "cancelPageUrl",
-                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.CancelPageUrlDescription, CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.CancelPageUrlLabel, CultureInfo.CurrentUICulture),
-                        Value = configurationDb != null ? configurationDb.CancelPageUrl : string.Empty,
-                        View = "multiurlpicker",
-                        Config = new Config
-                        {
-                            HideAnchor = false,
-                            IgnoreUserStartNodes = false,
-                            MaxNumber = 1,
-                            MinNumber = 1,
-                        },
-                        Validation = new Validation
-                        {
-                            Mandatory = true
-                        }
-                    },
-                    new()
-                    {
-                        Alias = "currencyCode",
-                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.CurrencyCodeDescription, CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.CurrencyCodeLabel, CultureInfo.CurrentUICulture),
-                        Value = configurationDb != null ? configurationDb.CurrencyCode : string.Empty,
-                        View = "textbox",
-                        Config = new Config
-                        {
-                            MaxChars = 3
-                        },
-                        Validation = new Validation
-                        {
-                            Mandatory = true
-                        }
-                    },
-                    new()
-                    {
-                        Alias = "enableShipping",
-                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.EnableShippingDescription, CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.EnableShippingLabel, CultureInfo.CurrentUICulture),
-                        Value = configurationDb != null ? configurationDb.EnableShipping.ToString() : "false",
-                        View = "boolean"
-                    },
-                };
-
-                if (UmbCheckoutSettings.IsLicensed)
-                {
-                    backOfficeProperties.Add(new Property
-                    {
-                            Alias = "storeBasketInCookie",
-                            Description = storeBasketInCookieDescription,
-                            Label = "Store Basket In a Cookie",
-                            Value = configurationDb != null ? configurationDb.StoreBasketInCookie.ToString() : "false",
-                            View = "boolean"
-                        });
-
-                    backOfficeProperties.Add(new Property
-                    {
-                        Alias = "basketInCookieExpiry",
-                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketCookieExpiryDescription, CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketCookieExpiryLabel, CultureInfo.CurrentUICulture),
-                        Value = configurationDb != null ? configurationDb.BasketInCookieExpiry.ToString() : "30",
-                        View = "integer",
-                        Validation = new Validation
-                        {
-                            Mandatory = true
-                        }
-                    });
-
-                    backOfficeProperties.Add(new Property
-                    {
-                        Alias = "storeBasketInDatabase",
-                        Description = storeBasketInDatabaseDescription,
-                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketDatabaseLabel, CultureInfo.CurrentUICulture),
-                        Value = configurationDb != null ? configurationDb.StoreBasketInDatabase.ToString() : "false",
-                        View = "boolean"
-                    });
-
-                    backOfficeProperties.Add(new Property
-                    {
-                        Alias = "basketInDatabaseExpiry",
-                        Description = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketDatabaseExpiryDescription, CultureInfo.CurrentUICulture),
-                        Label = _localizedTextService.Localize(Consts.LocalizationKeys.Area, Consts.LocalizationKeys.StoreBasketDatabaseExpiryLabel, CultureInfo.CurrentUICulture),
-                        Value = configurationDb != null ? configurationDb.BasketInDatabaseExpiry.ToString() : "30",
-                        View = "integer",
-                        Validation = new Validation
-                        {
-                            Mandatory = true
-                        }
-                    });
-                }
-
-                return backOfficeProperties;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
-        }
+                ConfigurationOperationStatus.PageNotFound => BadRequest(problemDetails
+                    .WithTitle(UmbCheckoutProblemDetails.InvalidValueTitle)
+                    .WithDetail("The selected success or cancel page could not be found.")
+                    .Build()),
+                _ => BadRequest(problemDetails
+                    .WithTitle("Configuration not saved")
+                    .WithDetail("The configuration could not be saved.")
+                    .Build())
+            });
     }
 }

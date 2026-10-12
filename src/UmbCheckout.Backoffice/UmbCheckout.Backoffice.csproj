@@ -52,4 +52,8 @@
     <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="UmbCheckout.Tests" />
+  </ItemGroup>
+
 </Project>
