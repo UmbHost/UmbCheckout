@@ -7,3 +7,4 @@ export { UmbCheckoutUnlicensedAlertElement } from "./shared/unlicensed-alert.ele
 export { UmbCheckoutMadeByElement } from "./shared/made-by.element.js";
 export { UmbCheckoutAlertStyles } from "./shared/alert.styles.js";
 export { formatMoney, type UmbCheckoutMoney } from "./shared/money.js";
+export { createUmbCheckoutDeleteAction } from "./shared/delete-entity-action.js";
