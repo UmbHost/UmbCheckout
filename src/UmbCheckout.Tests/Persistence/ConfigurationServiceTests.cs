@@ -4,6 +4,7 @@ using UmbCheckout.Core.Persistence;
 using UmbCheckout.Core.Services;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications;
+using UmbCheckout.Shared.Persistence;
 using UmbCheckout.Shared.Notifications.Configuration;
 using UmbCheckout.Testing;
 using Umbraco.Cms.Core.Events;
@@ -17,6 +18,8 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
 {
     public static TheoryData<TestProvider> Providers => new() { TestProvider.Sqlite, TestProvider.SqlServer };
 
+    private SettingsCache<UmbCheckout.Core.Pocos.UmbCheckoutConfiguration> _cache = new();
+
     private async Task<(TestDatabase<UmbCheckoutDbContext> Database, ConfigurationService Service, TestEventAggregator Events, TestEventMessagesFactory Messages)> Arrange(TestProvider provider)
     {
         var database = await TestDatabase.CreateAsync<UmbCheckoutDbContext>(provider, sqlServer, o => new UmbCheckoutDbContext(o), UmbCheckoutDbContext.HistoryTable);
@@ -28,7 +31,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         var events = new TestEventAggregator();
         var messages = new TestEventMessagesFactory();
         var service = new ConfigurationService(database.ScopeProvider, NullLogger<ConfigurationService>.Instance,
-            TestMapper.Create(new UmbCheckout.Core.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages);
+            TestMapper.Create(new UmbCheckout.Core.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages, _cache);
         return (database, service, events, messages);
     }
 
@@ -173,5 +176,54 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
 
         Assert.Null(await service.GetConfigurationAsync());
         Assert.Empty(events.Published.OfType<OnConfigurationLoadedNotification>());
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_second_read_is_served_from_the_cache(TestProvider provider)
+    {
+        // Quality Phase 5: configuration was read from the database several times per shop request.
+        var (database, service, _, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" });
+        await service.GetConfigurationAsync();
+        await database.ExecuteSqlAsync("UPDATE UmbCheckoutConfiguration SET CurrencyCode = 'USD'");
+
+        Assert.Equal("GBP", (await service.GetConfigurationAsync())!.CurrencyCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_save_clears_the_cache_and_reads_never_share_an_instance(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" });
+        var first = await service.GetConfigurationAsync();
+        first!.CurrencyCode = "mutated by a caller";
+
+        await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "EUR" });
+        var second = await service.GetConfigurationAsync();
+        var third = await service.GetConfigurationAsync();
+
+        Assert.Equal("EUR", second!.CurrencyCode);
+        Assert.NotSame(second, third);
+        Assert.Equal(3, events.Published.OfType<OnConfigurationLoadedNotification>().Count()); // Loaded still runs on every read
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task The_cache_refresher_clears_the_cache_on_every_server(TestProvider provider)
+    {
+        // Load balancing: another server saved; Umbraco's distributed cache calls this refresher here.
+        var (database, service, _, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" });
+        await service.GetConfigurationAsync();
+        await database.ExecuteSqlAsync("UPDATE UmbCheckoutConfiguration SET CurrencyCode = 'USD'");
+
+        new UmbCheckout.Core.Cache.UmbCheckoutConfigurationCacheRefresher(_cache).RefreshAll();
+
+        Assert.Equal("USD", (await service.GetConfigurationAsync())!.CurrencyCode);
     }
 }

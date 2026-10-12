@@ -4,6 +4,7 @@ using UmbCheckout.Stripe.Notifications;
 using UmbCheckout.Stripe.Persistence;
 using UmbCheckout.Stripe.Services;
 using UmbCheckout.Shared.Notifications;
+using UmbCheckout.Shared.Persistence;
 using UmbCheckout.Testing;
 using Umbraco.Cms.Core.Events;
 using Xunit;
@@ -16,6 +17,8 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
 {
     public static TheoryData<TestProvider> Providers => new() { TestProvider.Sqlite, TestProvider.SqlServer };
 
+    private readonly SettingsCache<UmbCheckout.Stripe.Pocos.UmbCheckoutStripeSettings> _cache = new();
+
     private async Task<(TestDatabase<UmbCheckoutStripeDbContext> Database, StripeSettingsService Service, TestEventAggregator Events, TestEventMessagesFactory Messages)> Arrange(TestProvider provider)
     {
         var database = await TestDatabase.CreateAsync<UmbCheckoutStripeDbContext>(provider, sqlServer, o => new UmbCheckoutStripeDbContext(o), UmbCheckoutStripeDbContext.HistoryTable);
@@ -27,7 +30,7 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
         var events = new TestEventAggregator();
         var messages = new TestEventMessagesFactory();
         var service = new StripeSettingsService(database.ScopeProvider, NullLogger<StripeSettingsService>.Instance,
-            TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages);
+            TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages, _cache);
         return (database, service, events, messages);
     }
 
@@ -120,5 +123,52 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
 
         Assert.True((await service.GetStripeSettingsAsync())!.CollectPhoneNumber);
         Assert.Single(events.Published.OfType<OnStripeSettingsLoadedNotification>());
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_second_read_is_served_from_the_cache(TestProvider provider)
+    {
+        // Quality Phase 5: the settings were read from the database on every Stripe call.
+        var (database, service, _, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "GB" });
+        await service.GetStripeSettingsAsync();
+        await database.ExecuteSqlAsync("UPDATE UmbCheckoutStripeSettings SET ShippingAllowedCountries = 'US'");
+
+        Assert.Equal("GB", (await service.GetStripeSettingsAsync())!.ShippingAllowedCountries);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_save_clears_the_cache_and_reads_never_share_an_instance(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "GB" });
+        (await service.GetStripeSettingsAsync())!.ShippingAllowedCountries = "mutated by a caller";
+
+        await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "FR" });
+        var second = await service.GetStripeSettingsAsync();
+        var third = await service.GetStripeSettingsAsync();
+
+        Assert.Equal("FR", second!.ShippingAllowedCountries);
+        Assert.NotSame(second, third);
+        Assert.Equal(3, events.Published.OfType<OnStripeSettingsLoadedNotification>().Count());
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task The_cache_refresher_clears_the_cache_on_every_server(TestProvider provider)
+    {
+        var (database, service, _, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "GB" });
+        await service.GetStripeSettingsAsync();
+        await database.ExecuteSqlAsync("UPDATE UmbCheckoutStripeSettings SET ShippingAllowedCountries = 'US'");
+
+        new UmbCheckout.Stripe.Cache.UmbCheckoutStripeSettingsCacheRefresher(_cache).RefreshAll();
+
+        Assert.Equal("US", (await service.GetStripeSettingsAsync())!.ShippingAllowedCountries);
     }
 }
