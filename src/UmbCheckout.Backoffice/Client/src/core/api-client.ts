@@ -8,6 +8,29 @@ export interface UmbCheckoutApiClient {
   interceptors: { response: { use(fn: (response: Response) => Response | Promise<Response>): unknown } };
 }
 
+type Deferred = { promise: Promise<void>; resolve: () => void };
+
+const readiness = new WeakMap<UmbCheckoutApiClient, Deferred>();
+
+function deferredFor(client: UmbCheckoutApiClient): Deferred {
+  let deferred = readiness.get(client);
+  if (!deferred) {
+    let resolve!: () => void;
+    const promise = new Promise<void>((r) => (resolve = r));
+    deferred = { promise, resolve };
+    readiness.set(client, deferred);
+  }
+  return deferred;
+}
+
+/**
+ * Resolves once the client has been given the back-office token.
+ * Contexts that call the API as soon as they are created (global contexts can start before the entry point runs) must await this first.
+ */
+export function whenUmbCheckoutClientReady(client: UmbCheckoutApiClient): Promise<void> {
+  return deferredFor(client).promise;
+}
+
 /**
  * Configures a generated client with the back-office token (Umbraco 17.0 template pattern)
  * and warns once when the session has expired, because the 17.0 pattern does not trigger Umbraco's re-login prompt.
@@ -16,12 +39,14 @@ export function configureUmbCheckoutClient(host: UmbElement, client: UmbCheckout
   let warned = false;
 
   host.consumeContext(UMB_AUTH_CONTEXT, (authContext) => {
-    const config = authContext?.getOpenApiConfiguration();
+    if (!authContext) return;
+    const config = authContext.getOpenApiConfiguration();
     client.setConfig({
-      auth: config?.token ?? undefined,
-      baseUrl: config?.base ?? "",
-      credentials: config?.credentials ?? "same-origin",
+      auth: config.token,
+      baseUrl: config.base ?? "",
+      credentials: config.credentials ?? "same-origin",
     });
+    deferredFor(client).resolve();
   });
 
   host.consumeContext(UMB_NOTIFICATION_CONTEXT, (notificationContext) => {
