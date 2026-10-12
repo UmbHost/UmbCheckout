@@ -94,6 +94,30 @@ namespace UmbCheckout.Tests.Services
             _sessions.VerifyNoOtherCalls();
         }
 
+        [Fact]
+        public async Task A_Stripe_timeout_is_logged_and_the_page_still_renders()
+        {
+            // Stripe.net rethrows an HttpClient timeout as a raw TaskCanceledException; the customer has just paid.
+            _stripe.Setup(s => s.GetSessionAsync("cs_test_1")).ThrowsAsync(new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout"));
+
+            await Request("https://shop.test/success/?session_id=cs_test_1&success=true"); // no exception escapes
+
+            _sessions.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task A_failure_while_matching_the_success_page_is_logged_and_the_page_still_renders()
+        {
+            var request = new Mock<IPublishedRequestBuilder>();
+            request.Setup(r => r.Uri).Returns(new Uri("https://shop.test/success/?session_id=cs_test_1&success=true"));
+            _matcher.Setup(m => m.IsSuccessPageAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("database down"));
+
+            await new StripeResponseNotificationHandler(_stripe.Object, _sessions.Object, _matcher.Object, NullLogger<StripeResponseNotificationHandler>.Instance)
+                .HandleAsync(new RoutingRequestNotification(request.Object), CancellationToken.None); // no exception escapes
+
+            _stripe.VerifyNoOtherCalls();
+        }
+
         [Theory]
         [InlineData("paid")]
         [InlineData("no_payment_required")]

@@ -23,7 +23,7 @@ namespace UmbCheckout.Tests.Api
         private readonly Mock<IStripeWebhookEventStore> _store = new();
 
         public StripeWebhookApiControllerTests()
-            => _store.Setup(s => s.TryBeginAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            => _store.Setup(s => s.TryClaimAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(StripeWebhookEventClaim.Claimed);
 
         private static string Json(string id, string type, string apiVersion = "2026-01-28.clover") =>
             // Real Stripe events always carry "request"; Stripe.net's event converter relies on it.
@@ -73,7 +73,7 @@ namespace UmbCheckout.Tests.Api
         [Fact]
         public async Task A_redelivered_event_is_acknowledged_without_running_handlers()
         {
-            _store.Setup(s => s.TryBeginAsync("evt_1", It.IsAny<CancellationToken>())).ReturnsAsync(false);
+            _store.Setup(s => s.TryClaimAsync("evt_1", It.IsAny<CancellationToken>())).ReturnsAsync(StripeWebhookEventClaim.AlreadyHandled);
 
             Assert.IsType<OkResult>(await PostAsync(Json("evt_1", "checkout.session.completed")));
             _events.VerifyNoOtherCalls();
@@ -89,6 +89,47 @@ namespace UmbCheckout.Tests.Api
 
             Assert.Equal(500, result.StatusCode);
             _store.Verify(s => s.ForgetAsync("evt_1", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task A_handled_event_is_marked_done()
+        {
+            await PostAsync(Json("evt_1", "checkout.session.completed"));
+
+            _store.Verify(s => s.CompleteAsync("evt_1", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task A_redelivery_while_the_first_is_running_is_asked_to_retry_later()
+        {
+            _store.Setup(s => s.TryClaimAsync("evt_1", It.IsAny<CancellationToken>())).ReturnsAsync(StripeWebhookEventClaim.InProgress);
+
+            var result = Assert.IsType<StatusCodeResult>(await PostAsync(Json("evt_1", "checkout.session.completed")));
+
+            Assert.Equal(409, result.StatusCode);
+            _events.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task A_failing_release_still_answers_500_so_Stripe_retries()
+        {
+            // The handler failed because the database is down, so releasing the claim fails too; the lease expires instead.
+            _events.Setup(e => e.PublishAsync(It.IsAny<OnCheckoutSessionCompletedNotification>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("database down"));
+            _store.Setup(s => s.ForgetAsync("evt_1", It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("database down"));
+
+            var result = Assert.IsType<StatusCodeResult>(await PostAsync(Json("evt_1", "checkout.session.completed")));
+
+            Assert.Equal(500, result.StatusCode);
+            _store.Verify(s => s.CompleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task An_unhandled_type_is_not_recorded()
+        {
+            await PostAsync(Json("evt_3", "customer.created"));
+
+            _store.VerifyNoOtherCalls();
         }
 
         [Fact]

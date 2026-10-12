@@ -22,7 +22,7 @@ Add a webhook endpoint in Stripe pointing at `https://<your site>/umbraco/api/st
 
 UmbCheckout uses Stripe.net 50.x, which is pinned to Stripe API version `2026-01-28.clover`. Create the endpoint on that version where you can (the Stripe API and CLI accept an `api_version`; the Dashboard may only offer your account's default). Events on another version are still handled, with a warning in the log once per version.
 
-Stripe delivers each event at least once and retries for up to 3 days. UmbCheckout handles each event once: a redelivery is acknowledged without running your notification handlers, and if a handler throws, the webhook answers 500 so Stripe's retry runs it again.
+Stripe delivers each event at least once and retries for up to 3 days. Once your notification handlers have completed for an event, a redelivery is acknowledged without running them again. If a handler throws, or the server stops while handlers are running, Stripe's retry runs the handlers again (all of them), so write handlers that are safe to repeat.
 
 ## Pricing comparison
 

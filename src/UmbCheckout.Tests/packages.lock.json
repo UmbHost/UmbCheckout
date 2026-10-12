@@ -2414,6 +2414,16 @@
           "Umbraco.Cms.Web.Website": "[17.6.0, 18.0.0)"
         }
       },
+      "umbcheckout.stripe.usync": {
+        "type": "Project",
+        "dependencies": {
+          "UmbCheckout.Stripe": "[1.0.0, )",
+          "Umbraco.Cms.Api.Management": "[17.6.0, 18.0.0)",
+          "Umbraco.Cms.Core": "[17.6.0, 18.0.0)",
+          "Umbraco.Cms.Web.Common": "[17.6.0, 18.0.0)",
+          "uSync.BackOffice": "[17.0.0, 18.0.0)"
+        }
+      },
       "umbcheckout.testing": {
         "type": "Project",
         "dependencies": {

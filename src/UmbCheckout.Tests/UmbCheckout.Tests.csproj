@@ -29,6 +29,7 @@
       <ProjectReference Include="..\UmbCheckout\UmbCheckout.csproj" />
       <ProjectReference Include="..\UmbCheckout.Testing\UmbCheckout.Testing.csproj" />
     <ProjectReference Include="..\UmbCheckout.uSync\UmbCheckout.uSync.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Stripe.uSync\UmbCheckout.Stripe.uSync.csproj" />
     </ItemGroup>
 
     <ItemGroup>
