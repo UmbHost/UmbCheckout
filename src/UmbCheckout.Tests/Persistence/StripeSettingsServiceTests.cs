@@ -3,7 +3,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using UmbCheckout.Stripe.Notifications;
 using UmbCheckout.Stripe.Persistence;
 using UmbCheckout.Stripe.Services;
+using UmbCheckout.Shared.Notifications;
 using UmbCheckout.Testing;
+using Umbraco.Cms.Core.Events;
 using Xunit;
 using SettingsModel = UmbCheckout.Stripe.Models.UmbCheckoutStripeSettings;
 
@@ -14,7 +16,7 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
 {
     public static TheoryData<TestProvider> Providers => new() { TestProvider.Sqlite, TestProvider.SqlServer };
 
-    private async Task<(TestDatabase<UmbCheckoutStripeDbContext> Database, StripeSettingsService Service)> Arrange(TestProvider provider)
+    private async Task<(TestDatabase<UmbCheckoutStripeDbContext> Database, StripeSettingsService Service, TestEventAggregator Events, TestEventMessagesFactory Messages)> Arrange(TestProvider provider)
     {
         var database = await TestDatabase.CreateAsync<UmbCheckoutStripeDbContext>(provider, sqlServer, o => new UmbCheckoutStripeDbContext(o), UmbCheckoutStripeDbContext.HistoryTable);
         await using (var db = database.CreateContext())
@@ -22,16 +24,18 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
             await db.Database.MigrateAsync();
         }
 
+        var events = new TestEventAggregator();
+        var messages = new TestEventMessagesFactory();
         var service = new StripeSettingsService(database.ScopeProvider, NullLogger<StripeSettingsService>.Instance,
-            TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create());
-        return (database, service);
+            TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages);
+        return (database, service, events, messages);
     }
 
     [Theory]
     [MemberData(nameof(Providers))]
     public async Task First_save_inserts_then_updates_the_single_row_and_notifies_once_per_save(TestProvider provider)
     {
-        var (database, service) = await Arrange(provider);
+        var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
 
         Assert.Null(await service.GetStripeSettingsAsync());
@@ -51,7 +55,7 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
     [MemberData(nameof(Providers))]
     public async Task A_legacy_row_with_a_null_key_reads_as_empty_and_gets_a_key_on_the_next_save(TestProvider provider)
     {
-        var (database, service) = await Arrange(provider);
+        var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
         await database.ExecuteSqlAsync("INSERT INTO UmbCheckoutStripeSettings (\"Key\", UseLiveApiDetails, ShippingAllowedCountries, CollectPhoneNumber, CollectPromotionalConsent, AllowPromotionalCodes, EnableAbandonedCartRecovery, AllowPromotionalCodesOnRecoveredCarts) VALUES (NULL, 0, NULL, 0, 0, 0, 0, 0)");
 
@@ -60,5 +64,61 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
 
         await service.UpdateStripeSettingsAsync(legacy);
         Assert.NotEqual(Guid.Empty, (await service.GetStripeSettingsAsync())!.Key);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_Saving_handler_changes_what_is_saved(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        events.On<OnStripeSettingsSavingNotification>(n => n.Target.ShippingAllowedCountries = "GB");
+
+        Assert.True(await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "GB,US" }));
+
+        Assert.Equal("GB", (await service.GetStripeSettingsAsync())!.ShippingAllowedCountries);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_cancel_saves_nothing_and_keeps_the_message(TestProvider provider)
+    {
+        var (database, service, events, messages) = await Arrange(provider);
+        await using var _db = database;
+        events.On<OnStripeSettingsSavingNotification>(n => n.CancelOperation(new EventMessage("Stripe", "Live mode needs approval", EventMessageType.Error)));
+
+        Assert.False(await service.UpdateStripeSettingsAsync(new SettingsModel { UseLiveApiDetails = true }));
+
+        Assert.Equal(0, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutStripeSettings"));
+        Assert.Empty(database.ScopeProvider.Notifications.Published.OfType<OnStripeSettingsSavedNotification>());
+        Assert.Equal("Live mode needs approval", messages.Messages.CancellationMessage());
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task An_update_hands_the_handler_the_stored_settings(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "GB" });
+        string? before = null;
+        events.On<OnStripeSettingsSavingNotification>(n => before = n.Existing?.ShippingAllowedCountries);
+
+        await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "US" });
+
+        Assert.Equal("GB", before);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_Loaded_handler_changes_what_the_caller_gets_once_per_read(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateStripeSettingsAsync(new SettingsModel { CollectPhoneNumber = false });
+        events.On<OnStripeSettingsLoadedNotification>(n => n.Target.CollectPhoneNumber = true);
+
+        Assert.True((await service.GetStripeSettingsAsync())!.CollectPhoneNumber);
+        Assert.Single(events.Published.OfType<OnStripeSettingsLoadedNotification>());
     }
 }
