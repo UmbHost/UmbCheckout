@@ -12,13 +12,17 @@ namespace UmbCheckout.Core.ManagementApi
     public class UmbCheckoutOperationIdHandler : OperationIdHandler
     {
         private readonly string _controllerNamespacePrefix;
+        private readonly string? _excludedNamespacePrefix;
 
-        public UmbCheckoutOperationIdHandler(IOptions<ApiVersioningOptions> apiVersioningOptions, string controllerNamespacePrefix)
+        public UmbCheckoutOperationIdHandler(IOptions<ApiVersioningOptions> apiVersioningOptions, string controllerNamespacePrefix, string? excludedNamespacePrefix = null)
             : base(apiVersioningOptions)
-            => _controllerNamespacePrefix = controllerNamespacePrefix;
+        {
+            _controllerNamespacePrefix = controllerNamespacePrefix;
+            _excludedNamespacePrefix = excludedNamespacePrefix;
+        }
 
         protected override bool CanHandle(ApiDescription apiDescription, ControllerActionDescriptor controllerActionDescriptor)
-            => controllerActionDescriptor.ControllerTypeInfo.Namespace?.StartsWith(_controllerNamespacePrefix, StringComparison.Ordinal) is true;
+            => UmbCheckoutNamespaceScope.Matches(controllerActionDescriptor.ControllerTypeInfo.Namespace, _controllerNamespacePrefix, _excludedNamespacePrefix);
 
         public override string Handle(ApiDescription apiDescription)
             => $"{apiDescription.ActionDescriptor.RouteValues["action"]}";

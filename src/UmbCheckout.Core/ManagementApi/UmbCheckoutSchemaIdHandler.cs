@@ -8,11 +8,16 @@ namespace UmbCheckout.Core.ManagementApi
     public class UmbCheckoutSchemaIdHandler : SchemaIdHandler
     {
         private readonly string _modelNamespacePrefix;
+        private readonly string? _excludedNamespacePrefix;
 
-        public UmbCheckoutSchemaIdHandler(string modelNamespacePrefix) => _modelNamespacePrefix = modelNamespacePrefix;
+        public UmbCheckoutSchemaIdHandler(string modelNamespacePrefix, string? excludedNamespacePrefix = null)
+        {
+            _modelNamespacePrefix = modelNamespacePrefix;
+            _excludedNamespacePrefix = excludedNamespacePrefix;
+        }
 
         public override bool CanHandle(Type type)
-            => type.Namespace?.StartsWith(_modelNamespacePrefix, StringComparison.Ordinal) is true;
+            => UmbCheckoutNamespaceScope.Matches(type.Namespace, _modelNamespacePrefix, _excludedNamespacePrefix);
 
         public override string Handle(Type type) => type.IsGenericType ? base.Handle(type) : type.Name;
     }

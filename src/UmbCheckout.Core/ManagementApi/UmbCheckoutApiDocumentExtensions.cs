@@ -19,7 +19,8 @@ namespace UmbCheckout.Core.ManagementApi
             this IUmbracoBuilder builder,
             string documentName,
             string title,
-            string namespacePrefix)
+            string namespacePrefix,
+            string? excludedNamespacePrefix = null)
             where TSecurityFilter : BackOfficeSecurityRequirementsOperationFilterBase
         {
             builder.Services.Configure<SwaggerGenOptions>(options =>
@@ -29,8 +30,8 @@ namespace UmbCheckout.Core.ManagementApi
             });
 
             builder.Services.AddSingleton<IOperationIdHandler>(sp =>
-                new UmbCheckoutOperationIdHandler(sp.GetRequiredService<IOptions<ApiVersioningOptions>>(), namespacePrefix));
-            builder.Services.AddSingleton<ISchemaIdHandler>(_ => new UmbCheckoutSchemaIdHandler(namespacePrefix));
+                new UmbCheckoutOperationIdHandler(sp.GetRequiredService<IOptions<ApiVersioningOptions>>(), namespacePrefix, excludedNamespacePrefix));
+            builder.Services.AddSingleton<ISchemaIdHandler>(_ => new UmbCheckoutSchemaIdHandler(namespacePrefix, excludedNamespacePrefix));
 
             return builder;
         }
