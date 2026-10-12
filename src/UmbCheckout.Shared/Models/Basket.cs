@@ -10,6 +10,8 @@
 
         public string SessionId { get; set; } = string.Empty;
 
+        public string? SiteRootCulture { get; set; } = null;
+
         public string? CustomerReferenceId { get; set; } = null;
 
         public Customer? Customer { get; set; } = null;
@@ -34,7 +36,5 @@
         }
 
         public Dictionary<string, string> MetaData { get; set; } = new();
-
-        public string? SiteRootCulture { get; set; }
     }
 }
