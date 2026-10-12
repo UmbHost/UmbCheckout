@@ -26,5 +26,16 @@ namespace UmbCheckout.Tests.Api
             Assert.Equal("Active", licensed.Status);
             Assert.False(unlicensed.IsValid);
         }
+
+        [Fact]
+        public void LicenseStatusResponseModel_CarriesTheV13LicenceDetails()
+        {
+            // The v13 Licence Details panel shows Registration Date and Valid Path alongside the other fields.
+            var model = LicenseStatusResponseModel.From(status: "Active", isDevelopment: true, isLicensed: true, expiry: "0000-00-00",
+                validDomains: "localhost", addons: [], regDate: "2024-03-01", validPaths: "/");
+
+            Assert.Equal("2024-03-01", model.RegDate);
+            Assert.Equal("/", model.ValidPaths);
+        }
     }
 }
