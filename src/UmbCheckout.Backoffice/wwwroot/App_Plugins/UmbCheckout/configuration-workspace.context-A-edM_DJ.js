@@ -1,5 +1,5 @@
 import { UmbEntityDetailWorkspaceContextBase as c } from "@umbraco-cms/backoffice/workspace";
-import { b as u, a as m, c as p, U as C } from "./bundle.manifests-yQeLHgja.js";
+import { b as u, a as m, c as p, U as C } from "./bundle.manifests-CZ-eisen.js";
 import { html as l, customElement as O } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement as U } from "@umbraco-cms/backoffice/lit-element";
 var _ = Object.getOwnPropertyDescriptor, h = (o, t, e, i) => {
@@ -39,4 +39,4 @@ export {
   b as UmbCheckoutConfigurationWorkspaceContext,
   b as api
 };
-//# sourceMappingURL=configuration-workspace.context-D_vcFVF9.js.map
+//# sourceMappingURL=configuration-workspace.context-A-edM_DJ.js.map

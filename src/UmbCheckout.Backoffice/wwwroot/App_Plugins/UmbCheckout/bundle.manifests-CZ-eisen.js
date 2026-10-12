@@ -50,7 +50,7 @@ const s = [
     alias: "UmbCheckout.Dashboard.Status",
     name: "UmbCheckout Status Dashboard",
     weight: 10,
-    element: () => import("./status-dashboard.element-CCReWH2g.js"),
+    element: () => import("./status-dashboard.element-BnUdR4xT.js"),
     meta: { label: "#umbcheckout_status", pathname: "status" },
     conditions: [{ alias: "Umb.Condition.SectionAlias", match: e }]
   }
@@ -59,7 +59,7 @@ const s = [
     type: "repository",
     alias: C,
     name: "UmbCheckout Configuration Repository",
-    api: () => import("./configuration.repository-BRryeB56.js")
+    api: () => import("./configuration.repository-BKpP-ga5.js")
   },
   {
     type: "store",
@@ -73,7 +73,7 @@ const s = [
     kind: "routable",
     alias: t,
     name: "UmbCheckout Configuration Workspace",
-    api: () => import("./configuration-workspace.context-D_vcFVF9.js"),
+    api: () => import("./configuration-workspace.context-A-edM_DJ.js"),
     meta: { entityType: a }
   },
   {
@@ -129,4 +129,4 @@ export {
   t as c,
   y as m
 };
-//# sourceMappingURL=bundle.manifests-yQeLHgja.js.map
+//# sourceMappingURL=bundle.manifests-CZ-eisen.js.map

@@ -33,7 +33,12 @@ export class UmbCheckoutStatusDashboardElement extends UmbLitElement {
         : html`<uui-box><p class="warning">${this.localize.term("umbcheckout_application_url_missing")}</p></uui-box>`}
       <uui-box headline=${this.localize.term("umbcheckout_license_status")}>
         ${this._license
-          ? html`<p><uui-tag color=${this._license.isValid ? "positive" : "danger"}>${this._license.status}</uui-tag></p>
+          ? html`<p>
+                <uui-tag color=${this._license.isValid ? "positive" : "danger"}>${this._license.status}</uui-tag>
+                ${this._license.isDevelopmentLicense
+                  ? html`<uui-tag color="warning">${this.localize.term("umbcheckout_license_development")}</uui-tag>`
+                  : nothing}
+              </p>
               ${this._license.isValid ? nothing : html`<p>${this.localize.term("umbcheckout_disabled_unlicensed")}</p>`}`
           : html`<uui-loader></uui-loader>`}
       </uui-box>

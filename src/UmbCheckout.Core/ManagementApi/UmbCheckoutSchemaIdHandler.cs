@@ -16,8 +16,10 @@ namespace UmbCheckout.Core.ManagementApi
             _excludedNamespacePrefix = excludedNamespacePrefix;
         }
 
+        // Shared generic wrappers (e.g. CursorPagedViewModel<T> in Core) belong to the document that owns their type argument.
         public override bool CanHandle(Type type)
-            => UmbCheckoutNamespaceScope.Matches(type.Namespace, _modelNamespacePrefix, _excludedNamespacePrefix);
+            => UmbCheckoutNamespaceScope.Matches(type.Namespace, _modelNamespacePrefix, _excludedNamespacePrefix)
+               || (type.IsGenericType && type.GetGenericArguments().Any(CanHandle));
 
         public override string Handle(Type type) => type.IsGenericType ? base.Handle(type) : type.Name;
     }
