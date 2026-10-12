@@ -1925,6 +1925,7 @@
           "Umbraco.Cms.Api.Common": "[17.6.0, 18.0.0)",
           "Umbraco.Cms.Api.Management": "[17.6.0, 18.0.0)",
           "Umbraco.Cms.Infrastructure": "[17.6.0, 18.0.0)",
+          "Umbraco.Cms.Persistence.EFCore": "[17.6.0, 18.0.0)",
           "Umbraco.Cms.Web.Common": "[17.6.0, 18.0.0)"
         }
       }
