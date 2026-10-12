@@ -35,6 +35,14 @@
 </style>
 <section class="section section--sand">
     <div class="container">
+        @if (TempData[UmbCheckout.Shared.Consts.TempData.UmbCheckoutBasketChangeCancelled] is string basketChangeCancelled)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-warning" role="alert">@basketChangeCancelled</div>
+                </div>
+            </div>
+        }
         @if (TempData[UmbCheckout.Shared.Consts.TempData.UmbCheckoutAddedToBasket] is Guid addedKey)
         {
             var lineItemContent = Umbraco.Content(addedKey);

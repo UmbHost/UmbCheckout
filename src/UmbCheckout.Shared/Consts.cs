@@ -57,6 +57,9 @@
             public const string UmbCheckoutAddToBasketFailed = "UmbCheckout_Add_To_Basket_Failed";
 
             public const string UmbCheckoutBasketRepriced = "UmbCheckout_Basket_Repriced";
+
+            /// <summary>A notification handler cancelled the basket change; the value is its message, for the shopper.</summary>
+            public const string UmbCheckoutBasketChangeCancelled = "UmbCheckout_Basket_Change_Cancelled";
         }
 
         public static class LocalizationKeys
