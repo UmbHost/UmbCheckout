@@ -27,7 +27,7 @@ namespace UmbCheckout.Tests
         {
             var httpContext = new DefaultHttpContext { Session = _session };
             _basketContext.Setup(b => b.SiteRootCulture).Returns("en-GB");
-            var licenseService = new LicenseService(null!, NullLogger<LicenseService>.Instance, null!, Options.Create(new UmbHost.Licensing.Models.UmbCheckoutAppSettings()), null!, Mock.Of<IRuntimeState>(), Options.Create(new WebRoutingSettings()), null!);
+            var licenseService = UmbCheckout.Testing.TestLicenseService.Create();
 
             return new SessionService(
                 new EphemeralDataProtectionProvider(),

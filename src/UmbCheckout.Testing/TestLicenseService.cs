@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -6,21 +7,30 @@ using UmbHost.Licensing.Models;
 using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Configuration.Models;
-using Umbraco.Cms.Core.Scoping;
+using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Services;
 
 namespace UmbCheckout.Testing;
 
-/// <summary>A LicenseService whose RunLicenseCheck() returns at once (runtime level Boot), leaving the licence flag to <see cref="LicenseState"/>.</summary>
+/// <summary>A LicenseService that does nothing (runtime level Boot), leaving the licence flag to <see cref="LicenseState"/>.</summary>
 public static class TestLicenseService
 {
-    public static LicenseService Create() => new(
-        Mock.Of<IHttpClientFactory>(),
-        NullLogger<LicenseService>.Instance,
-        Mock.Of<IWebHostEnvironment>(),
-        Options.Create(new UmbCheckoutAppSettings()),
-        Mock.Of<ICoreScopeProvider>(),
-        Mock.Of<IRuntimeState>(r => r.Level == RuntimeLevel.Boot),
-        Options.Create(new WebRoutingSettings()),
-        null!);
+    public static LicenseService Create()
+    {
+        // The constructor is internal to UmbHost.Licensing (its cache store is not public API).
+        var constructor = typeof(LicenseService).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).Single();
+        var cacheStore = typeof(LicenseService).Assembly.GetType("UmbHost.Licensing.Services.ILicenseCacheStore", throwOnError: true)!;
+        return (LicenseService)constructor.Invoke(
+        [
+            Mock.Of<IHttpClientFactory>(),
+            NullLogger<LicenseService>.Instance,
+            Mock.Of<IWebHostEnvironment>(),
+            Options.Create(new UmbCheckoutAppSettings()),
+            Mock.Of<IEventAggregator>(),
+            Mock.Of<IRuntimeState>(r => r.Level == RuntimeLevel.Boot),
+            Options.Create(new WebRoutingSettings()),
+            null,
+            TimeProvider.System
+        ]);
+    }
 }

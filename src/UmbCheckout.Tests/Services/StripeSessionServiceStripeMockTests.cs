@@ -45,7 +45,7 @@ namespace UmbCheckout.Tests.Services
             stripeSettingsService.Setup(s => s.GetStripeSettingsAsync(It.IsAny<CancellationToken>())).ReturnsAsync((UmbCheckout.Stripe.Models.UmbCheckoutStripeSettings?)null);
 
             // The runtime level is not Run, so the licence check returns before using its other dependencies.
-            var licenseService = new LicenseService(null!, NullLogger<LicenseService>.Instance, null!, Options.Create(new UmbHost.Licensing.Models.UmbCheckoutAppSettings()), null!, Mock.Of<IRuntimeState>(), Options.Create(new WebRoutingSettings()), null!);
+            var licenseService = UmbCheckout.Testing.TestLicenseService.Create();
 
             return new StripeSessionService(
                 contentCache.Object,
