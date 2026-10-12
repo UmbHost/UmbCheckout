@@ -22,7 +22,7 @@ namespace UmbCheckout.Tests.Infrastructure
 
         public async Task InitializeAsync()
         {
-            _container = new ContainerBuilder("stripe/stripe-mock:latest")
+            _container = new ContainerBuilder("stripe/stripe-mock@sha256:6a3fbbb37639a15525f8df5ae6995a9da21d5e827b897898a47a88e2b6e3790b") // stripe-mock 0.201.0, pinned so tests don't change underneath us
                 .WithPortBinding(StripeMockPort, assignRandomHostPort: true)
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(StripeMockPort))
                 .Build();
