@@ -153,6 +153,11 @@
           "System.Diagnostics.EventLog": "6.0.0"
         }
       },
+      "CsvHelper": {
+        "type": "Transitive",
+        "resolved": "33.1.0",
+        "contentHash": "kqfTOZGrn7NarNeXgjh86JcpTHUoeQDMB8t9NVa/ZtlSYiV1rxfRnQ49WaJsob4AiGrbK0XDzpyKkBwai4F8eg=="
+      },
       "Dazinator.Extensions.FileProviders": {
         "type": "Transitive",
         "resolved": "2.0.0",
@@ -278,8 +283,16 @@
       },
       "Json.More.Net": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "qtwsyAsL55y2vB2/sK4Pjg3ZyVzD5KKSpV3lOAMHlnjFfsjQ/86eHJfQT9aV1YysVXzF4+xyHOZbh7Iu3YQ7Lg=="
+        "resolved": "2.1.1",
+        "contentHash": "ZXAKl2VsdnIZeUo1PFII3Oi1m1L4YQjEyDjygHfHln5vgsjgIo749X6xWkv7qFYp8RROES+vOEfDcvvoVgs8kA=="
+      },
+      "JsonLogic": {
+        "type": "Transitive",
+        "resolved": "5.4.2",
+        "contentHash": "I+WN9i1cexmAar+HLDPjsKIU6hNkIiVDOI9ztCjQDhJqSRaAA1m4V0ZhIh2Ual2cb6N+uuZyD0BmXd26Fz/oCA==",
+        "dependencies": {
+          "JsonPointer.Net": "5.3.1"
+        }
       },
       "JsonPatch.Net": {
         "type": "Transitive",
@@ -291,11 +304,11 @@
       },
       "JsonPointer.Net": {
         "type": "Transitive",
-        "resolved": "5.2.0",
-        "contentHash": "qe1F7Tr/p4mgwLPU9P60MbYkp+xnL2uCPnWXGgzfR/AZCunAZIC0RZ32dLGJJEhSuLEfm0YF/1R3u5C7mEVq+w==",
+        "resolved": "5.3.1",
+        "contentHash": "3e2OJjU0OaE26XC/klgxbJuXvteFWTDJIJv0ITYWcJEoskq7jzUwPSC1s0iz4wPPQnfN7vwwFmg2gJfwRAPwgw==",
         "dependencies": {
           "Humanizer.Core": "2.14.1",
-          "Json.More.Net": "2.1.0"
+          "Json.More.Net": "2.1.1"
         }
       },
       "K4os.Compression.LZ4": {
@@ -2291,6 +2304,45 @@
           "ncrontab": "3.4.0"
         }
       },
+      "Umbraco.Forms.Core": {
+        "type": "Transitive",
+        "resolved": "17.0.0",
+        "contentHash": "J3CiqLu/N3n/sK9C1vzKghJBoy6akZ9n9pC+oTe98wDEzkUPGI+0Q7hX7g7ag7T0FuXWBfWBiaUJaI5gFGrzsA==",
+        "dependencies": {
+          "Microsoft.Data.SqlClient": "6.1.1",
+          "Umbraco.Licenses": "[17.0.0, 18.0.0)"
+        }
+      },
+      "Umbraco.Forms.Core.Providers": {
+        "type": "Transitive",
+        "resolved": "17.0.0",
+        "contentHash": "IwmxCOi7SBxYloE30kS32E40r8KAyt2GGsVHkjuhfdj0EnM9EwmS4oell2C9NB9aq1xBb28ZqlyGouXplh/kwA==",
+        "dependencies": {
+          "CsvHelper": "33.1.0",
+          "Umbraco.Cms.Web.Common": "[17.0.0, 18.0.0)",
+          "Umbraco.Forms.Core": "[17.0.0, 18.0.0)",
+          "Umbraco.Forms.Web": "[17.0.0, 18.0.0)"
+        }
+      },
+      "Umbraco.Forms.Web": {
+        "type": "Transitive",
+        "resolved": "17.0.0",
+        "contentHash": "9sUhye/9A/x+5VaUvp63Vkx6HlKsfrXhriY/5LUdveMNuOBDkFSeUCZ5Q5ijOKGp7C0nO0goaD1qiL40MeOPQQ==",
+        "dependencies": {
+          "JsonLogic": "5.4.2",
+          "Umbraco.Cms.Api.Management": "[17.0.0, 18.0.0)",
+          "Umbraco.Cms.Web.Website": "[17.0.0, 18.0.0)",
+          "Umbraco.Forms.Core": "[17.0.0, 18.0.0)"
+        }
+      },
+      "Umbraco.Licenses": {
+        "type": "Transitive",
+        "resolved": "17.0.0",
+        "contentHash": "AYG5vSJ4e5rcxCquK0GZSlbXKr+pL6Ghno9TIaxsNSQMJrY+Gedio2MIUdcM5Nv7H0Li2R4HU30NJsjH1SrfYg==",
+        "dependencies": {
+          "Umbraco.Cms.Api.Management": "[17.0.0, 18.0.0)"
+        }
+      },
       "uSync.BackOffice": {
         "type": "Transitive",
         "resolved": "17.0.0",
@@ -2412,6 +2464,16 @@
           "Umbraco.Cms.Api.Management": "[17.6.0, 18.0.0)",
           "Umbraco.Cms.Web.Common": "[17.6.0, 18.0.0)",
           "Umbraco.Cms.Web.Website": "[17.6.0, 18.0.0)"
+        }
+      },
+      "umbcheckout.stripe.forms": {
+        "type": "Project",
+        "dependencies": {
+          "UmbCheckout.Core": "[1.0.0, )",
+          "UmbCheckout.Shared": "[1.0.0, )",
+          "UmbCheckout.Stripe": "[1.0.0, )",
+          "Umbraco.Forms.Core": "[17.0.0, 18.0.0)",
+          "Umbraco.Forms.Core.Providers": "[17.0.0, 18.0.0)"
         }
       },
       "umbcheckout.stripe.usync": {
