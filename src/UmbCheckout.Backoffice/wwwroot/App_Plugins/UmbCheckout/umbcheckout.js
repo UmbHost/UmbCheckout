@@ -1,4 +1,4 @@
-import { m as a } from "./bundle.manifests-C6ijG9He.js";
+import { m as a } from "./bundle.manifests-Dktysq4T.js";
 export {
   a as manifests
 };

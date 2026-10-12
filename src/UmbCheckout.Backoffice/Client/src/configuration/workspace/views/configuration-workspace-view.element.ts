@@ -125,7 +125,7 @@ export class UmbCheckoutConfigurationWorkspaceViewElement extends UmbLitElement 
         <a href="https://github.com/UmbHost/UmbCheckout/issues" target="_blank" rel="noopener">${this.localize.term("umbcheckout_github_repo")}</a><br />
         ${licensed
           ? html`${this.localize.term("umbcheckout_support_ticket")}
-              <a href="https://my.umbhost.net/submitticket.php?step=2&deptid=8&subject=UmbCheckout:%20[ISSUE%20NAME%20HERE]" target="_blank" rel="noopener">My.UmbHost</a>`
+              <a href="https://www.umbpanel.io" target="_blank" rel="noopener">UmbPanel</a>`
           : nothing}
       </p>
       <umbcheckout-unlicensed-alert></umbcheckout-unlicensed-alert>
