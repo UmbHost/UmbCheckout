@@ -42,7 +42,7 @@ const a = [
     type: "repository",
     alias: c,
     name: "UmbCheckout Configuration Repository",
-    api: () => import("./configuration.repository-Bl8yctcJ.js")
+    api: () => import("./configuration.repository-CorH9fXW.js")
   },
   {
     type: "store",
@@ -56,7 +56,7 @@ const a = [
     kind: "routable",
     alias: t,
     name: "UmbCheckout Configuration Workspace",
-    api: () => import("./configuration-workspace.context-KqqhpxIG.js"),
+    api: () => import("./configuration-workspace.context-CkYWlFUU.js"),
     meta: { entityType: e }
   },
   {
@@ -112,4 +112,4 @@ export {
   t as c,
   f as m
 };
-//# sourceMappingURL=bundle.manifests-DxilhKBw.js.map
+//# sourceMappingURL=bundle.manifests-B1q7guFd.js.map
