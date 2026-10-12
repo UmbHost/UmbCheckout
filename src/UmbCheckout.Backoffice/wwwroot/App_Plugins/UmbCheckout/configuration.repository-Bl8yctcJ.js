@@ -1,7 +1,7 @@
 import { UmbDetailRepositoryBase as n } from "@umbraco-cms/backoffice/repository";
 import { tryExecute as t } from "@umbraco-cms/backoffice/resources";
 import { C as r } from "./sdk.gen-bktVcCtQ.js";
-import { U as o, a as i } from "./bundle.manifests-Dktysq4T.js";
+import { U as o, a as i } from "./bundle.manifests-DxilhKBw.js";
 import { UMBCHECKOUT_CONFIGURATION_STORE_CONTEXT as c } from "./configuration.store-BlabXKVF.js";
 class u {
   #e;
@@ -61,4 +61,4 @@ export {
   g as UmbCheckoutConfigurationRepository,
   g as api
 };
-//# sourceMappingURL=configuration.repository-Dm6SswoX.js.map
+//# sourceMappingURL=configuration.repository-Bl8yctcJ.js.map

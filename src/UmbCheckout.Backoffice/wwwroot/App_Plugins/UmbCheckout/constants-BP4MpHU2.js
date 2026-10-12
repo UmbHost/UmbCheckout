@@ -1,9 +1,9 @@
 const U = "umbCheckout", C = "umbcheckout", t = "UmbCheckout.Menu.Settings", E = "UmbCheckout.Menu.Store", S = "UmbCheckout.Menu.Stripe";
 export {
-  U,
-  C as a,
-  t as b,
+  t as U,
+  U as a,
+  C as b,
   E as c,
   S as d
 };
-//# sourceMappingURL=constants-EivlDXmp.js.map
+//# sourceMappingURL=constants-BP4MpHU2.js.map

@@ -6,3 +6,4 @@ export type { UmbCheckoutLicenseContext, UmbCheckoutLicenseStatus, UmbCheckoutLi
 export { UmbCheckoutUnlicensedAlertElement } from "./shared/unlicensed-alert.element.js";
 export { UmbCheckoutMadeByElement } from "./shared/made-by.element.js";
 export { UmbCheckoutAlertStyles } from "./shared/alert.styles.js";
+export { formatMoney, type UmbCheckoutMoney } from "./shared/money.js";

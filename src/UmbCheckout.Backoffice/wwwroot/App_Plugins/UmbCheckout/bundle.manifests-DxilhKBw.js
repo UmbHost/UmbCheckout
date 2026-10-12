@@ -1,4 +1,4 @@
-import { b as o } from "./constants-EivlDXmp.js";
+import { U as o } from "./constants-BP4MpHU2.js";
 import { UmbSubmitWorkspaceAction as i } from "@umbraco-cms/backoffice/workspace";
 const a = [
   {
@@ -42,7 +42,7 @@ const a = [
     type: "repository",
     alias: c,
     name: "UmbCheckout Configuration Repository",
-    api: () => import("./configuration.repository-Dm6SswoX.js")
+    api: () => import("./configuration.repository-Bl8yctcJ.js")
   },
   {
     type: "store",
@@ -56,7 +56,7 @@ const a = [
     kind: "routable",
     alias: t,
     name: "UmbCheckout Configuration Workspace",
-    api: () => import("./configuration-workspace.context-DTUOvGhi.js"),
+    api: () => import("./configuration-workspace.context-KqqhpxIG.js"),
     meta: { entityType: e }
   },
   {
@@ -112,4 +112,4 @@ export {
   t as c,
   f as m
 };
-//# sourceMappingURL=bundle.manifests-Dktysq4T.js.map
+//# sourceMappingURL=bundle.manifests-DxilhKBw.js.map
