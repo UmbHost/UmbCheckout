@@ -55,6 +55,8 @@
             public const string UmbCheckoutAddedToBasket = "UmbCheckout_Added_To_Basket";
 
             public const string UmbCheckoutAddToBasketFailed = "UmbCheckout_Add_To_Basket_Failed";
+
+            public const string UmbCheckoutBasketRepriced = "UmbCheckout_Basket_Repriced";
         }
 
         public static class LocalizationKeys
