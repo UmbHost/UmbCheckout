@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Moq;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.Models;
@@ -14,8 +14,9 @@ namespace UmbCheckout.Tests.Services
     {
         private readonly Mock<ICurrencyService> _currency = new();
         private readonly RecordingLogger<StripeLineItemPricingService> _logger = new();
+        private readonly Mock<IBasketContext> _basketContext = new();
 
-        private StripeLineItemPricingService Service() => new(_currency.Object, _logger);
+        private StripeLineItemPricingService Service() => new(_currency.Object, _basketContext.Object, _logger);
 
         /// <summary>Moq cannot proxy ILogger&lt;T&gt; for an internal T, so the log levels are recorded here.</summary>
         private sealed class RecordingLogger<T> : ILogger<T>
@@ -100,6 +101,24 @@ namespace UmbCheckout.Tests.Services
         [InlineData("XYZ")]
         public async Task GetPriceAsync_NoValidCurrency_ReturnsNull(string? currency)
             => Assert.Null(await Service().GetPriceAsync(Product(10m, currency)));
+
+        [Fact]
+        public async Task GetPriceAsync_AProductSoldInAnotherCurrencyThanThePageIsRefused()
+        {
+            // e.g. a shared product library or a listing from another site: its line would go to a basket this page never shows.
+            _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("USD");
+
+            Assert.Null(await Service().GetPriceAsync(Product(10m, "GBP")));
+            VerifyLogged(LogLevel.Warning);
+        }
+
+        [Fact]
+        public async Task GetPriceAsync_AProductInThePagesCurrencyIsPriced()
+        {
+            _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("gbp");
+
+            Assert.Equal(10m, (await Service().GetPriceAsync(Product(10m, "GBP")))?.Price);
+        }
 
         [Fact]
         public void BasketAdd_HasNoCurrencyField()
