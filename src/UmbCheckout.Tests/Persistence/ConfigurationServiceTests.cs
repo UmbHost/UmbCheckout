@@ -40,7 +40,6 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
     {
         var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
-        using var licensed = LicenseState.Set(true);
 
         Assert.Null(await service.GetConfigurationAsync());
         Assert.True(await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP", StoreBasketInDatabase = true }));
@@ -77,7 +76,6 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         // Whether they apply is the licensed add-on's rule, not the open service's
         var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
-        using var unlicensed = LicenseState.Set(false);
 
         await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), StoreBasketInCookie = true, StoreBasketInDatabase = true });
 
