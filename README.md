@@ -24,6 +24,59 @@ UmbCheckout uses Stripe.net 50.x, which is pinned to Stripe API version `2026-01
 
 Stripe delivers each event at least once and retries for up to 3 days. Once your notification handlers have completed for an event, a redelivery is acknowledged without running them again. If a handler throws, or the server stops while handlers are running, Stripe's retry runs the handlers again (all of them), so write handlers that are safe to repeat.
 
+## Extending UmbCheckout
+
+UmbCheckout publishes Umbraco notifications around its data, so a site can change or refuse data going in and change data coming out, without changing UmbCheckout. Register handlers as usual, e.g. `builder.AddNotificationAsyncHandler<OnShippingRateSavingNotification, MyHandler>()` in a composer.
+
+| Data | Before it is saved (change it, or cancel) | After it is read (change what is returned) |
+|---|---|---|
+| Configuration | `OnConfigurationSavingNotification` | `OnConfigurationLoadedNotification` |
+| Stripe settings | `OnStripeSettingsSavingNotification` | `OnStripeSettingsLoadedNotification` |
+| Shipping rates | `OnShippingRateSavingNotification` (create and update), `OnShippingRateDeletingNotification` | `OnShippingRatesLoadedNotification` |
+| Tax rates (licensed add-on) | `OnStripeTaxRateSavingNotification`, `OnStripeTaxRateDeletingNotification` | `OnStripeTaxRatesLoadedNotification` |
+| Basket | `OnSessionSavingNotification` | `OnSessionLoadedNotification` |
+
+Saving notifications carry the object about to be saved (`Target`) and, for an update, the stored one (`Existing`). Loaded notifications carry the object (`Target`) or, for shipping and tax rates, the list about to be returned (`Items`); remove a rate from `Items` to hide it, from lists and single reads alike. The existing `…Saved`, `…Deleted` and session notifications are unchanged.
+
+Refuse a save or delete with a message for the person who tried:
+
+```csharp
+public sealed class StripeShippingRateIds : INotificationAsyncHandler<OnShippingRateSavingNotification>
+{
+    public Task HandleAsync(OnShippingRateSavingNotification notification, CancellationToken cancellationToken)
+    {
+        if (!notification.Target.Value.StartsWith("shr_", StringComparison.Ordinal))
+        {
+            notification.CancelOperation(new EventMessage("Shipping", "Stripe shipping rate IDs start with shr_", EventMessageType.Error));
+        }
+
+        return Task.CompletedTask;
+    }
+}
+```
+
+Nothing is saved, and the message is shown in the backoffice error toast. On the shop, a cancelled basket change leaves the basket as it was and puts the message in `TempData[UmbCheckout.Shared.Consts.TempData.UmbCheckoutBasketChangeCancelled]` for your views to show.
+
+Change what is read:
+
+```csharp
+public sealed class HideInternalShippingRates : INotificationAsyncHandler<OnShippingRatesLoadedNotification>
+{
+    public Task HandleAsync(OnShippingRatesLoadedNotification notification, CancellationToken cancellationToken)
+    {
+        notification.Items.RemoveAll(rate => rate.Name.StartsWith("Internal", StringComparison.Ordinal));
+        return Task.CompletedTask;
+    }
+}
+```
+
+Rules:
+
+- Cancel with an `Error` or `Warning` event message; that message is what the person sees.
+- Loaded handlers run on every read, including frequent internal ones, so keep them cheap.
+- A handler that throws fails the operation; UmbCheckout doesn't hide handler errors.
+- Basket Loaded changes affect what is shown and passed to your code, never what Stripe charges: checkout re-prices every line from published content.
+
 ## Pricing comparison
 
 UmbCheckout can be used for FREE forever with the basket stored in .NET sessions, for a small fee of £50 you can purchase a license which unlocks cookie and database storing of the database, as well as all existing / future addon features and lifetime updates.
