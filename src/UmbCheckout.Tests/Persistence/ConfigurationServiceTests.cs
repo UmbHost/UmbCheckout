@@ -3,8 +3,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 using UmbCheckout.Core.Persistence;
 using UmbCheckout.Core.Services;
 using UmbCheckout.Shared.Models;
+using UmbCheckout.Shared.Notifications;
 using UmbCheckout.Shared.Notifications.Configuration;
 using UmbCheckout.Testing;
+using Umbraco.Cms.Core.Events;
 using Xunit;
 using ConfigurationModel = UmbCheckout.Shared.Models.UmbCheckoutConfiguration;
 
@@ -15,7 +17,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
 {
     public static TheoryData<TestProvider> Providers => new() { TestProvider.Sqlite, TestProvider.SqlServer };
 
-    private async Task<(TestDatabase<UmbCheckoutDbContext> Database, ConfigurationService Service)> Arrange(TestProvider provider)
+    private async Task<(TestDatabase<UmbCheckoutDbContext> Database, ConfigurationService Service, TestEventAggregator Events, TestEventMessagesFactory Messages)> Arrange(TestProvider provider)
     {
         var database = await TestDatabase.CreateAsync<UmbCheckoutDbContext>(provider, sqlServer, o => new UmbCheckoutDbContext(o), UmbCheckoutDbContext.HistoryTable);
         await using (var db = database.CreateContext())
@@ -23,9 +25,11 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
             await db.Database.MigrateAsync();
         }
 
+        var events = new TestEventAggregator();
+        var messages = new TestEventMessagesFactory();
         var service = new ConfigurationService(database.ScopeProvider, NullLogger<ConfigurationService>.Instance,
-            TestMapper.Create(new UmbCheckout.Core.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create());
-        return (database, service);
+            TestMapper.Create(new UmbCheckout.Core.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages);
+        return (database, service, events, messages);
     }
 
     private static MultiUrlPicker[] Page(string url) => [new MultiUrlPicker { Name = url, Url = url }];
@@ -34,7 +38,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
     [MemberData(nameof(Providers))]
     public async Task First_save_inserts_then_updates_the_single_row_and_notifies_once_per_save(TestProvider provider)
     {
-        var (database, service) = await Arrange(provider);
+        var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
         using var licensed = LicenseState.Set(true);
 
@@ -54,7 +58,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
     [MemberData(nameof(Providers))]
     public async Task A_legacy_row_with_a_null_key_reads_as_empty_and_gets_a_key_on_the_next_save(TestProvider provider)
     {
-        var (database, service) = await Arrange(provider);
+        var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
         await database.ExecuteSqlAsync("INSERT INTO UmbCheckoutConfiguration (SuccessPageUrl, CancelPageUrl, StoreBasketInCookie, StoreBasketInDatabase, BasketInDatabaseExpiry, BasketInCookieExpiry, EnableShipping, \"Key\", CurrencyCode) VALUES ('[]', '[]', 0, 0, 30, 30, 0, NULL, NULL)");
 
@@ -71,7 +75,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
     public async Task Basket_storage_options_are_stored_as_given(TestProvider provider)
     {
         // Whether they apply is the licensed add-on's rule, not the open service's
-        var (database, service) = await Arrange(provider);
+        var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
         using var unlicensed = LicenseState.Set(false);
 
@@ -84,5 +88,78 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         var row = await db.Configurations.SingleAsync();
         Assert.True(row.StoreBasketInCookie);
         Assert.True(row.StoreBasketInDatabase);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_Saving_handler_changes_what_is_saved(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        events.On<OnConfigurationSavingNotification>(n => n.Target.CurrencyCode = "EUR");
+
+        Assert.True(await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" }));
+
+        Assert.Equal("EUR", (await service.GetConfigurationAsync())!.CurrencyCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_cancel_saves_nothing_and_keeps_the_message(TestProvider provider)
+    {
+        var (database, service, events, messages) = await Arrange(provider);
+        await using var _db = database;
+        events.On<OnConfigurationSavingNotification>(n =>
+        {
+            n.Target.CurrencyCode = "EUR";
+            n.CancelOperation(new EventMessage("Configuration", "Currency changes are frozen", EventMessageType.Error));
+        });
+
+        Assert.False(await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" }));
+
+        Assert.Equal(0, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutConfiguration"));
+        Assert.Empty(database.ScopeProvider.Notifications.Published.OfType<OnConfigurationSavedNotification>());
+        Assert.Equal("Currency changes are frozen", messages.Messages.CancellationMessage());
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task An_update_hands_the_handler_the_stored_configuration(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" });
+        string? before = null;
+        events.On<OnConfigurationSavingNotification>(n => before = n.Existing?.CurrencyCode);
+
+        await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "USD" });
+
+        Assert.Equal("GBP", before);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_Loaded_handler_changes_what_the_caller_gets_once_per_read(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" });
+        events.On<OnConfigurationLoadedNotification>(n => n.Target.CurrencyCode = "JPY");
+
+        var loaded = await service.GetConfigurationAsync();
+
+        Assert.Equal("JPY", loaded!.CurrencyCode);
+        Assert.Single(events.Published.OfType<OnConfigurationLoadedNotification>());
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task Nothing_to_load_publishes_no_Loaded(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+
+        Assert.Null(await service.GetConfigurationAsync());
+        Assert.Empty(events.Published.OfType<OnConfigurationLoadedNotification>());
     }
 }
