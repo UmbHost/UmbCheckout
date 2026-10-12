@@ -1,20 +1,20 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Migrations;
 using UmbCheckout.Core.Migrations.Legacy;
 using UmbCheckout.Shared.Persistence;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.Migrations;
-using Umbraco.Cms.Persistence.EFCore.Scoping;
 
 namespace UmbCheckout.Core.Persistence;
 
 internal sealed class UmbCheckoutDatabaseMigrator(
-    IEFCoreScopeProvider<UmbCheckoutDbContext> scopeProvider,
+    IDbContextFactory<UmbCheckoutDbContext> contextFactory,
     IRuntimeState runtimeState,
     IKeyValueService keyValueService,
     ILegacyMigrationPlanRunner legacyPlanRunner,
     ILogger<UmbCheckoutDatabaseMigrator> logger)
-    : EfCoreDatabaseMigrator<UmbCheckoutDbContext>(scopeProvider, runtimeState, keyValueService, legacyPlanRunner, logger)
+    : EfCoreDatabaseMigrator<UmbCheckoutDbContext>(contextFactory, runtimeState, keyValueService, legacyPlanRunner, logger)
 {
     protected override MigrationPlan LegacyPlan => CreateLegacyPlan();
 

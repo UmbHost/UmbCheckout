@@ -1,7 +1,6 @@
 using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace UmbCheckout.Shared.Persistence;
@@ -48,8 +47,5 @@ public static class UmbCheckoutDbContextOptionsExtensions
     private static void Finish(DbContextOptionsBuilder options)
     {
         options.ReplaceService<IMigrationsAssembly, ProviderMigrationsAssembly>();
-
-        // Migrations run inside an Umbraco scope, which shares Umbraco's connection and transaction.
-        options.ConfigureWarnings(w => w.Ignore(RelationalEventId.MigrationsUserTransactionWarning));
     }
 }

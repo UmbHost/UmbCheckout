@@ -5,31 +5,32 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.Migrations;
-using Umbraco.Cms.Persistence.EFCore.Scoping;
 
 namespace UmbCheckout.Shared.Persistence;
 
 /// <summary>
 /// Brings one context's tables up to date at startup. A legacy install (its NPoco plan has a state key) first finishes that plan,
 /// then has Baseline recorded as applied; every install then runs the EF migrations.
+/// It works on a context from <see cref="IDbContextFactory{TContext}"/>, outside any Umbraco scope: on SQLite (Cache=Shared) EF checks
+/// for the database on a second connection, which a schema change still uncommitted in a shared scope transaction would lock out.
 /// </summary>
 public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandler<UmbracoApplicationStartingNotification>
     where TContext : DbContext
 {
-    private readonly IEFCoreScopeProvider<TContext> _scopeProvider;
+    private readonly IDbContextFactory<TContext> _contextFactory;
     private readonly IRuntimeState _runtimeState;
     private readonly IKeyValueService _keyValueService;
     private readonly ILegacyMigrationPlanRunner _legacyPlanRunner;
     private readonly ILogger _logger;
 
     protected EfCoreDatabaseMigrator(
-        IEFCoreScopeProvider<TContext> scopeProvider,
+        IDbContextFactory<TContext> contextFactory,
         IRuntimeState runtimeState,
         IKeyValueService keyValueService,
         ILegacyMigrationPlanRunner legacyPlanRunner,
         ILogger logger)
     {
-        _scopeProvider = scopeProvider;
+        _contextFactory = contextFactory;
         _runtimeState = runtimeState;
         _keyValueService = keyValueService;
         _legacyPlanRunner = legacyPlanRunner;
@@ -73,13 +74,11 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
         if (LegacyPlan is { } plan && _keyValueService.GetValue(Constants.Conventions.Migrations.KeyValuePrefix + plan.Name) is not null)
         {
             await _legacyPlanRunner.RunAsync(plan, cancellationToken);
-            using var adoptScope = _scopeProvider.CreateScope();
-            await adoptScope.ExecuteWithContextAsync(db => BaselineAdoption.AdoptAsync(db, cancellationToken));
-            adoptScope.Complete();
+            await using var adoptContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
+            await BaselineAdoption.AdoptAsync(adoptContext, cancellationToken);
         }
 
-        using var scope = _scopeProvider.CreateScope();
-        await scope.ExecuteWithContextAsync<Task>(db => db.Database.MigrateAsync(cancellationToken));
-        scope.Complete();
+        await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        await db.Database.MigrateAsync(cancellationToken);
     }
 }

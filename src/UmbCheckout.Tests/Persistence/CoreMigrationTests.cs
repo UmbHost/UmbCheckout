@@ -14,7 +14,7 @@ namespace UmbCheckout.Tests.Persistence;
 [Collection(DatabaseCollection.Name)]
 public sealed class CoreMigrationTests(SqlServerContainerFixture sqlServer)
 {
-    public static TheoryData<TestProvider> Providers => new() { TestProvider.Sqlite, TestProvider.SqlServer };
+    public static TheoryData<TestProvider> Providers => new() { TestProvider.Sqlite, TestProvider.SqliteSharedCacheFile, TestProvider.SqlServer };
 
     private sealed class RecordingRunner : ILegacyMigrationPlanRunner
     {
@@ -33,11 +33,11 @@ public sealed class CoreMigrationTests(SqlServerContainerFixture sqlServer)
         var keyValues = new Mock<IKeyValueService>();
         keyValues.Setup(k => k.GetValue(Constants.Conventions.Migrations.KeyValuePrefix + "UmbCheckoutConfiguration"))
             .Returns(legacy ? "4e8a2c1d-6b5f-4a3e-8d7c-9f0e1a2b3c4d" : null);
-        return new UmbCheckoutDatabaseMigrator(database.ScopeProvider, runtime, keyValues.Object, runner, NullLogger<UmbCheckoutDatabaseMigrator>.Instance);
+        return new UmbCheckoutDatabaseMigrator(database.ContextFactory, runtime, keyValues.Object, runner, NullLogger<UmbCheckoutDatabaseMigrator>.Instance);
     }
 
     private static string Fixture(TestProvider provider) =>
-        Path.Combine(AppContext.BaseDirectory, "Persistence", "Fixtures", provider == TestProvider.Sqlite ? "legacy-sqlite.sql" : "legacy-sqlserver.sql");
+        Path.Combine(AppContext.BaseDirectory, "Persistence", "Fixtures", provider != TestProvider.SqlServer ? "legacy-sqlite.sql" : "legacy-sqlserver.sql");
 
     [Theory]
     [MemberData(nameof(Providers))]
