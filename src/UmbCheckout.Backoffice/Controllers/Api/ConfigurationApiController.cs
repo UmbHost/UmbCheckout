@@ -1,3 +1,5 @@
+using Umbraco.Cms.Web.Common.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +25,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
     [VersionedApiBackOfficeRoute("umbcheckout/configuration")]
     [ApiExplorerSettings(GroupName = "Configuration")]
     [MapToApi(UmbCheckoutApiComposer.DocumentName)]
+    // Settings > UmbCheckout: changing these requires Settings section access, not just a back-office login.
+    [Authorize(Policy = AuthorizationPolicies.SectionAccessSettings)]
     public class ConfigurationApiController : ManagementApiControllerBase
     {
         private readonly IConfigurationService _configurationService;
