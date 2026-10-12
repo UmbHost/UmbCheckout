@@ -63,7 +63,7 @@ namespace UmbCheckout.Tests.Services
         public async Task CreateSessionAsync_WithNoSavedStripeSettings_ChargesTheBasketInMinorUnits()
         {
             var key = Guid.NewGuid();
-            var basket = new Basket { LineItems = [new LineItem { Key = key, Name = "Ping Pong Ball", Description = "Table tennis ball", Price = 2m, CurrencyCode = "GBP", Quantity = 2 }] };
+            var basket = new Basket { SiteRootCulture = "en-GB", CurrencyCode = "GBP", LineItems = [new LineItem { Key = key, Name = "Ping Pong Ball", Description = "Table tennis ball", Price = 2m, CurrencyCode = "GBP", Quantity = 2 }] };
 
             await Service(key).CreateSessionAsync(basket);
 
@@ -73,6 +73,9 @@ namespace UmbCheckout.Tests.Services
             Assert.Contains("line_items[0][price_data][currency]=gbp", body);
             Assert.Contains("line_items[0][quantity]=2", body);
             Assert.Contains($"line_items[0][price_data][product_data][metadata][nodeKey]={key}", body);
+            // Which basket this session pays for, so the success page clears it.
+            Assert.Contains("&metadata[umbcheckout_culture]=en-GB", body);
+            Assert.Contains("&metadata[umbcheckout_currency]=GBP", body);
         }
     }
 }

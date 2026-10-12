@@ -143,7 +143,10 @@ namespace UmbCheckout.Core.Services
         public async Task<bool> Clear() => await Clear(await _basketContext.GetCurrencyAsync());
 
         /// <inheritdoc />
-        public async Task<bool> Clear(string? currencyCode)
+        public async Task<bool> Clear(string? currencyCode) => await Clear(_basketContext.SiteRootCulture, currencyCode);
+
+        /// <inheritdoc />
+        public async Task<bool> Clear(string? siteRootCulture, string? currencyCode)
         {
             var configuration = await _configurationService.GetConfiguration();
 
@@ -151,7 +154,6 @@ namespace UmbCheckout.Core.Services
             await _eventAggregator.PublishAsync(new OnSessionClearStartedNotification());
 
             var sessionId = HttpContext.Session.Id;
-            var siteRootCulture = _basketContext.SiteRootCulture;
             var key = BasketKeys.Session(siteRootCulture, currencyCode);
 
             HttpContext.Session.Remove(key);

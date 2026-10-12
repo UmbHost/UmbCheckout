@@ -94,5 +94,19 @@ namespace UmbCheckout.Tests
             Assert.Empty((await service.Get("GBP")).Basket.LineItems);
             Assert.Single((await service.Get("USD")).Basket.LineItems);
         }
+
+        [Fact]
+        public async Task Clear_WithAnExplicitCultureWorksWhileThePageIsUnknown()
+        {
+            // The success handler runs while routing: the request's culture is not known yet.
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [Line("GBP")] });
+            _basketContext.Setup(b => b.SiteRootCulture).Returns((string?)null);
+
+            await service.Clear("en-GB", "GBP");
+
+            _basketContext.Setup(b => b.SiteRootCulture).Returns("en-GB");
+            Assert.Empty((await service.Get("GBP")).Basket.LineItems);
+        }
     }
 }

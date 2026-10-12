@@ -39,5 +39,14 @@ namespace UmbCheckout.Core.Interfaces
         /// <param name="currencyCode">The currency of the basket to clear</param>
         /// <returns>True when the basket is still present afterwards</returns>
         Task<bool> Clear(string? currencyCode);
+
+        /// <summary>
+        /// Clears the basket of <paramref name="siteRootCulture"/> in <paramref name="currencyCode"/>, for callers that run
+        /// before the request's page is known (e.g. while routing); other baskets are kept
+        /// </summary>
+        /// <param name="siteRootCulture">The basket's site root culture</param>
+        /// <param name="currencyCode">The basket's currency</param>
+        /// <returns>True when the basket is still present afterwards</returns>
+        Task<bool> Clear(string? siteRootCulture, string? currencyCode);
     }
 }
