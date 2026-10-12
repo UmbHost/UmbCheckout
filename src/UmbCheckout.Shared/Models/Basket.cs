@@ -34,5 +34,7 @@
         }
 
         public Dictionary<string, string> MetaData { get; set; } = new();
+
+        public string? SiteRootCulture { get; set; }
     }
 }

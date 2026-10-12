@@ -1,0 +1,83 @@
+{
+  "id": "umbcheckout-backoffice",
+  "name": "UmbCheckout",
+  "version": "2.0.0",
+  "extensions": [
+    {
+      "type": "dashboard",
+      "alias": "UmbCheckout.Dashboard",
+      "name": "UmbCheckout Dashboard",
+      "element": "/App_Plugins/UmbCheckout/umbcheckout-backoffice.js",
+      "elementName": "umbcheckout-dashboard",
+      "meta": {
+        "label": "UmbCheckout",
+        "pathname": "umbcheckout"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Settings"
+        }
+      ]
+    },
+    {
+      "type": "propertyEditorUi",
+      "alias": "UmbCheckout.PropertyEditorUi.MetaData",
+      "name": "UmbCheckout MetaData",
+      "element": "/App_Plugins/UmbCheckout/umbcheckout-backoffice.js",
+      "elementName": "umbcheckout-metadata-editor",
+      "meta": {
+        "label": "UmbCheckout MetaData",
+        "icon": "icon-ordered-list",
+        "group": "eCommerce",
+        "propertyEditorSchemaAlias": "Umbraco.Plain.String"
+      }
+    }
+  ],
+  "localizations": [
+    {
+      "culture": "en-US",
+      "translations": {
+        "treeHeaders_umbCheckoutGroup": "UmbCheckout",
+        "dashboardTabs_umbCheckout": "UmbCheckout",
+        "dashboard_umbCheckout": "UmbCheckout",
+        "umbcheckout_disabled_unlicensed": "DISABLED IN UNLICENSED MODE",
+        "umbcheckout_unlicensed_warning": "UmbCheckout is running in unlicensed mode, please purchase a license to support development",
+        "umbcheckout_help_support": "Help & Support",
+        "umbcheckout_configuration": "Configuration",
+        "umbcheckout_configuration_saved_title": "Configuration saved",
+        "umbcheckout_configuration_saved_message": "The configuration has been saved successfully",
+        "umbcheckout_configuration_failed_save_title": "Configuration failed to save",
+        "umbcheckout_configuration_failed_save_message": "There was an issue trying to save the configuration",
+        "umbcheckout_license_status": "License Status",
+        "umbcheckout_license_details": "License Details",
+        "umbcheckout_license_development": "Development License",
+        "umbcheckout_registration_date": "Registration Date",
+        "umbcheckout_expiry_date": "Expiry Date",
+        "umbcheckout_valid_domains": "Valid Domains",
+        "umbcheckout_valid_path": "Valid Path",
+        "umbcheckout_recheck_license": "Re-Check License",
+        "umbcheckout_currency_code_label": "Currency Code",
+        "umbcheckout_currency_code_description": "The default 3 letter currency code",
+        "umbcheckout_success_page_url_label": "Success Page URL",
+        "umbcheckout_success_page_url_description": "The checkout success page",
+        "umbcheckout_cancel_page_url_label": "Cancel Page URL",
+        "umbcheckout_cancel_page_url_description": "The checkout cancelled page",
+        "umbcheckout_enable_shipping_label": "Enable Shipping",
+        "umbcheckout_enable_shipping_description": "Enable the use of Shipping Rates",
+        "umbcheckout_store_basket_cookie_label": "Store Basket In a Cookie",
+        "umbcheckout_store_basket_cookie_description": "Whether the basket contents should be stored in a cookie",
+        "umbcheckout_store_basket_cookie_expiry_label": "Basket Expiry (Cookie)",
+        "umbcheckout_store_basket_cookie_expiry_description": "How many days the basket cookie should persist",
+        "umbcheckout_store_basket_database_label": "Store Basket In The Database",
+        "umbcheckout_store_basket_database_description": "Whether the basket contents should be stored in the database",
+        "umbcheckout_store_basket_database_expiry_label": "Basket Expiry (Database)",
+        "umbcheckout_store_basket_database_expiry_description": "How many days the basket should persist in the database",
+        "umbcheckout_shipping_rates": "Shipping Rates",
+        "umbcheckout_tax_rates": "Tax Rates",
+        "umbcheckout_first_page": "First Page",
+        "umbcheckout_next_page": "Next Page"
+      }
+    }
+  ]
+}

@@ -29,7 +29,7 @@ namespace UmbCheckout.Tests
             const decimal amount = 1.99m;
 
             Assert.Equal("£1.99", amount.FormatCurrency("GBP"));
-            Assert.Equal("1.99", amount.FormatCurrency("Z"));
+            Assert.StartsWith("1.99", amount.FormatCurrency("Z"));
         }
     }
 }

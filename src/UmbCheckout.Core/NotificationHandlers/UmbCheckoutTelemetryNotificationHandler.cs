@@ -10,7 +10,6 @@ using UmbHost.Licensing.Notifications;
 using Umbraco.Cms.Core.Configuration;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Events;
-using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using UmbCheckoutAppSettings = UmbCheckout.Shared.Models.UmbCheckoutAppSettings;
@@ -24,17 +23,15 @@ namespace UmbCheckout.Core.NotificationHandlers
         private readonly GlobalSettings _globalSettings;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IUmbracoVersion _umbracoVersion;
-        private readonly IPackagingService _packagingService;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IPackagingService packagingService, IWebHostEnvironment webHostEnvironment)
+        public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IWebHostEnvironment webHostEnvironment)
         {
 
             _umbCheckoutConfiguration = umbCheckoutConfiguration.Value;
             _globalSettings = globalSettings.Value;
             _httpClientFactory = httpClientFactory;
             _umbracoVersion = umbracoVersion;
-            _packagingService = packagingService;
             _webHostEnvironment = webHostEnvironment;
         }
 
@@ -66,15 +63,11 @@ namespace UmbCheckout.Core.NotificationHandlers
                     return;
                 }
 
-                var installedPackages = _packagingService.GetAllInstalledPackages()
-                    .Where(x => !string.IsNullOrEmpty(x.PackageName) && x.PackageName.StartsWith("UmbCheckout."));
-
                 var data = new
                 {
                     umbracoId = umbracoId,
                     umbracoVersion = _umbracoVersion.SemanticVersion.ToSemanticStringWithoutBuild(),
                     umbCheckoutVersion = UmbCheckoutVersion.SemanticVersion.ToString(),
-                    installedPackages = JsonSerializer.Serialize(installedPackages),
                     isLicensed = UmbCheckoutSettings.IsLicensed.ToString(),
                     isDevelopmentLicense = UmbCheckoutSettings.LicenseDetails.IsDevelopmentLicense.ToString(),
                     environmentName = _webHostEnvironment.EnvironmentName

@@ -1,7 +1,7 @@
-﻿using UmbCheckout.Backoffice.Models;
+using System.Text.Json;
+using UmbCheckout.Backoffice.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors;
-using Umbraco.Cms.Core.Serialization;
 using Umbraco.Extensions;
 
 namespace UmbCheckout.Backoffice.ValueConverters;
@@ -11,12 +11,8 @@ namespace UmbCheckout.Backoffice.ValueConverters;
 /// </summary>
 public class MetaDataValueConverter : PropertyValueConverterBase
 {
-    private readonly IJsonSerializer _jsonSerializer;
-
-    public MetaDataValueConverter(IJsonSerializer jsonSerializer) => _jsonSerializer = jsonSerializer;
-
     public override bool IsConverter(IPublishedPropertyType propertyType)
-        => propertyType.EditorAlias.InvariantEquals("umbCheckoutMetaData");
+        => propertyType.EditorUiAlias.InvariantEquals("UmbCheckout.PropertyEditorUi.MetaData");
 
     public override Type GetPropertyValueType(IPublishedPropertyType propertyType)
         => typeof(IEnumerable<string>);
@@ -33,7 +29,7 @@ public class MetaDataValueConverter : PropertyValueConverterBase
         }
 
         var metaDataDictionary  = new Dictionary<string, string>();
-        var values = _jsonSerializer.Deserialize<IEnumerable<UmbCheckoutMetaData>>(sourceString);
+        var values = JsonSerializer.Deserialize<IEnumerable<UmbCheckoutMetaData>>(sourceString);
         if (values != null)
         {
             foreach (var metaDataItem in values)

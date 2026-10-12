@@ -12,16 +12,22 @@ using UmbHost.Licensing.Models;
 using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Web.BackOffice.Controllers;
-using Umbraco.Cms.Web.Common.Attributes;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
+using Umbraco.Cms.Api.Management.Controllers;
+using Umbraco.Cms.Api.Management.Routing;
+using Umbraco.Cms.Web.Common.Authorization;
 
 namespace UmbCheckout.Backoffice.Controllers.Api
 {
     /// <summary>
-    /// UmbracoAuthorizedApiController to retrieve the configuration settings for the backoffice
+    /// ManagementApiControllerBase to retrieve the configuration settings for the backoffice
     /// </summary>
-    [PluginController(Consts.PackageName)]
-    public class ConfigurationApiController : UmbracoAuthorizedApiController
+    [ApiVersion("1.0")]
+    [ApiExplorerSettings(GroupName = "UmbCheckout")]
+    [Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
+    [VersionedApiBackOfficeRoute("umbcheckout/configuration")]
+    public class ConfigurationApiController : ManagementApiControllerBase
     {
         private readonly IConfigurationService _configuration;
         private readonly ILocalizedTextService _localizedTextService;
@@ -61,6 +67,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         /// Gets whether the Umbraco Application Url configuration has been set
         /// </summary>
         /// <returns>True if the Umbraco Application Url has been set, false if not</returns>
+        [HttpGet("has-url-set")]
         public bool HasUmbracoApplicationUrlSet()
         {
             return !string.IsNullOrWhiteSpace(_umbracoWebRoutingSettings.UmbracoApplicationUrl);

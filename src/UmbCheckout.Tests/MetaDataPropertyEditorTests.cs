@@ -1,6 +1,6 @@
-﻿using UmbCheckout.Backoffice.ValueConverters;
+using System.Text.Json;
+using UmbCheckout.Backoffice.ValueConverters;
 using Xunit;
-using Umbraco.Cms.Infrastructure.Serialization;
 using UmbCheckout.Backoffice.Models;
 
 namespace UmbCheckout.Tests
@@ -31,7 +31,7 @@ namespace UmbCheckout.Tests
 ]";
 
             //Act
-            var converter = new MetaDataValueConverter(new JsonNetSerializer());
+            var converter = new MetaDataValueConverter();
             var result = converter.ConvertSourceToIntermediate(null, null, jsonString, false);
 
             // Assert
@@ -62,11 +62,10 @@ namespace UmbCheckout.Tests
                 { "Dictionary Key 2", "Dictionary Value 2" }
             };
 
-            var jsonSerializer = new JsonNetSerializer();
-            var jsonString = jsonSerializer.Serialize(metaData);
+            var jsonString = JsonSerializer.Serialize(metaData);
 
             //Act
-            var converter = new MetaDataValueConverter(new JsonNetSerializer());
+            var converter = new MetaDataValueConverter();
             var result = converter.ConvertSourceToIntermediate(null, null, jsonString, false);
 
             // Assert
