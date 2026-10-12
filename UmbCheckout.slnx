@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Solution Items/" />
+  <Project Path="src/UmbCheckout.Backoffice/UmbCheckout.Backoffice.csproj" />
+  <Project Path="src/UmbCheckout.Core/UmbCheckout.Core.csproj" />
+  <Project Path="src/UmbCheckout.Shared/UmbCheckout.Shared.csproj" />
+  <Project Path="src/UmbCheckout.Stripe/UmbCheckout.Stripe.csproj" />
+  <Project Path="src/UmbCheckout.Testing/UmbCheckout.Testing.csproj" />
+  <Project Path="src/UmbCheckout.Tests/UmbCheckout.Tests.csproj" />
+  <Project Path="src/UmbCheckout.uSync/UmbCheckout.uSync.csproj" />
+  <Project Path="src/UmbCheckout/UmbCheckout.csproj" />
+</Solution>
