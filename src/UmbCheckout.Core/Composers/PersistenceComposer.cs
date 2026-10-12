@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using UmbCheckout.Core.Migrations.Setup;
 using UmbCheckout.Core.Persistence;
 using UmbCheckout.Shared.Persistence;
 using Umbraco.Cms.Core.Composing;
@@ -19,6 +20,7 @@ namespace UmbCheckout.Core.Composers
                 (_, options, connectionString, providerName) => options.UseUmbCheckoutProvider(providerName, connectionString, UmbCheckoutDbContext.HistoryTable),
                 shareUmbracoConnection: true);
             builder.AddNotificationAsyncHandler<UmbracoApplicationStartingNotification, UmbCheckoutDatabaseMigrator>();
+            builder.AddNotificationAsyncHandler<UmbracoApplicationStartingNotification, UmbCheckoutSetupMigrator>();
         }
     }
 }
