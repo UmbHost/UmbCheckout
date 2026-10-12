@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -52,7 +52,7 @@ namespace UmbCheckout.Tests.Services
                 new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object,
                 Mock.Of<IEventAggregator>(),
                 NullLogger<StripeSessionService>.Instance,
-                Mock.Of<IConfigurationService>(c => c.GetConfiguration() == Task.FromResult<UmbCheckoutConfiguration?>(enableShipping ? new UmbCheckoutConfiguration { EnableShipping = true } : null)),
+                Mock.Of<IConfigurationService>(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>()) == Task.FromResult<UmbCheckoutConfiguration?>(enableShipping ? new UmbCheckoutConfiguration { EnableShipping = true } : null)),
                 Mock.Of<IHttpContextAccessor>(),
                 Mock.Of<IStripeShippingOptionsService>(s => s.GetShippingOptions(It.IsAny<Basket>()) == Task.FromResult(new List<SessionShippingOptionOptions>())),
                 licenseService,

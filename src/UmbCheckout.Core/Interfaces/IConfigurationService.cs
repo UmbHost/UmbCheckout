@@ -1,4 +1,4 @@
-﻿namespace UmbCheckout.Core.Interfaces
+namespace UmbCheckout.Core.Interfaces
 {
     /// <summary>
     /// A service which Gets or Updates the configuration
@@ -8,14 +8,14 @@
         /// <summary>
         /// Gets the configuration
         /// </summary>
-        /// <returns>The configuration</returns>
-        Task<Shared.Models.UmbCheckoutConfiguration?> GetConfiguration();
+        /// <returns>The configuration, or null before it is first saved</returns>
+        Task<Shared.Models.UmbCheckoutConfiguration?> GetConfigurationAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Updates the configuration
+        /// Inserts or updates the configuration
         /// </summary>
         /// <param name="configuration">The configuration</param>
-        /// <returns>true if update was successful false if not</returns>
-        Task<bool> UpdateConfiguration(Shared.Models.UmbCheckoutConfiguration configuration);
+        /// <returns>true when saved</returns>
+        Task<bool> UpdateConfigurationAsync(Shared.Models.UmbCheckoutConfiguration configuration, CancellationToken cancellationToken = default);
     }
 }

@@ -64,7 +64,7 @@ namespace UmbCheckout.Tests.Services
         {
             var root = Guid.NewGuid();
             Parent(root, null);
-            _configuration.Setup(c => c.GetConfiguration()).ReturnsAsync(new UmbCheckoutConfiguration { CurrencyCode = "usd" });
+            _configuration.Setup(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new UmbCheckoutConfiguration { CurrencyCode = "usd" });
 
             Assert.Equal("USD", await Service().GetCurrencyForContentAsync(Content(root)));
         }
@@ -74,7 +74,7 @@ namespace UmbCheckout.Tests.Services
         {
             var root = Guid.NewGuid();
             Parent(root, null);
-            _configuration.Setup(c => c.GetConfiguration()).ReturnsAsync(new UmbCheckoutConfiguration());
+            _configuration.Setup(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new UmbCheckoutConfiguration());
 
             Assert.Null(await Service().GetCurrencyForContentAsync(Content(root)));
         }

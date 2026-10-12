@@ -1,11 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
+using UmbCheckout.Core.Persistence;
 using UmbCheckout.Shared.Notifications.Configuration;
 using UmbHost.Licensing.Models;
 using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Mapping;
-using Umbraco.Cms.Core.Scoping;
-using IScopeProvider = Umbraco.Cms.Infrastructure.Scoping.IScopeProvider;
+using Umbraco.Cms.Persistence.EFCore.Scoping;
 using UmbCheckoutConfiguration = UmbCheckout.Core.Pocos.UmbCheckoutConfiguration;
 
 namespace UmbCheckout.Core.Services
@@ -15,117 +16,73 @@ namespace UmbCheckout.Core.Services
     /// </summary>
     internal class ConfigurationService : IConfigurationService
     {
-        private readonly IScopeProvider _scopeProvider;
-        private readonly ICoreScopeProvider _coreScopeProvider;
+        private readonly IEFCoreScopeProvider<UmbCheckoutDbContext> _scopeProvider;
         private readonly IUmbracoMapper _mapper;
         private readonly ILogger<ConfigurationService> _logger;
 
-        public ConfigurationService(IScopeProvider scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, ICoreScopeProvider coreScopeProvider, LicenseService licenseService)
+        public ConfigurationService(IEFCoreScopeProvider<UmbCheckoutDbContext> scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, LicenseService licenseService)
         {
             _scopeProvider = scopeProvider;
             _logger = logger;
             _mapper = mapper;
-            _coreScopeProvider = coreScopeProvider;
             licenseService.RunLicenseCheck();
         }
 
         /// <inheritdoc />
-        public async Task<Shared.Models.UmbCheckoutConfiguration?> GetConfiguration()
+        public async Task<Shared.Models.UmbCheckoutConfiguration?> GetConfigurationAsync(CancellationToken cancellationToken = default)
         {
-            try
-            {
-                using var scope = _scopeProvider.CreateScope(autoComplete: true);
-                var result = await scope.Database.QueryAsync<UmbCheckoutConfiguration>().SingleOrDefault();
+            using var scope = _scopeProvider.CreateScope();
+            var entity = await scope.ExecuteWithContextAsync(db => db.Configurations.AsNoTracking().SingleOrDefaultAsync(cancellationToken));
+            scope.Complete();
 
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    if (result != null)
-                    {
-                        result.StoreBasketInDatabase = false;
-                        result.StoreBasketInDatabase = false;
-                    }
-                }
-
-                return _mapper.Map<UmbCheckoutConfiguration, Shared.Models.UmbCheckoutConfiguration>(result);
-            }
-            catch (Exception ex)
+            if (entity != null && !UmbCheckoutSettings.IsLicensed)
             {
-                _logger.LogError(ex, ex.Message);
-                throw;
+                entity.StoreBasketInCookie = false;
+                entity.StoreBasketInDatabase = false;
             }
+
+            return _mapper.Map<UmbCheckoutConfiguration, Shared.Models.UmbCheckoutConfiguration>(entity);
         }
 
         /// <inheritdoc />
-        public async Task<bool> UpdateConfiguration(Shared.Models.UmbCheckoutConfiguration configuration)
+        public async Task<bool> UpdateConfigurationAsync(Shared.Models.UmbCheckoutConfiguration configuration, CancellationToken cancellationToken = default)
         {
-            try
+            if (!UmbCheckoutSettings.IsLicensed)
             {
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    configuration.StoreBasketInDatabase = false;
-                    configuration.StoreBasketInCookie = false;
-                }
+                configuration.StoreBasketInDatabase = false;
+                configuration.StoreBasketInCookie = false;
+            }
 
-                using var coreScope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                var configurationPoco = _mapper.Map<Shared.Models.UmbCheckoutConfiguration, UmbCheckoutConfiguration>(configuration);
-                var existingConfiguration = await GetConfiguration();
-                if (existingConfiguration != null)
-                {
-                    if (configurationPoco != null)
-                    {
-                        configurationPoco.Id = existingConfiguration.Id;
-                        configurationPoco.Key = existingConfiguration.Key;
-                        using var scope = _scopeProvider.CreateScope(autoComplete: true);
-                        var db = scope.Database;
-                        var result = await db.UpdateAsync(configurationPoco);
-                        var updatedConfiguration = await GetConfiguration();
-                        scope.Notifications.Publish(new OnConfigurationSavedNotification(updatedConfiguration));
-                        return result != 0;
-                    }
-                }
-
-                if (configurationPoco != null)
-                {
-                    var created = await CreateConfiguration(configurationPoco);
-
-                    return created;
-                }
-
+            var incoming = _mapper.Map<Shared.Models.UmbCheckoutConfiguration, UmbCheckoutConfiguration>(configuration);
+            if (incoming == null)
+            {
                 return false;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
-        }
 
-        /// <summary>
-        /// Inserts the initial configuration
-        /// </summary>
-        /// <param name="configuration">The configuration</param>
-        /// <returns>true is inserted successfully false if not</returns>
-        private async Task<bool> CreateConfiguration(UmbCheckoutConfiguration configuration)
-        {
-            try
+            using var scope = _scopeProvider.CreateScope();
+            var saved = await scope.ExecuteWithContextAsync(async db =>
             {
-                if (!UmbCheckoutSettings.IsLicensed)
+                var existing = await db.Configurations.SingleOrDefaultAsync(cancellationToken);
+                if (existing == null)
                 {
-                    configuration.StoreBasketInDatabase = false;
-                    configuration.StoreBasketInCookie = false;
+                    incoming.Id = 0;
+                    incoming.Key = incoming.Key is null || incoming.Key == Guid.Empty ? Guid.NewGuid() : incoming.Key;
+                    db.Configurations.Add(incoming);
+                    await db.SaveChangesAsync(cancellationToken);
+                    return incoming;
                 }
 
-                using var scope = _scopeProvider.CreateScope(autoComplete: true);
-                var db = scope.Database;
-                var result = await db.InsertAsync(configuration);
+                incoming.Id = existing.Id;
+                incoming.Key = existing.Key ?? Guid.NewGuid();
+                db.Entry(existing).CurrentValues.SetValues(incoming);
+                await db.SaveChangesAsync(cancellationToken);
+                return existing;
+            });
 
-                return result is not null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            scope.Notifications.Publish(new OnConfigurationSavedNotification(_mapper.Map<UmbCheckoutConfiguration, Shared.Models.UmbCheckoutConfiguration>(saved)));
+            scope.Complete();
+            _logger.LogDebug("UmbCheckout configuration saved");
+            return true;
         }
     }
 }

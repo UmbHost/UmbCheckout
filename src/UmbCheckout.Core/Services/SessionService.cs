@@ -42,7 +42,7 @@ namespace UmbCheckout.Core.Services
 
         private async Task<UmbCheckoutSession> Create(string? siteRootCulture, string? currencyCode)
         {
-            var configuration = await _configurationService.GetConfiguration();
+            var configuration = await _configurationService.GetConfigurationAsync();
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
             await _eventAggregator.PublishAsync(new OnSessionCreateStartedNotification());
@@ -67,7 +67,7 @@ namespace UmbCheckout.Core.Services
         /// <inheritdoc />
         public async Task<UmbCheckoutSession> Get(string? currencyCode)
         {
-            var configuration = await _configurationService.GetConfiguration();
+            var configuration = await _configurationService.GetConfigurationAsync();
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
             await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
@@ -120,7 +120,7 @@ namespace UmbCheckout.Core.Services
         /// <inheritdoc />
         public async Task<UmbCheckoutSession> Update(Basket basket)
         {
-            var configuration = await _configurationService.GetConfiguration();
+            var configuration = await _configurationService.GetConfigurationAsync();
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
             await _eventAggregator.PublishAsync(new OnSessionUpdateStartedNotification());
@@ -148,7 +148,7 @@ namespace UmbCheckout.Core.Services
         /// <inheritdoc />
         public async Task<bool> Clear(string? siteRootCulture, string? currencyCode)
         {
-            var configuration = await _configurationService.GetConfiguration();
+            var configuration = await _configurationService.GetConfigurationAsync();
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
             await _eventAggregator.PublishAsync(new OnSessionClearStartedNotification());

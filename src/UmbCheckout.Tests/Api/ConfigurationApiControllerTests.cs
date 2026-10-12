@@ -40,7 +40,7 @@ namespace UmbCheckout.Tests.Api
         public async Task Get_ReturnsTypedConfiguration_WithPageKeys()
         {
             var service = new Mock<IConfigurationService>();
-            service.Setup(s => s.GetConfiguration()).ReturnsAsync(new UmbCheckoutConfiguration
+            service.Setup(s => s.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new UmbCheckoutConfiguration
             {
                 CurrencyCode = "GBP",
                 SuccessPageUrl = [new MultiUrlPicker { Udi = $"umb://document/{SuccessKey:N}", Name = "Basket" }],
@@ -64,8 +64,8 @@ namespace UmbCheckout.Tests.Api
         {
             var service = new Mock<IConfigurationService>();
             UmbCheckoutConfiguration? saved = null;
-            service.Setup(s => s.UpdateConfiguration(It.IsAny<UmbCheckoutConfiguration>()))
-                .Callback<UmbCheckoutConfiguration>(c => saved = c)
+            service.Setup(s => s.UpdateConfigurationAsync(It.IsAny<UmbCheckoutConfiguration>(), It.IsAny<CancellationToken>()))
+                .Callback<UmbCheckoutConfiguration, CancellationToken>((c, _) => saved = c)
                 .ReturnsAsync(true);
 
             var result = await CreateController(service, isLicensed: false).UpdateConfiguration(new UpdateConfigurationRequestModel
@@ -91,8 +91,8 @@ namespace UmbCheckout.Tests.Api
         {
             var service = new Mock<IConfigurationService>();
             UmbCheckoutConfiguration? saved = null;
-            service.Setup(s => s.UpdateConfiguration(It.IsAny<UmbCheckoutConfiguration>()))
-                .Callback<UmbCheckoutConfiguration>(c => saved = c)
+            service.Setup(s => s.UpdateConfigurationAsync(It.IsAny<UmbCheckoutConfiguration>(), It.IsAny<CancellationToken>()))
+                .Callback<UmbCheckoutConfiguration, CancellationToken>((c, _) => saved = c)
                 .ReturnsAsync(true);
 
             await CreateController(service).UpdateConfiguration(new UpdateConfigurationRequestModel
@@ -109,7 +109,7 @@ namespace UmbCheckout.Tests.Api
         public async Task Put_ServiceFails_Returns400ProblemDetails()
         {
             var service = new Mock<IConfigurationService>();
-            service.Setup(s => s.UpdateConfiguration(It.IsAny<UmbCheckoutConfiguration>())).ReturnsAsync(false);
+            service.Setup(s => s.UpdateConfigurationAsync(It.IsAny<UmbCheckoutConfiguration>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
             var result = await CreateController(service).UpdateConfiguration(new UpdateConfigurationRequestModel { CurrencyCode = "GBP" });
 
@@ -131,7 +131,7 @@ namespace UmbCheckout.Tests.Api
 
             var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
             Assert.Equal(400, objectResult.StatusCode);
-            service.Verify(s => s.UpdateConfiguration(It.IsAny<UmbCheckoutConfiguration>()), Times.Never);
+            service.Verify(s => s.UpdateConfigurationAsync(It.IsAny<UmbCheckoutConfiguration>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]

@@ -34,7 +34,7 @@ namespace UmbCheckout.Core.Services
                 return await _currencyService.GetCurrencyForContentAsync(page);
             }
 
-            var configuration = await _configurationService.GetConfiguration();
+            var configuration = await _configurationService.GetConfigurationAsync();
             return string.IsNullOrWhiteSpace(configuration?.CurrencyCode) ? null : configuration.CurrencyCode.Trim().ToUpperInvariant();
         }
     }

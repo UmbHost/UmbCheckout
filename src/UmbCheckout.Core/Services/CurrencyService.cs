@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
@@ -42,7 +42,7 @@ namespace UmbCheckout.Core.Services
                 return siteCurrency.Trim().ToUpperInvariant();
             }
 
-            var configuration = await _configurationService.GetConfiguration();
+            var configuration = await _configurationService.GetConfigurationAsync();
             if (!string.IsNullOrWhiteSpace(configuration?.CurrencyCode))
             {
                 return configuration.CurrencyCode.Trim().ToUpperInvariant();
@@ -73,7 +73,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                var configuration = await _configurationService.GetConfiguration();
+                var configuration = await _configurationService.GetConfigurationAsync();
                 var stringBuilder = new StringBuilder();
 
                 if (currencyNodeKey is not null)

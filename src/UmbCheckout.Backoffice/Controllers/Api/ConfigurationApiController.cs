@@ -55,7 +55,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         [ProducesResponseType(typeof(ConfigurationResponseModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetConfiguration()
         {
-            var configuration = await _configurationService.GetConfiguration() ?? new UmbCheckoutConfiguration();
+            var configuration = await _configurationService.GetConfigurationAsync(HttpContext?.RequestAborted ?? default) ?? new UmbCheckoutConfiguration();
             return Ok(ConfigurationModelMapper.ToResponse(configuration, _isLicensed()));
         }
 
@@ -70,7 +70,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
             }
 
             var configuration = ConfigurationModelMapper.ToConfiguration(model, _isLicensed(), successPage, cancelPage);
-            var updated = await _configurationService.UpdateConfiguration(configuration);
+            var updated = await _configurationService.UpdateConfigurationAsync(configuration, HttpContext?.RequestAborted ?? default);
 
             return updated ? Ok() : ConfigurationOperationStatusResult(ConfigurationOperationStatus.SaveFailed);
         }

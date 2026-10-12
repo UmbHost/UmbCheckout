@@ -35,7 +35,7 @@ namespace UmbCheckout.Tests.Services
         [Fact]
         public async Task GetCurrencyAsync_WithoutAPageIsTheConfigurationCurrency()
         {
-            _configuration.Setup(c => c.GetConfiguration()).ReturnsAsync(new UmbCheckoutConfiguration { CurrencyCode = " usd " });
+            _configuration.Setup(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new UmbCheckoutConfiguration { CurrencyCode = " usd " });
 
             Assert.Equal("USD", await Context().GetCurrencyAsync());
         }
