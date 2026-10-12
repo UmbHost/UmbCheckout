@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10"><PrivateAssets>all</PrivateAssets><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets></PackageReference>
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
       <PackageReference Include="Moq" Version="4.18.4" />
       <PackageReference Include="Testcontainers" Version="4.15.0" />
@@ -25,6 +26,7 @@
       <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
       <ProjectReference Include="..\UmbCheckout.Stripe\UmbCheckout.Stripe.csproj" />
       <ProjectReference Include="..\UmbCheckout\UmbCheckout.csproj" />
+      <ProjectReference Include="..\UmbCheckout.Testing\UmbCheckout.Testing.csproj" />
     </ItemGroup>
 
 </Project>

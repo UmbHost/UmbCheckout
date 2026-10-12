@@ -19,12 +19,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmbCheckout.Tests", "src\Um
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmbCheckout.uSync", "src\UmbCheckout.uSync\UmbCheckout.uSync.csproj", "{F8C84DB7-3BF5-4B27-A861-F80B52295C7F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmbCheckout.Testing", "src\UmbCheckout.Testing\UmbCheckout.Testing.csproj", "{3A3E7F57-5BA2-4925-948B-040D1FA66E05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A3E7F57-5BA2-4925-948B-040D1FA66E05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A3E7F57-5BA2-4925-948B-040D1FA66E05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A3E7F57-5BA2-4925-948B-040D1FA66E05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A3E7F57-5BA2-4925-948B-040D1FA66E05}.Release|Any CPU.Build.0 = Release|Any CPU
 		{82B95291-CE73-42E7-ADFD-59B7FB9A9B99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{82B95291-CE73-42E7-ADFD-59B7FB9A9B99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82B95291-CE73-42E7-ADFD-59B7FB9A9B99}.Release|Any CPU.ActiveCfg = Release|Any CPU
