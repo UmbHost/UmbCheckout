@@ -21,7 +21,8 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
             await db.Database.MigrateAsync();
         }
 
-        var service = new StripeShippingRateDatabaseService(database.ScopeProvider, TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()));
+        var service = new StripeShippingRateDatabaseService(database.ScopeProvider, TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<StripeShippingRateDatabaseService>.Instance);
         return (database, service);
     }
 
@@ -75,5 +76,54 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
         var updated = await service.UpdateShippingRateAsync(new ShippingRate { Name = "Old", Value = "shr_old" });
 
         Assert.NotEqual(Guid.Empty, updated!.Key);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task Changing_the_Stripe_ID_updates_the_row_in_place(TestProvider provider)
+    {
+        var (database, service) = await Arrange(provider);
+        await using var _ = database;
+        var created = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_old" }))!;
+
+        var updated = await service.UpdateShippingRateAsync(new ShippingRate { Key = created.Key, Name = "Standard", Value = "shr_new" });
+
+        Assert.NotNull(updated);
+        Assert.Equal("shr_new", updated!.Value);
+        Assert.Equal(created.Key, updated.Key);
+        Assert.Equal(1, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutStripeShipping"));
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task Changing_the_Stripe_ID_to_another_rates_ID_is_refused(TestProvider provider)
+    {
+        var (database, service) = await Arrange(provider);
+        await using var _ = database;
+        var first = (await service.CreateShippingRateAsync(new ShippingRate { Name = "One", Value = "shr_1" }))!;
+        await service.CreateShippingRateAsync(new ShippingRate { Name = "Two", Value = "shr_2" });
+
+        Assert.Null(await service.UpdateShippingRateAsync(new ShippingRate { Key = first.Key, Name = "One", Value = "shr_2" }));
+        Assert.Equal("shr_1", (await service.GetShippingRateAsync(first.Key))!.Value);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_uSync_import_with_an_unknown_key_inserts_or_adopts_by_Stripe_ID(TestProvider provider)
+    {
+        var (database, service) = await Arrange(provider);
+        await using var _ = database;
+        var existing = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Old name", Value = "shr_1" }))!;
+
+        // Another environment's key for the same Stripe rate: adopt the row by Stripe ID, keep its key.
+        var adopted = await service.UpdateShippingRateAsync(new ShippingRate { Key = Guid.NewGuid(), Name = "New name", Value = "shr_1" });
+        // A rate this site doesn't have yet: inserted with the imported key.
+        var importedKey = Guid.NewGuid();
+        var inserted = await service.UpdateShippingRateAsync(new ShippingRate { Key = importedKey, Name = "Express", Value = "shr_2" });
+
+        Assert.Equal(existing.Key, adopted!.Key);
+        Assert.Equal("New name", adopted.Name);
+        Assert.Equal(importedKey, inserted!.Key);
+        Assert.Equal(2, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutStripeShipping"));
     }
 }
