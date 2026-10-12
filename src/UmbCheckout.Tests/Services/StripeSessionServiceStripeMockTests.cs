@@ -1,0 +1,77 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Moq;
+using UmbCheckout.Core.Interfaces;
+using UmbCheckout.Shared.Models;
+using UmbCheckout.Stripe.Interfaces;
+using UmbCheckout.Stripe.Services;
+using UmbCheckout.Tests.Infrastructure;
+using UmbHost.Licensing.Services;
+using Umbraco.Cms.Core.Configuration.Models;
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.PublishedCache;
+using Umbraco.Cms.Core.Scoping;
+using Umbraco.Cms.Core.Services;
+using Xunit;
+
+namespace UmbCheckout.Tests.Services
+{
+    /// <summary>Checkout end to end through StripeSessionService, against stripe-mock.</summary>
+    [Trait("Category", "Integration")]
+    [Collection("stripe-mock")]
+    public class StripeSessionServiceStripeMockTests
+    {
+        private readonly StripeMockFixture _fixture;
+        private readonly CapturingHandler _handler = new();
+
+        public StripeSessionServiceStripeMockTests(StripeMockFixture fixture) => _fixture = fixture;
+
+        private StripeSessionService Service(Guid productKey)
+        {
+            var product = new Mock<IPublishedContent> { DefaultValue = DefaultValue.Mock };
+            product.Setup(p => p.Key).Returns(productKey);
+            product.Setup(p => p.Name).Returns("Ping Pong Ball");
+            var contentCache = new Mock<IPublishedContentCache>();
+            contentCache.Setup(c => c.GetById(productKey)).Returns(product.Object);
+
+            var factory = new Mock<IUmbCheckoutStripeClientFactory>();
+            factory.Setup(f => f.CreateAsync()).ReturnsAsync(() => _fixture.CreateClient(_handler));
+
+            // No Stripe settings row saved yet (a fresh install): checkout must still use the configured test key.
+            var stripeSettingsService = new Mock<IStripeSettingsService>();
+            stripeSettingsService.Setup(s => s.GetStripeSettings()).ReturnsAsync((UmbCheckout.Stripe.Models.UmbCheckoutStripeSettings?)null);
+
+            // The runtime level is not Run, so the licence check returns before using its other dependencies.
+            var licenseService = new LicenseService(null!, NullLogger<LicenseService>.Instance, null!, Options.Create(new UmbHost.Licensing.Models.UmbCheckoutAppSettings()), null!, Mock.Of<IRuntimeState>(), Options.Create(new WebRoutingSettings()), null!);
+
+            return new StripeSessionService(
+                contentCache.Object,
+                new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object,
+                Mock.Of<IEventAggregator>(),
+                NullLogger<StripeSessionService>.Instance,
+                Mock.Of<IConfigurationService>(),
+                Mock.Of<IHttpContextAccessor>(),
+                Mock.Of<IStripeShippingOptionsService>(),
+                licenseService,
+                stripeSettingsService.Object,
+                factory.Object);
+        }
+
+        [Fact]
+        public async Task CreateSessionAsync_WithNoSavedStripeSettings_ChargesTheBasketInMinorUnits()
+        {
+            var key = Guid.NewGuid();
+            var basket = new Basket { LineItems = [new LineItem { Key = key, Name = "Ping Pong Ball", Description = "Table tennis ball", Price = 2m, CurrencyCode = "GBP", Quantity = 2 }] };
+
+            await Service(key).CreateSessionAsync(basket);
+
+            var body = Assert.Single(_handler.RequestBodies);
+            Assert.Contains("/v1/checkout/sessions", Assert.Single(_handler.RequestUris));
+            Assert.Contains("line_items[0][price_data][unit_amount]=200", body);
+            Assert.Contains("line_items[0][price_data][currency]=gbp", body);
+            Assert.Contains("line_items[0][quantity]=2", body);
+        }
+    }
+}
