@@ -7,20 +7,59 @@ namespace UmbCheckout.Shared.Persistence
     /// </summary>
     public sealed class SettingsCache<TEntity> where TEntity : class
     {
-        private volatile Box? _box;
+        private readonly object _lock = new();
+        private Box? _box;
+        private long _generation;
 
         private sealed record Box(TEntity? Value);
+
+        /// <summary>Read before querying the database, and handed back to <see cref="TrySet"/>.</summary>
+        public long Generation
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _generation;
+                }
+            }
+        }
 
         /// <summary>The cached row (null when none is saved yet); false when nothing is cached.</summary>
         public bool TryGet(out TEntity? value)
         {
-            var box = _box;
+            Box? box;
+            lock (_lock)
+            {
+                box = _box;
+            }
+
             value = box?.Value;
             return box is not null;
         }
 
-        public void Set(TEntity? value) => _box = new Box(value);
+        /// <summary>
+        /// Caches a row read from the database, unless the cache was cleared since <paramref name="generation"/> was taken:
+        /// a read that started before a save would otherwise put the old row back.
+        /// </summary>
+        public void TrySet(TEntity? value, long generation)
+        {
+            lock (_lock)
+            {
+                if (generation == _generation)
+                {
+                    _box = new Box(value);
+                }
+            }
+        }
 
-        public void Clear() => _box = null;
+        public void Clear()
+        {
+            lock (_lock)
+            {
+                _box = null;
+                _generation++;
+            }
+        }
     }
 }

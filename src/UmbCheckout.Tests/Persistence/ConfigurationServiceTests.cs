@@ -31,8 +31,38 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         var events = new TestEventAggregator();
         var messages = new TestEventMessagesFactory();
         var service = new ConfigurationService(database.ScopeProvider, NullLogger<ConfigurationService>.Instance,
-            TestMapper.Create(new UmbCheckout.Core.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages, _cache);
+            TestMapper.Create(new UmbCheckout.Core.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages, _cache, scopeAccessor: database.ScopeProvider.ScopeAccessor);
         return (database, service, events, messages);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_read_inside_an_unfinished_outer_scope_is_not_cached(TestProvider provider)
+    {
+        // Quality Phase 5 review: uSync imports inside its own outer scope. A read there sees the uncommitted row; if the import
+        // rolls back, the cache must not keep serving it.
+        var (database, service, _, _) = await Arrange(provider);
+        await using var _db = database;
+
+        using (database.ScopeProvider.CreateScope())
+        {
+            await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" });
+            Assert.Equal("GBP", (await service.GetConfigurationAsync())!.CurrencyCode);
+        } // not completed: rolled back
+
+        Assert.Null(await service.GetConfigurationAsync());
+    }
+
+    [Fact]
+    public void The_Saved_handler_clears_the_cache_after_the_outermost_commit()
+    {
+        // Umbraco publishes Saved when the outermost scope has committed, so a read that cached the old row in between is dropped.
+        var cache = new SettingsCache<UmbCheckout.Core.Pocos.UmbCheckoutConfiguration>();
+        cache.TrySet(new UmbCheckout.Core.Pocos.UmbCheckoutConfiguration { CurrencyCode = "old" }, cache.Generation);
+
+        new UmbCheckout.Core.Cache.UmbCheckoutConfigurationSavedCacheHandler(cache).Handle(new OnConfigurationSavedNotification(new ConfigurationModel()));
+
+        Assert.False(cache.TryGet(out _));
     }
 
     private static MultiUrlPicker[] Page(string url) => [new MultiUrlPicker { Name = url, Url = url }];

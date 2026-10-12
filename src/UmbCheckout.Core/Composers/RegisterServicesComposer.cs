@@ -27,9 +27,6 @@ namespace UmbCheckout.Core.Composers
             builder.Services.AddTransient<ISessionService, SessionService>();
             builder.Services.AddTransient<IBasketService, BasketService>();
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
-            // One cached configuration row per process, cleared on save here and on every other server by its cache refresher.
-            builder.Services.AddSingleton<UmbCheckout.Shared.Persistence.SettingsCache<UmbCheckout.Core.Pocos.UmbCheckoutConfiguration>>();
-            builder.CacheRefreshers().Add<UmbCheckout.Core.Cache.UmbCheckoutConfigurationCacheRefresher>();
             builder.Services.AddTransient<ICurrencyService, CurrencyService>();
             builder.Services.AddTransient<IBasketContext, UmbracoBasketContext>();
         }

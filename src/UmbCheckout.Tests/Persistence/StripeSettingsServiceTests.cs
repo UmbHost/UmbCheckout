@@ -30,8 +30,36 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
         var events = new TestEventAggregator();
         var messages = new TestEventMessagesFactory();
         var service = new StripeSettingsService(database.ScopeProvider, NullLogger<StripeSettingsService>.Instance,
-            TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages, _cache);
+            TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages, _cache, scopeAccessor: database.ScopeProvider.ScopeAccessor);
         return (database, service, events, messages);
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_read_inside_an_unfinished_outer_scope_is_not_cached(TestProvider provider)
+    {
+        // Quality Phase 5 review: a rolled-back uSync import must not leave its uncommitted settings in the cache.
+        var (database, service, _, _) = await Arrange(provider);
+        await using var _db = database;
+
+        using (database.ScopeProvider.CreateScope())
+        {
+            await service.UpdateStripeSettingsAsync(new SettingsModel { UseLiveApiDetails = true });
+            Assert.True((await service.GetStripeSettingsAsync())!.UseLiveApiDetails);
+        } // not completed: rolled back
+
+        Assert.Null(await service.GetStripeSettingsAsync());
+    }
+
+    [Fact]
+    public void The_Saved_handler_clears_the_cache_after_the_outermost_commit()
+    {
+        var cache = new SettingsCache<UmbCheckout.Stripe.Pocos.UmbCheckoutStripeSettings>();
+        cache.TrySet(new UmbCheckout.Stripe.Pocos.UmbCheckoutStripeSettings(), cache.Generation);
+
+        new UmbCheckout.Stripe.Cache.UmbCheckoutStripeSettingsSavedCacheHandler(cache).Handle(new OnStripeSettingsSavedNotification(new SettingsModel()));
+
+        Assert.False(cache.TryGet(out _));
     }
 
     [Theory]
