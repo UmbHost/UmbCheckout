@@ -1,0 +1,6 @@
+<Project>
+	<!-- The UmbHost banner, in every shipped assembly (not tests, test helpers or test sites). -->
+	<ItemGroup Condition="'$(IsTestProject)' != 'true' And '$(IsPackable)' != 'false' And '$(UsingMicrosoftNETSdkWeb)' != 'true'">
+		<Compile Include="$(MSBuildThisFileDirectory)build/UmbHostBanner.cs" Link="UmbHostBanner.cs" Visible="false" />
+	</ItemGroup>
+</Project>
