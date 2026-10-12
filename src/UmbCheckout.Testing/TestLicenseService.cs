@@ -19,7 +19,6 @@ public static class TestLicenseService
     {
         // The constructor is internal to UmbHost.Licensing (its cache store is not public API).
         var constructor = typeof(LicenseService).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).Single();
-        var cacheStore = typeof(LicenseService).Assembly.GetType("UmbHost.Licensing.Services.ILicenseCacheStore", throwOnError: true)!;
         return (LicenseService)constructor.Invoke(
         [
             Mock.Of<IHttpClientFactory>(),
@@ -30,7 +29,8 @@ public static class TestLicenseService
             Mock.Of<IRuntimeState>(r => r.Level == RuntimeLevel.Boot),
             Options.Create(new WebRoutingSettings()),
             null,
-            TimeProvider.System
+            TimeProvider.System,
+            null
         ]);
     }
 }
