@@ -19,7 +19,7 @@ namespace UmbCheckout.Tests.Helpers
                 Live = new StripeApiDetails { ApiKey = "sk_live_key" }
             });
             var settingsService = new Mock<IStripeSettingsService>();
-            settingsService.Setup(s => s.GetStripeSettings()).ReturnsAsync(settings);
+            settingsService.Setup(s => s.GetStripeSettingsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(settings);
             return new UmbCheckoutStripeClientFactory(options.Object, settingsService.Object);
         }
 
@@ -37,7 +37,7 @@ namespace UmbCheckout.Tests.Helpers
             var options = new Mock<IOptionsMonitor<StripeSettings>>();
             options.Setup(o => o.CurrentValue).Returns(new StripeSettings());
             var settingsService = new Mock<IStripeSettingsService>();
-            settingsService.Setup(s => s.GetStripeSettings()).ReturnsAsync((UmbCheckoutStripeSettings?)null);
+            settingsService.Setup(s => s.GetStripeSettingsAsync(It.IsAny<CancellationToken>())).ReturnsAsync((UmbCheckoutStripeSettings?)null);
 
             var ex = await Assert.ThrowsAsync<UmbCheckout.Stripe.StripeNotConfiguredException>(
                 () => new UmbCheckoutStripeClientFactory(options.Object, settingsService.Object).CreateAsync());

@@ -18,7 +18,7 @@ namespace UmbCheckout.Tests.Api
         [Fact]
         public async Task GetAll_PagesWithTotal()
         {
-            _db.Setup(s => s.GetShippingRates()).ReturnsAsync(Enumerable.Range(1, 5).Select(i => new ShippingRate { Key = Guid.NewGuid(), Name = $"Rate {i}", Value = $"shr_{i}" }));
+            _db.Setup(s => s.GetShippingRatesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(Enumerable.Range(1, 5).Select(i => new ShippingRate { Key = Guid.NewGuid(), Name = $"Rate {i}", Value = $"shr_{i}" }));
 
             var page = Assert.IsType<PagedViewModel<ShippingRateResponseModel>>(Assert.IsType<OkObjectResult>(await Controller.GetShippingRates(skip: 2, take: 2)).Value);
 
@@ -29,7 +29,7 @@ namespace UmbCheckout.Tests.Api
         [Fact]
         public async Task GetById_UnknownId_Returns404ProblemDetails()
         {
-            _db.Setup(s => s.GetShippingRate(It.IsAny<Guid>())).ReturnsAsync((ShippingRate?)null);
+            _db.Setup(s => s.GetShippingRateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((ShippingRate?)null);
 
             var result = Assert.IsAssignableFrom<ObjectResult>(await Controller.GetShippingRateById(Guid.NewGuid()));
 
@@ -41,27 +41,27 @@ namespace UmbCheckout.Tests.Api
         public async Task Create_ReturnsCreatedAtId_WithClientSuppliedId()
         {
             var id = Guid.NewGuid();
-            _db.Setup(s => s.GetShippingRate("shr_1")).ReturnsAsync((ShippingRate?)null);
-            _db.Setup(s => s.CreateShippingRate(It.Is<ShippingRate>(r => r.Key == id && r.Value == "shr_1"))).ReturnsAsync((ShippingRate r) => r);
+            _db.Setup(s => s.GetShippingRateAsync("shr_1", It.IsAny<CancellationToken>())).ReturnsAsync((ShippingRate?)null);
+            _db.Setup(s => s.CreateShippingRateAsync(It.Is<ShippingRate>(r => r.Key == id && r.Value == "shr_1"), It.IsAny<CancellationToken>())).ReturnsAsync((ShippingRate r, CancellationToken _) => r);
 
             var result = await Controller.CreateShippingRate(new CreateShippingRateRequestModel { Id = id, Name = "1 Day", Value = "shr_1" });
 
             // Umbraco's documented CreatedAtId returns an EmptyCreatedAtActionResult, which writes 201 + Location when executed.
             Assert.IsType<Umbraco.Cms.Api.Common.Mvc.ActionResults.EmptyCreatedAtActionResult>(result);
-            _db.Verify(s => s.CreateShippingRate(It.Is<ShippingRate>(r => r.Key == id)), Times.Once);
+            _db.Verify(s => s.CreateShippingRateAsync(It.Is<ShippingRate>(r => r.Key == id), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task Create_DuplicateStripeId_Returns400ProblemDetails()
         {
-            _db.Setup(s => s.GetShippingRate("shr_1")).ReturnsAsync(new ShippingRate { Value = "shr_1" });
+            _db.Setup(s => s.GetShippingRateAsync("shr_1", It.IsAny<CancellationToken>())).ReturnsAsync(new ShippingRate { Value = "shr_1" });
 
             var result = Assert.IsAssignableFrom<ObjectResult>(await Controller.CreateShippingRate(new CreateShippingRateRequestModel { Name = "Dup", Value = "shr_1" }));
 
             Assert.Equal(400, result.StatusCode);
             // The back-office notification shows the ProblemDetails title, so it must carry the user-facing message.
             Assert.Equal("A shipping rate with this Stripe ID already exists", Assert.IsType<ProblemDetails>(result.Value).Title);
-            _db.Verify(s => s.CreateShippingRate(It.IsAny<ShippingRate>()), Times.Never);
+            _db.Verify(s => s.CreateShippingRateAsync(It.IsAny<ShippingRate>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace UmbCheckout.Tests.Api
         [Fact]
         public async Task Update_UnknownId_Returns404()
         {
-            _db.Setup(s => s.GetShippingRate(It.IsAny<Guid>())).ReturnsAsync((ShippingRate?)null);
+            _db.Setup(s => s.GetShippingRateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((ShippingRate?)null);
 
             var result = Assert.IsAssignableFrom<ObjectResult>(await Controller.UpdateShippingRate(Guid.NewGuid(), new UpdateShippingRateRequestModel { Name = "x", Value = "shr_x" }));
 
@@ -88,7 +88,7 @@ namespace UmbCheckout.Tests.Api
         [Fact]
         public async Task Delete_UnknownId_Returns404()
         {
-            _db.Setup(s => s.DeleteShippingRate(It.IsAny<Guid>())).ReturnsAsync(false);
+            _db.Setup(s => s.DeleteShippingRateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
             var result = Assert.IsAssignableFrom<ObjectResult>(await Controller.DeleteShippingRate(Guid.NewGuid()));
 

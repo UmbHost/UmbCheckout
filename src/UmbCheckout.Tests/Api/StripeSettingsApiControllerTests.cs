@@ -14,7 +14,7 @@ namespace UmbCheckout.Tests.Api
         public async Task Get_MapsSettings()
         {
             var service = new Mock<IStripeSettingsService>();
-            service.Setup(s => s.GetStripeSettings()).ReturnsAsync(new UmbCheckoutStripeSettings { CollectPhoneNumber = true, ShippingAllowedCountries = "GB,US" });
+            service.Setup(s => s.GetStripeSettingsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new UmbCheckoutStripeSettings { CollectPhoneNumber = true, ShippingAllowedCountries = "GB,US" });
 
             var model = Assert.IsType<StripeSettingsResponseModel>(Assert.IsType<OkObjectResult>(await new StripeSettingsApiController(service.Object).GetStripeSettings()).Value);
 
@@ -26,7 +26,7 @@ namespace UmbCheckout.Tests.Api
         public async Task Get_NoSettingsYet_ReturnsDefaults()
         {
             var service = new Mock<IStripeSettingsService>();
-            service.Setup(s => s.GetStripeSettings()).ReturnsAsync((UmbCheckoutStripeSettings?)null);
+            service.Setup(s => s.GetStripeSettingsAsync(It.IsAny<CancellationToken>())).ReturnsAsync((UmbCheckoutStripeSettings?)null);
 
             var model = Assert.IsType<StripeSettingsResponseModel>(Assert.IsType<OkObjectResult>(await new StripeSettingsApiController(service.Object).GetStripeSettings()).Value);
 
@@ -37,7 +37,7 @@ namespace UmbCheckout.Tests.Api
         public async Task Put_SaveFails_Returns400ProblemDetails()
         {
             var service = new Mock<IStripeSettingsService>();
-            service.Setup(s => s.UpdateStripeSettings(It.IsAny<UmbCheckoutStripeSettings>())).ReturnsAsync(false);
+            service.Setup(s => s.UpdateStripeSettingsAsync(It.IsAny<UmbCheckoutStripeSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
             var result = Assert.IsAssignableFrom<ObjectResult>(await new StripeSettingsApiController(service.Object).UpdateStripeSettings(new UpdateStripeSettingsRequestModel()));
 
