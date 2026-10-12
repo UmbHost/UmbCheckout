@@ -28,6 +28,11 @@ namespace UmbCheckout.Tests.Api
         }
 
         [Fact]
+        public void LicenceVerification_CallsUmbPanelDirectly()
+            // Licensing moved off my.umbhost.net; the Cloudflare proxy on the old URL exists only for already-deployed clients.
+            => Assert.Equal("https://www.umbpanel.io/api/greenstack/licensing/verify", UmbHost.Licensing.LicensingEndpoints.VerifyUrl);
+
+        [Fact]
         public void LicenseStatusResponseModel_CarriesTheV13LicenceDetails()
         {
             // The v13 Licence Details panel shows Registration Date and Valid Path alongside the other fields.
