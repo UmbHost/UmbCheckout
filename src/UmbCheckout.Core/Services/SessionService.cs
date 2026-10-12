@@ -25,9 +25,12 @@ namespace UmbCheckout.Core.Services
         private readonly ILogger<SessionService> _logger;
         private readonly IConfigurationService _configurationService;
         private readonly IBasketContext _basketContext;
+        private readonly IEventMessagesFactory _eventMessagesFactory;
 
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext,
+            IEventMessagesFactory eventMessagesFactory)
         {
+            _eventMessagesFactory = eventMessagesFactory;
             _dataProtectionProvider = dataProtectionProvider;
             _contextAccessor = contextAccessor;
             _logger = logger;
@@ -72,16 +75,22 @@ namespace UmbCheckout.Core.Services
         {
             var configuration = await _configurationService.GetConfigurationAsync();
 
-            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
+            UmbCheckoutSession session;
+            using (var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true))
+            {
+                await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
 
-            MigrateLegacyBasket(siteRootCulture, currencyCode);
+                MigrateLegacyBasket(siteRootCulture, currencyCode);
 
-            var key = BasketKeys.Session(siteRootCulture, currencyCode);
-            var session = (HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null)
+                var key = BasketKeys.Session(siteRootCulture, currencyCode);
+                session = (HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null)
                           ?? await Create(siteRootCulture, currencyCode);
 
-            scope.Notifications.Publish(new OnSessionGetNotification(HttpContext, session, configuration));
+                scope.Notifications.Publish(new OnSessionGetNotification(HttpContext, session, configuration));
+            }
+
+            // After the scope: its notifications (the add-on's cookie and database basket restore) have replaced the basket by now.
+            await _eventAggregator.PublishAsync(new OnSessionLoadedNotification(session, _eventMessagesFactory.Get()));
             return session;
         }
 
@@ -130,10 +139,18 @@ namespace UmbCheckout.Core.Services
             var siteRootCulture = _basketContext.SiteRootCulture;
             basket.SiteRootCulture = siteRootCulture;
             basket.CurrencyCode ??= await _basketContext.GetCurrencyAsync();
+
+            var key = BasketKeys.Session(siteRootCulture, basket.CurrencyCode);
+            var stored = HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null;
+            if (await _eventAggregator.PublishCancelableAsync(new OnSessionSavingNotification(basket, stored?.Basket, _eventMessagesFactory.Get())))
+            {
+                return stored ?? new UmbCheckoutSession { SiteRootCulture = siteRootCulture, Basket = new Basket { SiteRootCulture = siteRootCulture, CurrencyCode = basket.CurrencyCode } };
+            }
+
             var session = new UmbCheckoutSession { SiteRootCulture = siteRootCulture, Basket = basket };
 
             var sessionId = HttpContext.Session.Id;
-            HttpContext.Session.SetObjectAsJson(BasketKeys.Session(siteRootCulture, basket.CurrencyCode), session);
+            HttpContext.Session.SetObjectAsJson(key, session);
 
             var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(basket), _dataProtectionProvider);
             scope.Notifications.Publish(new OnSessionUpdatedNotification(HttpContext, sessionId, basket, encryptedBasket, configuration));

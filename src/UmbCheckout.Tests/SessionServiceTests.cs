@@ -37,7 +37,8 @@ namespace UmbCheckout.Tests
                 new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object,
                 Mock.Of<IConfigurationService>(),
                 licenseService,
-                _basketContext.Object);
+                _basketContext.Object,
+                new UmbCheckout.Testing.TestEventMessagesFactory());
         }
 
         private static LineItem Line(string currency) => new() { Key = Guid.NewGuid(), CurrencyCode = currency, Price = 1m, Quantity = 1 };
