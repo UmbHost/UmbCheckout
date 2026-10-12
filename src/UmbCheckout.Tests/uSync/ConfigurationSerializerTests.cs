@@ -13,7 +13,9 @@ public sealed class ConfigurationSerializerTests
     [Fact]
     public async Task Every_setting_survives_an_export_and_import()
     {
-        var serializer = new ConfigurationSerializer(NullLogger<SyncSerializerRoot<UmbCheckoutConfiguration>>.Instance, Mock.Of<IConfigurationService>());
+        var service = new Mock<IConfigurationService>();
+        service.Setup(s => s.UpdateConfigurationAsync(It.IsAny<UmbCheckoutConfiguration>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var serializer = new ConfigurationSerializer(NullLogger<SyncSerializerRoot<UmbCheckoutConfiguration>>.Instance, service.Object);
         var exported = new UmbCheckoutConfiguration
         {
             Key = Guid.NewGuid(),
@@ -38,5 +40,16 @@ public sealed class ConfigurationSerializerTests
         Assert.True(imported.EnableShipping);
         Assert.Equal("/basket/", imported.SuccessPageUrl.Single().Url);
         Assert.Equal("/cancel/", imported.CancelPageUrl.Single().Url);
+    }
+
+    [Fact]
+    public async Task A_refused_import_fails_instead_of_reporting_success()
+    {
+        // e.g. a site's Saving handler cancelled it: uSync must show the item as failed.
+        var service = new Mock<IConfigurationService>();
+        service.Setup(s => s.UpdateConfigurationAsync(It.IsAny<UmbCheckoutConfiguration>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        var serializer = new ConfigurationSerializer(NullLogger<SyncSerializerRoot<UmbCheckoutConfiguration>>.Instance, service.Object);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => serializer.SaveItemAsync(new UmbCheckoutConfiguration()));
     }
 }
