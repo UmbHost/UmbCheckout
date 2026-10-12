@@ -124,6 +124,20 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
 
     [Theory]
     [MemberData(nameof(Providers))]
+    public async Task A_cancel_without_a_message_saves_nothing_and_still_reads_as_a_cancel(TestProvider provider)
+    {
+        var (database, service, events, messages) = await Arrange(provider);
+        await using var _db = database;
+        events.On<OnConfigurationSavingNotification>(n => n.Cancel = true);
+
+        Assert.False(await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" }));
+
+        Assert.Equal(0, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutConfiguration"));
+        Assert.Equal(EventMessagesExtensions.DefaultCancellationMessage, messages.Messages.CancellationMessage());
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
     public async Task An_update_hands_the_handler_the_stored_configuration(TestProvider provider)
     {
         var (database, service, events, _) = await Arrange(provider);

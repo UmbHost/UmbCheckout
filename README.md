@@ -36,7 +36,7 @@ UmbCheckout publishes Umbraco notifications around its data, so a site can chang
 | Tax rates (licensed add-on) | `OnStripeTaxRateSavingNotification`, `OnStripeTaxRateDeletingNotification` | `OnStripeTaxRatesLoadedNotification` |
 | Basket | `OnSessionSavingNotification` | `OnSessionLoadedNotification` |
 
-Saving notifications carry the object about to be saved (`Target`) and, for an update, the stored one (`Existing`). Loaded notifications carry the object (`Target`) or, for shipping and tax rates, the list about to be returned (`Items`); remove a rate from `Items` to hide it, from lists and single reads alike. The existing `…Saved`, `…Deleted` and session notifications are unchanged.
+Saving notifications carry the object about to be saved (`Target`) and, for an update, the stored one (`Existing`). Loaded notifications carry the object (`Target`) or, for shipping and tax rates, the list about to be returned (`Items`). Remove a rate from `Items` to hide it from lists and single reads alike (checkout and shop code); editors still see and manage it in the backoffice. The existing `…Saved`, `…Deleted` and session notifications are unchanged.
 
 Refuse a save or delete with a message for the person who tried:
 
@@ -72,10 +72,15 @@ public sealed class HideInternalShippingRates : INotificationAsyncHandler<OnShip
 
 Rules:
 
-- Cancel with an `Error` or `Warning` event message; that message is what the person sees.
-- Loaded handlers run on every read, including frequent internal ones, so keep them cheap.
+- Cancel with `CancelOperation(...)` and an `Error` or `Warning` event message; that message is what the person sees. `notification.Cancel = true` also cancels, with a generic message.
+- Loaded changes are for what is shown and handed to code; they are never stored. UmbCheckout reads stored data, without Loaded, wherever it changes or charges data:
+  - basket changes and checkout (checkout charges the stored basket, with every unit price re-priced from published content);
+  - the backoffice screens that edit configuration, Stripe settings, shipping rates and tax rates;
+  - uSync exports and imports.
+- Your own code can do the same with `using (UmbCheckoutHooks.SuppressLoaded()) { ... }`.
+- Checkout records its Stripe session on the basket inside `UmbCheckoutHooks.SuppressSaving()`, so a basket Saving handler can't stop the paid basket being cleared.
+- Loaded handlers run on every other read, including frequent internal ones, so keep them cheap.
 - A handler that throws fails the operation; UmbCheckout doesn't hide handler errors.
-- Basket Loaded changes affect what is shown and passed to your code, never what Stripe charges: checkout re-prices every line from published content.
 
 ## Pricing comparison
 

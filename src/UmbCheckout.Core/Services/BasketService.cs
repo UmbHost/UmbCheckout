@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared;
 using UmbCheckout.Shared.Models;
+using UmbCheckout.Shared.Notifications;
 using UmbCheckout.Shared.Notifications.Basket;
+using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Scoping;
 
@@ -17,13 +20,22 @@ namespace UmbCheckout.Core.Services
         private readonly IEventAggregator _eventAggregator;
         private readonly ICoreScopeProvider _coreScopeProvider;
         private readonly ILogger<BasketService> _logger;
+        private readonly IEventMessagesFactory _eventMessagesFactory;
 
-        public BasketService(ISessionService sessionService, ILogger<BasketService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider)
+        public BasketService(ISessionService sessionService, ILogger<BasketService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider,
+            IEventMessagesFactory eventMessagesFactory)
         {
             _sessionService = sessionService;
             _logger = logger;
             _eventAggregator = eventAggregator;
             _coreScopeProvider = coreScopeProvider;
+            _eventMessagesFactory = eventMessagesFactory;
+        }
+
+        [Obsolete("Use the constructor that takes an IEventMessagesFactory. Scheduled for removal in the next major version.")]
+        public BasketService(ISessionService sessionService, ILogger<BasketService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider)
+            : this(sessionService, logger, eventAggregator, coreScopeProvider, StaticServiceProvider.Instance.GetRequiredService<IEventMessagesFactory>())
+        {
         }
 
         /// <inheritdoc />
@@ -47,16 +59,20 @@ namespace UmbCheckout.Core.Services
             ValidateNewLine(item);
 
             // A basket holds one currency: the line goes to its own currency's basket.
-            var basket = (await _sessionService.Get(item.CurrencyCode)).Basket;
+            var basket = await Stored(item.CurrencyCode);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
             await _eventAggregator.PublishAsync(new OnBasketAddStartedNotification(item, basket));
 
             basket.LineItems = Merge(basket.LineItems, [item]);
             basket.CurrencyCode ??= item.CurrencyCode;
-            basket = (await _sessionService.Update(basket)).Basket;
+            (basket, var saved) = await Store(basket);
 
-            scope.Notifications.Publish(new OnBasketAddedNotification(item, basket));
+            if (saved)
+            {
+                scope.Notifications.Publish(new OnBasketAddedNotification(item, basket));
+            }
+
             return basket;
         }
 
@@ -74,13 +90,35 @@ namespace UmbCheckout.Core.Services
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
             await _eventAggregator.PublishAsync(new OnBasketAddManyStartedNotification(newLines));
 
-            var basket = (await _sessionService.Get(currencies[0])).Basket;
+            var basket = await Stored(currencies[0]);
             basket.LineItems = Merge(basket.LineItems, newLines);
             basket.CurrencyCode ??= currencies[0];
-            basket = (await _sessionService.Update(basket)).Basket;
+            (basket, var saved) = await Store(basket);
 
-            scope.Notifications.Publish(new OnBasketAddedManyNotification(newLines, basket));
+            if (saved)
+            {
+                scope.Notifications.Publish(new OnBasketAddedManyNotification(newLines, basket));
+            }
+
             return basket;
+        }
+
+        /// <summary>The stored basket, without the Loaded hooks: a change starts from what is stored, never from what a site displays.</summary>
+        private async Task<Basket> Stored(string? currencyCode = null)
+        {
+            using (UmbCheckoutHooks.SuppressLoaded())
+            {
+                return currencyCode == null ? (await _sessionService.Get()).Basket : (await _sessionService.Get(currencyCode)).Basket;
+            }
+        }
+
+        /// <summary>Stores the changed basket; Saved is false when a site's handler cancelled the change (the stored basket comes back unchanged).</summary>
+        private async Task<(Basket Basket, bool Saved)> Store(Basket basket)
+        {
+            var messages = _eventMessagesFactory.Get();
+            var cancelled = messages.CancellationCount();
+            var stored = (await _sessionService.Update(basket)).Basket;
+            return (stored, messages.CancellationCount() == cancelled);
         }
 
         /// <summary>Adds each new line's quantity to an existing line for the same product, or appends it; the latest price wins.</summary>
@@ -131,7 +169,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                var basket = await Get();
+                var basket = await Stored();
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket));
@@ -148,10 +186,13 @@ namespace UmbCheckout.Core.Services
                 }
 
                 basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
-                basket = updateResponse.Basket;
+                (basket, var saved) = await Store(basket);
 
-                scope.Notifications.Publish(new OnBasketReducedNotification(key, basket));
+                if (saved)
+                {
+                    scope.Notifications.Publish(new OnBasketReducedNotification(key, basket));
+                }
+
                 return basket;
             }
             catch (Exception ex)
@@ -166,7 +207,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                var basket = await Get();
+                var basket = await Stored();
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket));
@@ -179,10 +220,13 @@ namespace UmbCheckout.Core.Services
                 }
 
                 basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
-                basket = updateResponse.Basket;
+                (basket, var saved) = await Store(basket);
 
-                scope.Notifications.Publish(new OnBasketRemovedNotification(key, basket));
+                if (saved)
+                {
+                    scope.Notifications.Publish(new OnBasketRemovedNotification(key, basket));
+                }
+
                 return basket;
             }
             catch (Exception ex)
@@ -197,7 +241,7 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                var basket = await Get();
+                var basket = await Stored();
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket));
@@ -214,10 +258,13 @@ namespace UmbCheckout.Core.Services
                 }
 
                 basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
-                basket = updateResponse.Basket;
+                (basket, var saved) = await Store(basket);
 
-                scope.Notifications.Publish(new OnBasketRemovedManyNotification(keys, basket));
+                if (saved)
+                {
+                    scope.Notifications.Publish(new OnBasketRemovedManyNotification(keys, basket));
+                }
+
                 return basket;
             }
             catch (Exception ex)
@@ -232,17 +279,20 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                var basket = await Get();
+                var basket = await Stored();
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 await _eventAggregator.PublishAsync(new OnBasketClearStartedNotification(basket));
 
                 var lineItems = Enumerable.Empty<LineItem>();
                 basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
-                basket = updateResponse.Basket;
+                (basket, var saved) = await Store(basket);
 
-                scope.Notifications.Publish(new OnBasketClearedNotification(basket));
+                if (saved)
+                {
+                    scope.Notifications.Publish(new OnBasketClearedNotification(basket));
+                }
+
                 return basket;
             }
             catch (Exception ex)

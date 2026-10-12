@@ -4,6 +4,7 @@ using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.Persistence;
 using UmbCheckout.Shared.Notifications.Configuration;
 using UmbHost.Licensing.Services;
+using UmbCheckout.Shared.Notifications;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Mapping;
 using Umbraco.Cms.Persistence.EFCore.Scoping;
@@ -37,7 +38,7 @@ namespace UmbCheckout.Core.Services
         public async Task<Shared.Models.UmbCheckoutConfiguration?> GetConfigurationAsync(CancellationToken cancellationToken = default)
         {
             var configuration = await ReadAsync(cancellationToken);
-            if (configuration != null)
+            if (configuration != null && !UmbCheckoutHooks.LoadedSuppressed)
             {
                 await _eventAggregator.PublishAsync(new OnConfigurationLoadedNotification(configuration, _eventMessagesFactory.Get()), cancellationToken);
             }
@@ -59,7 +60,7 @@ namespace UmbCheckout.Core.Services
         public async Task<bool> UpdateConfigurationAsync(Shared.Models.UmbCheckoutConfiguration configuration, CancellationToken cancellationToken = default)
         {
             var saving = new OnConfigurationSavingNotification(configuration, await ReadAsync(cancellationToken), _eventMessagesFactory.Get());
-            if (await _eventAggregator.PublishCancelableAsync(saving))
+            if (await _eventAggregator.PublishCancellingAsync(saving, _eventMessagesFactory.Get()))
             {
                 return false;
             }

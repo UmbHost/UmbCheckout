@@ -1,14 +1,17 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared.Helpers;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Session;
 using UmbHost.Licensing.Services;
+using UmbCheckout.Shared.Notifications;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Scoping;
+using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Web.Common.Security;
 
 namespace UmbCheckout.Core.Services
@@ -39,6 +42,13 @@ namespace UmbCheckout.Core.Services
             _configurationService = configurationService;
             _basketContext = basketContext;
             licenseService.RunLicenseCheck();
+        }
+
+        [Obsolete("Use the constructor that takes an IEventMessagesFactory. Scheduled for removal in the next major version.")]
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
+            : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
+                StaticServiceProvider.Instance.GetRequiredService<IEventMessagesFactory>())
+        {
         }
 
         private HttpContext HttpContext => _contextAccessor.HttpContext ?? throw new InvalidOperationException("HttpContext cannot be null");
@@ -90,7 +100,10 @@ namespace UmbCheckout.Core.Services
             }
 
             // After the scope: its notifications (the add-on's cookie and database basket restore) have replaced the basket by now.
-            await _eventAggregator.PublishAsync(new OnSessionLoadedNotification(session, _eventMessagesFactory.Get()));
+            if (!UmbCheckoutHooks.LoadedSuppressed)
+            {
+                await _eventAggregator.PublishAsync(new OnSessionLoadedNotification(session, _eventMessagesFactory.Get()));
+            }
             return session;
         }
 
@@ -142,7 +155,7 @@ namespace UmbCheckout.Core.Services
 
             var key = BasketKeys.Session(siteRootCulture, basket.CurrencyCode);
             var stored = HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null;
-            if (await _eventAggregator.PublishCancelableAsync(new OnSessionSavingNotification(basket, stored?.Basket, _eventMessagesFactory.Get())))
+            if (await _eventAggregator.PublishCancellingAsync(new OnSessionSavingNotification(basket, stored?.Basket, _eventMessagesFactory.Get()), _eventMessagesFactory.Get()))
             {
                 return stored ?? new UmbCheckoutSession { SiteRootCulture = siteRootCulture, Basket = new Basket { SiteRootCulture = siteRootCulture, CurrencyCode = basket.CurrencyCode } };
             }

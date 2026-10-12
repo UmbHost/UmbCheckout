@@ -184,6 +184,38 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
 
     [Theory]
     [MemberData(nameof(Providers))]
+    public async Task A_Loaded_handler_that_adds_a_rate_leaves_single_reads_working(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        var stored = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" }))!;
+        events.On<OnShippingRatesLoadedNotification>(n => n.Items.Add(new ShippingRate { Key = Guid.NewGuid(), Name = "Virtual", Value = "shr_virtual" }));
+
+        Assert.Equal("Standard", (await service.GetShippingRateAsync(stored.Key))!.Name);
+        Assert.Equal("Standard", (await service.GetShippingRateAsync("shr_1"))!.Name);
+        Assert.Equal(2, (await service.GetShippingRatesAsync()).Count());
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task Suppressed_reads_publish_no_Loaded(TestProvider provider)
+    {
+        var (database, service, events, _) = await Arrange(provider);
+        await using var _db = database;
+        var stored = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" }))!;
+        events.On<OnShippingRatesLoadedNotification>(n => n.Items.Clear());
+
+        using (UmbCheckoutHooks.SuppressLoaded())
+        {
+            Assert.Single(await service.GetShippingRatesAsync());
+            Assert.NotNull(await service.GetShippingRateAsync(stored.Key));
+        }
+
+        Assert.Empty(events.Published.OfType<OnShippingRatesLoadedNotification>());
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
     public async Task A_Loaded_handler_can_hide_a_rate(TestProvider provider)
     {
         var (database, service, events, _) = await Arrange(provider);

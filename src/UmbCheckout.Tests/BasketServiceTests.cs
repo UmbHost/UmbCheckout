@@ -32,7 +32,7 @@ public class BasketServiceTests
         coreScopeProvider.Setup(x => x.CreateCoreScope(IsolationLevel.Unspecified, RepositoryCacheMode.Unspecified, null, null, null, false, true))
             .Returns(mockScope.Object);
 
-        _basketService = new BasketService(_sessionService.Object, logger.Object, eventAggregator.Object, coreScopeProvider.Object);
+        _basketService = new BasketService(_sessionService.Object, logger.Object, eventAggregator.Object, coreScopeProvider.Object, new UmbCheckout.Testing.TestEventMessagesFactory());
     }
 
     [Fact]

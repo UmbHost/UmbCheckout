@@ -27,6 +27,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
     [MapToApi(UmbCheckoutApiComposer.DocumentName)]
     // Settings > UmbCheckout: changing these requires Settings section access, not just a back-office login.
     [Authorize(Policy = AuthorizationPolicies.SectionAccessSettings)]
+    // Editors manage what is stored: reads here skip the Loaded hooks, so display changes aren't saved back.
+    [SuppressLoadedHooks]
     public class ConfigurationApiController : ManagementApiControllerBase
     {
         private readonly IConfigurationService _configurationService;

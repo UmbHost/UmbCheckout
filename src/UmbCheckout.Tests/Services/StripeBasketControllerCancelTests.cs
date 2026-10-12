@@ -10,6 +10,7 @@ using UmbCheckout.Core.Models;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Stripe.Controllers.Surface;
 using UmbCheckout.Stripe.Interfaces;
+using UmbCheckout.Shared.Notifications;
 using UmbCheckout.Testing;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Events;
@@ -59,6 +60,7 @@ namespace UmbCheckout.Tests.Services
             if (cancelMessage != null)
             {
                 _messages.Messages.Add(new EventMessage("Basket", cancelMessage, EventMessageType.Error));
+                _messages.Messages.MarkCancelled();
             }
 
             var http = new DefaultHttpContext { RequestServices = new ServiceCollection().AddSingleton<IEventMessagesFactory>(_messages).BuildServiceProvider() };
