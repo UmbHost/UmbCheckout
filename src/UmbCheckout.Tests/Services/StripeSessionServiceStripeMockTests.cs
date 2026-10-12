@@ -72,6 +72,7 @@ namespace UmbCheckout.Tests.Services
             Assert.Contains("line_items[0][price_data][unit_amount]=200", body);
             Assert.Contains("line_items[0][price_data][currency]=gbp", body);
             Assert.Contains("line_items[0][quantity]=2", body);
+            Assert.Contains($"line_items[0][price_data][product_data][metadata][nodeKey]={key}", body);
         }
     }
 }
