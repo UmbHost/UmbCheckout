@@ -61,6 +61,27 @@ namespace UmbCheckout.Tests.Services
         }
 
         [Fact]
+        public async Task A_cancelled_request_stops_the_Stripe_call()
+        {
+            // Quality Phase 5: a shopper who leaves mid-checkout doesn't keep a Stripe call (and a thread) busy.
+            var key = Guid.NewGuid();
+            var basket = new Basket { SiteRootCulture = "en-GB", CurrencyCode = "GBP", LineItems = [new LineItem { Key = key, Name = "Ping Pong Ball", Price = 2m, CurrencyCode = "GBP", Quantity = 1 }] };
+            using var cancelled = new CancellationTokenSource();
+            cancelled.Cancel();
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Service(key).CreateSessionAsync(basket, cancelled.Token));
+
+            Assert.Empty(_handler.RequestUris);
+        }
+
+        [Theory]
+        [InlineData(nameof(IStripeSessionService.GetSession))]
+        [InlineData(nameof(IStripeSessionService.CreateSession))]
+        [InlineData(nameof(IStripeSessionService.ClearSession))]
+        public void The_blocking_methods_are_obsolete(string method)
+            => Assert.All(typeof(IStripeSessionService).GetMethods().Where(m => m.Name == method),
+                m => Assert.NotNull(m.GetCustomAttributes(typeof(ObsoleteAttribute), false).SingleOrDefault()));
+        [Fact]
         public async Task CreateSessionAsync_WithNoSavedStripeSettings_ChargesTheBasketInMinorUnits()
         {
             var key = Guid.NewGuid();

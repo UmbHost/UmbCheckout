@@ -28,7 +28,7 @@ namespace UmbCheckout.Tests.Services
             var pricing = new Mock<IStripeBasketPricingService>();
             pricing.Setup(p => p.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, []));
             var stripe = new Mock<IStripeSessionService>();
-            stripe.Setup(s => s.CreateSessionAsync(basket)).ReturnsAsync(new Session { Id = "cs_test_9", Url = "https://checkout.stripe.com/c/pay/cs_test_9" });
+            stripe.Setup(s => s.CreateSessionAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new Session { Id = "cs_test_9", Url = "https://checkout.stripe.com/c/pay/cs_test_9" });
             var sessions = new Mock<ISessionService>();
             Basket? saved = null;
             sessions.Setup(s => s.Update(It.IsAny<Basket>())).Callback<Basket>(b => saved = b).ReturnsAsync(new UmbCheckoutSession());

@@ -156,7 +156,7 @@ public sealed class BasketHookTests
         });
         Basket? charged = null;
         var stripe = new Mock<IStripeSessionService>();
-        stripe.Setup(s => s.CreateSessionAsync(It.IsAny<Basket>())).Callback<Basket>(b => charged = b)
+        stripe.Setup(s => s.CreateSessionAsync(It.IsAny<Basket>(), It.IsAny<CancellationToken>())).Callback<Basket, CancellationToken>((b, _) => charged = b)
             .ReturnsAsync(new Session { Id = "cs_test_1", Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
 
         Assert.IsType<RedirectResult>(await Checkout(stripe).Checkout());
@@ -173,7 +173,7 @@ public sealed class BasketHookTests
         await _baskets.Add(Ball());
         _events.On<OnSessionSavingNotification>(n => n.CancelOperation(new EventMessage("Basket", "Locked", EventMessageType.Error)));
         var stripe = new Mock<IStripeSessionService>();
-        stripe.Setup(s => s.CreateSessionAsync(It.IsAny<Basket>())).ReturnsAsync(new Session { Id = "cs_test_2", Url = "https://checkout.stripe.com/c/pay/cs_test_2" });
+        stripe.Setup(s => s.CreateSessionAsync(It.IsAny<Basket>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Session { Id = "cs_test_2", Url = "https://checkout.stripe.com/c/pay/cs_test_2" });
 
         Assert.IsType<RedirectResult>(await Checkout(stripe).Checkout());
 

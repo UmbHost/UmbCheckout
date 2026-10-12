@@ -119,7 +119,7 @@ namespace UmbCheckout.Tests.Services
 
             Assert.Equal("Prices are frozen", controller.TempData[Consts.TempData.UmbCheckoutBasketChangeCancelled]);
             Assert.Null(controller.TempData[Consts.TempData.UmbCheckoutBasketRepriced]);
-            _stripe.Verify(s => s.CreateSessionAsync(It.IsAny<Basket>()), Times.Never);
+            _stripe.Verify(s => s.CreateSessionAsync(It.IsAny<Basket>(), It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }
