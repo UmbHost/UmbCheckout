@@ -1,0 +1,48 @@
+const e = {
+  umbcheckout: {
+    disabled_unlicensed: "DISABLED IN UNLICENSED MODE",
+    unlicensed_warning: "UmbCheckout is running in unlicensed mode, please purchase a license to support development",
+    help_support: "Help & Support",
+    configuration: "Configuration",
+    configuration_saved_title: "Configuration saved",
+    configuration_saved_message: "The configuration has been saved successfully",
+    configuration_failed_save_title: "Configuration failed to save",
+    configuration_failed_save_message: "There was an issue trying to save the configuration",
+    license_status: "License Status",
+    license_details: "License Details",
+    license_development: "Development License",
+    registration_date: "Registration Date",
+    expiry_date: "Expiry Date",
+    valid_domains: "Valid Domains",
+    valid_path: "Valid Path",
+    recheck_license: "Re-Check License",
+    currency_code_label: "Fallback Currency Code",
+    currency_code_description: "The fallback 3 letter currency code",
+    success_page_url_label: "Success Page URL",
+    success_page_url_description: "The checkout success page",
+    cancel_page_url_label: "Cancel Page URL",
+    cancel_page_url_description: "The checkout cancelled page",
+    enable_shipping_label: "Enable Shipping",
+    enable_shipping_description: "Enable the use of Shipping Rates",
+    store_basket_cookie_label: "Store Basket In a Cookie",
+    store_basket_cookie_description: "Whether the basket contents should be stored in a cookie",
+    store_basket_cookie_expiry_label: "Basket Expiry (Cookie)",
+    store_basket_cookie_expiry_description: "How many days the basket cookie should persist",
+    store_basket_database_label: "Store Basket In The Database",
+    store_basket_database_description: "Whether the basket contents should be stored in the database",
+    store_basket_database_expiry_label: "Basket Expiry (Database)",
+    store_basket_database_expiry_description: "How many days the basket should persist in the database",
+    shipping_rates: "Shipping Rates",
+    tax_rates: "Tax Rates",
+    first_page: "First Page",
+    next_page: "Next Page",
+    section: "UmbCheckout",
+    menu_settings: "Settings",
+    status: "Status",
+    application_url_missing: "The Umbraco application URL is not set. Set Umbraco:CMS:WebRouting:UmbracoApplicationUrl so checkout URLs are correct."
+  }
+};
+export {
+  e as default
+};
+//# sourceMappingURL=en-VaH6GnQm.js.map
