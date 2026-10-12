@@ -47,6 +47,8 @@
             public const string UmbCheckoutEmptyBasket = "UmbCheckout_EmptyBasket";
 
             public const string UmbCheckoutAddedToBasket = "UmbCheckout_Added_To_Basket";
+
+            public const string UmbCheckoutAddToBasketFailed = "UmbCheckout_Add_To_Basket_Failed";
         }
 
         public static class LocalizationKeys
