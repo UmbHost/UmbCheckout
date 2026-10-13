@@ -29,6 +29,7 @@ namespace UmbCheckout.Tests.Services
         private readonly CapturingHandler _handler = new();
         private readonly Mock<IUmbCheckoutStripeClientFactory> _factory = new();
         private readonly Mock<IStripeShippingOptionsService> _shippingOptions = new();
+        private readonly Mock<IEventAggregator> _events = new();
 
         public StripeSessionServiceStripeMockTests(StripeMockFixture fixture) => _fixture = fixture;
 
@@ -55,7 +56,7 @@ namespace UmbCheckout.Tests.Services
             return new StripeSessionService(
                 contentCache.Object,
                 new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object,
-                Mock.Of<IEventAggregator>(),
+                _events.Object,
                 NullLogger<StripeSessionService>.Instance,
                 Mock.Of<IConfigurationService>(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>()) == Task.FromResult<UmbCheckoutConfiguration?>(enableShipping ? new UmbCheckoutConfiguration { EnableShipping = true } : null)),
                 Mock.Of<IHttpContextAccessor>(),
@@ -128,6 +129,22 @@ namespace UmbCheckout.Tests.Services
             await Service(key, enableShipping: true).CreateSessionAsync(basket);
 
             Assert.DoesNotContain("shipping_options", Assert.Single(_handler.RequestBodies));
+        }
+
+        [Fact]
+        public async Task A_session_option_handlers_change_is_sent_and_accepted()
+        {
+            // Handlers run before the session is created (they were queued until the scope ended), and Stripe accepts what they set.
+            _events.Setup(e => e.PublishAsync(It.IsAny<UmbCheckout.Stripe.Notifications.OnProviderSessionOptionsStarted>(), It.IsAny<CancellationToken>()))
+                .Callback<UmbCheckout.Stripe.Notifications.OnProviderSessionOptionsStarted, CancellationToken>((n, _) => n.Options.Metadata["order_reference"] = "order-42")
+                .Returns(Task.CompletedTask);
+            var key = Guid.NewGuid();
+            var basket = new Basket { SiteRootCulture = "en-GB", CurrencyCode = "GBP", LineItems = [new LineItem { Key = key, Name = "Ping Pong Ball", Description = "Table tennis ball", Price = 2m, CurrencyCode = "GBP", Quantity = 1 }] };
+
+            var session = await Service(key).CreateSessionAsync(basket, CancellationToken.None);
+
+            Assert.NotNull(session.Id);
+            Assert.Contains("metadata[order_reference]=order-42", Assert.Single(_handler.RequestBodies));
         }
     }
 }
