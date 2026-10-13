@@ -19,6 +19,8 @@
 	<PropertyGroup>
 		<UmbLicensingProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../UmbLicensing/UmbHost.Licensing.csproj'))</UmbLicensingProject>
 		<UseUmbLicensingProject Condition="'$(UseUmbLicensingProject)' == '' And Exists('$(UmbLicensingProject)')">true</UseUmbLicensingProject>
-		<UmbHostLicensingVersion>1.4.0</UmbHostLicensingVersion>
+		<!-- Set only when the build is given a version (CI passes the one built from the UmbLicensing submodule). -->
+		<UmbHostLicensingPinnedVersion>$(UmbHostLicensingVersion)</UmbHostLicensingPinnedVersion>
+		<UmbHostLicensingVersion Condition="'$(UmbHostLicensingVersion)' == ''">1.4.0</UmbHostLicensingVersion>
 	</PropertyGroup>
 </Project>

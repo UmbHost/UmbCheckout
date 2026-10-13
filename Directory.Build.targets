@@ -7,6 +7,21 @@
 		<PackageReference Include="UmbHost.Licensing" Version="$(UmbHostLicensingVersion)" />
 	</ItemGroup>
 
+	<!--
+		UmbHost.Licensing has its own version line (published by the UmbLicensing repo). When a version is pinned
+		(-p:UmbHostLicensingVersion=..., CI passes the one built from the UmbLicensing submodule commit), packages list it as their
+		UmbHost.Licensing dependency. NuGet reads a project reference's version with this build's global properties (so the
+		package's own Version), hence the override here. The reference itself is left alone: giving it its own Version makes
+		parallel builds compile and obfuscate UmbHost.Licensing twice into the same obj folder.
+	-->
+	<Target Name="PinUmbHostLicensingPackageDependency" AfterTargets="_GetProjectReferenceVersions" Condition="'$(UmbHostLicensingPinnedVersion)' != ''">
+		<ItemGroup>
+			<_ProjectReferencesWithVersions Condition="'%(_ProjectReferencesWithVersions.Filename)' == 'UmbHost.Licensing'">
+				<ProjectVersion>$(UmbHostLicensingPinnedVersion)</ProjectVersion>
+			</_ProjectReferencesWithVersions>
+		</ItemGroup>
+	</Target>
+
 	<!-- The UmbHost banner, in every shipped assembly (not tests, test helpers or test sites). -->
 	<ItemGroup Condition="'$(IsTestProject)' != 'true' And '$(IsPackable)' != 'false' And '$(UsingMicrosoftNETSdkWeb)' != 'true'">
 		<Compile Include="$(MSBuildThisFileDirectory)build/UmbHostBanner.cs" Link="UmbHostBanner.cs" Visible="false" />
