@@ -64,6 +64,57 @@ public sealed class StripeWebhookRouteTests
         secrets.Verify(p => p.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task The_webhook_is_routed_on_a_website_only_host_without_duplicating_it_on_a_full_host()
+    {
+        // Phase 6 review: attribute routes need MapControllers(), which in Umbraco 17 only the Management and Delivery APIs call.
+        // A front-end-only host (AddCore().AddWebsite(), the public servers of a load-balanced shop) would answer Stripe with 404.
+        var services = new ServiceCollection();
+        var builder = new Mock<Umbraco.Cms.Core.DependencyInjection.IUmbracoBuilder>();
+        builder.SetupGet(b => b.Services).Returns(services);
+        new UmbCheckout.Stripe.Composers.StripeWebhookRoutingComposer().Compose(builder.Object);
+        var filters = services.BuildServiceProvider().GetRequiredService<Microsoft.Extensions.Options.IOptions<Umbraco.Cms.Web.Common.ApplicationBuilder.UmbracoPipelineOptions>>().Value.PipelineFilters;
+        var filter = Assert.Single(filters);
+
+        foreach (var fullHost in new[] { false, true })
+        {
+            var secrets = new Mock<IStripeWebhookSecretProvider>();
+            secrets.Setup(p => p.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync((string.Empty, false));
+            using var host = await new HostBuilder()
+                .ConfigureWebHost(web => web
+                    .UseTestServer()
+                    .ConfigureServices(s =>
+                    {
+                        s.AddSingleton(secrets.Object);
+                        s.AddSingleton(Mock.Of<IEventAggregator>());
+                        s.AddSingleton(Mock.Of<IStripeWebhookEventStore>());
+                        s.AddLogging();
+                        s.AddAuthorization();
+                        s.AddControllers().ConfigureApplicationPartManager(parts =>
+                        {
+                            parts.ApplicationParts.Clear();
+                            parts.FeatureProviders.Add(new OnlyWebhookController());
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting().UseAuthorization();
+                        if (fullHost)
+                        {
+                            app.UseEndpoints(e => e.MapControllers()); // what the Management API does on a backoffice host
+                        }
+
+                        filter.OnEndpoints(app);
+                    }))
+                .StartAsync();
+
+            var response = await host.GetTestClient().PostAsync("/umbraco/api/stripewebhookapi/checkoutevents", new StringContent("{}", Encoding.UTF8, "application/json"));
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode); // reached the action once (an ambiguous match would throw before it)
+            secrets.Verify(p => p.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+    }
+
     private sealed class OnlyWebhookController : IApplicationFeatureProvider<ControllerFeature>
     {
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
