@@ -24,6 +24,7 @@ namespace UmbCheckout.Core.Composers
             builder
                 .AddNotificationAsyncHandler<OnLicenseCheckCompletedNotification,
                     UmbCheckoutTelemetryNotificationHandler>();
+            builder.Services.AddHttpClient(UmbCheckoutTelemetryNotificationHandler.HttpClientName, UmbCheckoutTelemetryNotificationHandler.ConfigureClient);
             builder.Services.AddTransient<ISessionService, SessionService>();
             builder.Services.AddTransient<IBasketService, BasketService>();
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
