@@ -11,6 +11,7 @@ using UmbCheckout.Stripe.Cache;
 using UmbCheckout.Stripe.Migrations;
 using UmbCheckout.Stripe.Notifications;
 using UmbCheckout.Stripe.Services;
+using UmbCheckout.Testing;
 using UmbCheckout.Tests.Infrastructure;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.DependencyInjection;
@@ -37,11 +38,14 @@ namespace UmbCheckout.Tests.Persistence
     /// which calls the cache refresher on each server). A read can't put an older row back after a save, and a read inside someone
     /// else's scope (possibly uncommitted) isn't cached.
     /// </summary>
-    public sealed class SettingsCacheTests : IDisposable
+    public class SettingsCacheTests : IDisposable
     {
-        private readonly List<SqliteTestDatabase> _databases = new();
+        private readonly List<NPocoTestDatabase> _databases = new();
 
         public void Dispose() => _databases.ForEach(d => d.Dispose());
+
+        /// <summary>A new database for the engine under test (SQLite; the SQL Server cases override this).</summary>
+        protected virtual NPocoTestDatabase NewDatabase() => new();
 
         /// <summary>A database holding one settings row, counting reads; scopes can be made "ambient" (someone else's).</summary>
         private sealed class FakeStore<TPoco> where TPoco : class
@@ -111,9 +115,9 @@ namespace UmbCheckout.Tests.Persistence
         /// The Stripe settings on real NPoco and SQLite (Moq can't proxy queries over the Stripe package's internal POCO). A cached
         /// read is seen by changing the row behind the service: a cached service still answers with the row it read.
         /// </summary>
-        private (StripeSettingsService Service, SqliteTestDatabase Database, SettingsCache<StripeSettingsPoco> Cache, Mock<IScopeAccessor> ScopeAccessor) StripeSettings(bool? live = false)
+        private (StripeSettingsService Service, NPocoTestDatabase Database, SettingsCache<StripeSettingsPoco> Cache, Mock<IScopeAccessor> ScopeAccessor) StripeSettings(bool? live = false)
         {
-            var database = new SqliteTestDatabase();
+            var database = NewDatabase();
             _databases.Add(database);
             database.Migrate(c => new AddUmbCheckoutStripeSettingsTable(c), c => new AddStripeShippingAllowedCountries(c), c => new AddStripeSettingsCollectPhoneNumber(c),
                 c => new AddStripeSettingsCollectPromotionalConsent(c), c => new AddStripeSettingsAllowPromotionalCodes(c), c => new AddStripeSettingsAbandonedCarts(c));
@@ -130,7 +134,7 @@ namespace UmbCheckout.Tests.Persistence
             return (service, database, cache, scopeAccessor);
         }
 
-        private static void DeleteTheRow(SqliteTestDatabase database) => database.Execute("DELETE FROM UmbCheckoutStripeSettings");
+        private static void DeleteTheRow(NPocoTestDatabase database) => database.Execute("DELETE FROM UmbCheckoutStripeSettings");
 
         [Fact]
         public async Task The_configuration_is_read_from_the_database_once()
@@ -374,5 +378,17 @@ namespace UmbCheckout.Tests.Persistence
                 Assert.True(refreshers.Has<UmbCheckoutConfigurationCacheRefresher>());
             }
         }
+    }
+
+    /// <summary>The same cases against SQL Server in a container (needs Docker).</summary>
+    [Trait("Category", "Integration")]
+    [Collection(DatabaseCollection.Name)]
+    public sealed class SettingsCacheSqlServerTests : SettingsCacheTests
+    {
+        private readonly SqlServerContainerFixture _sqlServer;
+
+        public SettingsCacheSqlServerTests(SqlServerContainerFixture sqlServer) => _sqlServer = sqlServer;
+
+        protected override NPocoTestDatabase NewDatabase() => NPocoTestDatabase.SqlServer(_sqlServer);
     }
 }

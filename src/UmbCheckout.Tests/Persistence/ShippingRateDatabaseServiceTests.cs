@@ -16,13 +16,18 @@ namespace UmbCheckout.Tests.Persistence
     /// A shipping rate is updated by its Key, so an editor can change its Stripe ID (v13 looked it up by Stripe ID, didn't find it,
     /// and inserted a second row with the same Key: a 500). Real NPoco on SQLite.
     /// </summary>
-    public sealed class ShippingRateDatabaseServiceTests : IDisposable
+    public class ShippingRateDatabaseServiceTests : IDisposable
     {
-        private readonly SqliteTestDatabase _database = new();
+        private readonly NPocoTestDatabase _database;
         private readonly StripeShippingRateDatabaseService _service;
 
-        public ShippingRateDatabaseServiceTests()
+        public ShippingRateDatabaseServiceTests() : this(new NPocoTestDatabase())
         {
+        }
+
+        protected ShippingRateDatabaseServiceTests(NPocoTestDatabase database)
+        {
+            _database = database;
             _database.Migrate(c => new AddUmbCheckoutStripeShippingTable(c), c => new AddStripeShippingKey(c), c => new AddKeyUniqueConstraint(c), c => new AddStripeIdUniqueConstraint(c));
             var mapper = new UmbracoMapper(new MapDefinitionCollection(() => new IMapDefinition[] { new UmbCheckoutConfigurationMappingDefinition() }), Mock.Of<ICoreScopeProvider>(), NullLogger<UmbracoMapper>.Instance);
             _service = new StripeShippingRateDatabaseService(_database.ScopeProvider, mapper, NullLogger<StripeShippingRateDatabaseService>.Instance);

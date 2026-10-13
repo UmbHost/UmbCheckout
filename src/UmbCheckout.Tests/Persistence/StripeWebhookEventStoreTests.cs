@@ -2,6 +2,7 @@ using UmbCheckout.Stripe.Interfaces;
 using UmbCheckout.Stripe.Migrations;
 using UmbCheckout.Stripe.NotificationHandlers;
 using UmbCheckout.Stripe.Services;
+using UmbCheckout.Testing;
 using UmbCheckout.Tests.Infrastructure;
 using Xunit;
 
@@ -11,11 +12,22 @@ namespace UmbCheckout.Tests.Persistence
     /// Stripe delivers each webhook event at least once: an event is claimed with a lease while its handlers run and marked done
     /// after, so a redelivery is acknowledged without running handlers again. Real NPoco on SQLite, table made by its migration.
     /// </summary>
-    public sealed class StripeWebhookEventStoreTests : IDisposable
+    public class StripeWebhookEventStoreTests : IDisposable
     {
-        private readonly SqliteTestDatabase _database = new();
+        private readonly NPocoTestDatabase _database;
 
-        public StripeWebhookEventStoreTests() => _database.Migrate(c => new AddUmbCheckoutStripeWebhookEventsTable(c), c => new AddUmbCheckoutStripeWebhookEventLeaseToken(c));
+        public StripeWebhookEventStoreTests() : this(new NPocoTestDatabase())
+        {
+        }
+
+        /// <summary>A second, empty database on the engine under test.</summary>
+        protected virtual NPocoTestDatabase NewDatabase() => new();
+
+        protected StripeWebhookEventStoreTests(NPocoTestDatabase database)
+        {
+            _database = database;
+            _database.Migrate(c => new AddUmbCheckoutStripeWebhookEventsTable(c), c => new AddUmbCheckoutStripeWebhookEventLeaseToken(c));
+        }
 
         public void Dispose() => _database.Dispose();
 
@@ -152,8 +164,10 @@ namespace UmbCheckout.Tests.Persistence
         public void The_lease_token_column_is_added_to_a_table_created_without_it()
         {
             // A site that ran the first step before the lease token existed: the second step adds the column.
-            using var database = new SqliteTestDatabase();
-            database.Execute("CREATE TABLE UmbCheckoutStripeWebhookEvents (EventId TEXT NOT NULL PRIMARY KEY, ReceivedUtc TEXT NOT NULL, Status INTEGER NOT NULL, LeaseUntilUtc TEXT NULL)");
+            using var database = NewDatabase();
+            database.Execute(database.Provider == TestProvider.Sqlite
+                ? "CREATE TABLE UmbCheckoutStripeWebhookEvents (EventId TEXT NOT NULL PRIMARY KEY, ReceivedUtc TEXT NOT NULL, Status INTEGER NOT NULL, LeaseUntilUtc TEXT NULL)"
+                : "CREATE TABLE UmbCheckoutStripeWebhookEvents (EventId NVARCHAR(255) NOT NULL PRIMARY KEY, ReceivedUtc DATETIME2 NOT NULL, Status INT NOT NULL, LeaseUntilUtc DATETIME2 NULL)");
 
             database.Migrate(c => new AddUmbCheckoutStripeWebhookEventLeaseToken(c));
 
@@ -169,5 +183,17 @@ namespace UmbCheckout.Tests.Persistence
             Assert.Equal(typeof(AddUmbCheckoutStripeWebhookEventLeaseToken), plan.Transitions[first]!.MigrationType);
             Assert.Equal(plan.Transitions[first]!.TargetState, plan.FinalState);
         }
+    }
+
+    /// <summary>The same cases against SQL Server in a container (needs Docker).</summary>
+    [Trait("Category", "Integration")]
+    [Collection(DatabaseCollection.Name)]
+    public sealed class StripeWebhookEventStoreSqlServerTests : StripeWebhookEventStoreTests
+    {
+        private readonly SqlServerContainerFixture _sqlServer;
+
+        public StripeWebhookEventStoreSqlServerTests(SqlServerContainerFixture sqlServer) : base(NPocoTestDatabase.SqlServer(sqlServer)) => _sqlServer = sqlServer;
+
+        protected override NPocoTestDatabase NewDatabase() => NPocoTestDatabase.SqlServer(_sqlServer);
     }
 }
