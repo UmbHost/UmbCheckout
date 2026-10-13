@@ -1,3 +1,4 @@
+using UmbCheckout.Testing;
 using Moq;
 using UmbCheckout.Stripe.Interfaces;
 using UmbCheckout.Stripe.Services;
@@ -19,7 +20,20 @@ namespace UmbCheckout.Tests.Services
         {
             var factory = new Mock<IUmbCheckoutStripeClientFactory>();
             factory.Setup(f => f.CreateAsync()).ReturnsAsync(() => _fixture.CreateClient(_handler));
+            factory.Setup(f => f.CreateAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => _fixture.CreateClient(_handler));
             return new StripeShippingRateApiService(factory.Object);
+        }
+
+        [Fact]
+        public async Task A_cancelled_request_stops_the_Stripe_calls()
+        {
+            IStripeShippingRateApiService service = Service();
+            var cancelled = new CancellationToken(canceled: true);
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.GetShippingRates(cancelled));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.GetShippingRate("shr_123", cancelled));
+
+            Assert.Empty(_handler.RequestUris);
         }
 
         [Fact]

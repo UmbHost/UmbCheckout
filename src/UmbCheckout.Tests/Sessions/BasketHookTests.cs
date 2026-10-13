@@ -64,7 +64,7 @@ public sealed class BasketHookTests
             It.IsAny<IScopedNotificationPublisher?>(), It.IsAny<bool?>(), It.IsAny<bool>(), It.IsAny<bool>())).Returns(scope.Object);
         var basketContext = new Mock<IBasketContext>();
         basketContext.Setup(c => c.SiteRootCulture).Returns("en-GB");
-        basketContext.Setup(c => c.GetCurrencyAsync()).ReturnsAsync("GBP");
+        basketContext.Setup(c => c.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("GBP");
 
         _sessions = new SessionService(new EphemeralDataProtectionProvider(), Mock.Of<IHttpContextAccessor>(a => a.HttpContext == _http), NullLogger<SessionService>.Instance,
             _events, scopes.Object, Mock.Of<IConfigurationService>(), TestLicenseService.Create(), basketContext.Object, _messages);
@@ -130,7 +130,7 @@ public sealed class BasketHookTests
         var cache = new Mock<IPublishedContentCache>();
         cache.Setup(c => c.GetByIdAsync(ProductKey, It.IsAny<bool?>())).ReturnsAsync(product.Object);
         var pricing = new Mock<IStripeLineItemPricingService>();
-        pricing.Setup(p => p.GetPriceAsync(product.Object)).ReturnsAsync(new LineItemPrice(10m, "GBP"));
+        pricing.Setup(p => p.GetPriceAsync(product.Object, It.IsAny<CancellationToken>())).ReturnsAsync(new LineItemPrice(10m, "GBP"));
         var repricing = new StripeBasketPricingService(cache.Object, pricing.Object, NullLogger<StripeBasketPricingService>.Instance);
 
         var controller = new StripeBasketController(Mock.Of<IUmbracoContextAccessor>(), Mock.Of<IUmbracoDatabaseFactory>(), ServiceContext.CreatePartial(), AppCaches.NoCache,

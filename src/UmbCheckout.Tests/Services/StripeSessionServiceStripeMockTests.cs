@@ -1,3 +1,4 @@
+using UmbCheckout.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -26,6 +27,8 @@ namespace UmbCheckout.Tests.Services
     {
         private readonly StripeMockFixture _fixture;
         private readonly CapturingHandler _handler = new();
+        private readonly Mock<IUmbCheckoutStripeClientFactory> _factory = new();
+        private readonly Mock<IStripeShippingOptionsService> _shippingOptions = new();
 
         public StripeSessionServiceStripeMockTests(StripeMockFixture fixture) => _fixture = fixture;
 
@@ -37,8 +40,10 @@ namespace UmbCheckout.Tests.Services
             var contentCache = new Mock<IPublishedContentCache>();
             contentCache.Setup(c => c.GetById(productKey)).Returns(product.Object);
 
-            var factory = new Mock<IUmbCheckoutStripeClientFactory>();
-            factory.Setup(f => f.CreateAsync()).ReturnsAsync(() => _fixture.CreateClient(_handler));
+            _factory.Setup(f => f.CreateAsync()).ReturnsAsync(() => _fixture.CreateClient(_handler));
+            _factory.Setup(f => f.CreateAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => _fixture.CreateClient(_handler));
+            _shippingOptions.Setup(s => s.GetShippingOptions(It.IsAny<Basket>())).ReturnsAsync([]);
+            _shippingOptions.Setup(s => s.GetShippingOptions(It.IsAny<Basket>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
 
             // No Stripe settings row saved yet (a fresh install): checkout must still use the configured test key.
             var stripeSettingsService = new Mock<IStripeSettingsService>();
@@ -54,10 +59,10 @@ namespace UmbCheckout.Tests.Services
                 NullLogger<StripeSessionService>.Instance,
                 Mock.Of<IConfigurationService>(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>()) == Task.FromResult<UmbCheckoutConfiguration?>(enableShipping ? new UmbCheckoutConfiguration { EnableShipping = true } : null)),
                 Mock.Of<IHttpContextAccessor>(),
-                Mock.Of<IStripeShippingOptionsService>(s => s.GetShippingOptions(It.IsAny<Basket>()) == Task.FromResult(new List<SessionShippingOptionOptions>())),
+                _shippingOptions.Object,
                 licenseService,
                 stripeSettingsService.Object,
-                factory.Object);
+                _factory.Object);
         }
 
         [Fact]
@@ -72,6 +77,19 @@ namespace UmbCheckout.Tests.Services
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Service(key).CreateSessionAsync(basket, cancelled.Token));
 
             Assert.Empty(_handler.RequestUris);
+        }
+
+        [Fact]
+        public async Task The_request_token_reaches_the_client_factory_and_the_shipping_options()
+        {
+            var key = Guid.NewGuid();
+            var basket = new Basket { SiteRootCulture = "en-GB", CurrencyCode = "GBP", LineItems = [new LineItem { Key = key, Name = "Ping Pong Ball", Description = "Table tennis ball", Price = 2m, CurrencyCode = "GBP", Quantity = 1 }] };
+            using var request = new CancellationTokenSource();
+
+            await Service(key, enableShipping: true).CreateSessionAsync(basket, request.Token);
+
+            _factory.Verify(f => f.CreateAsync(request.Token), Times.Once);
+            _shippingOptions.Verify(s => s.GetShippingOptions(basket, request.Token), Times.Once);
         }
 
         [Theory]

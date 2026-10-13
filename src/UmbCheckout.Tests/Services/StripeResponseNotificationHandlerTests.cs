@@ -26,7 +26,7 @@ namespace UmbCheckout.Tests.Services
 
         /// <summary>The visitor's current en-GB GBP basket, recorded at checkout against a Stripe checkout session (or none).</summary>
         private void CurrentBasketCheckedOutAs(string? checkoutSessionId)
-            => _sessions.Setup(s => s.Get("en-GB", "GBP")).ReturnsAsync(new UmbCheckout.Shared.Models.UmbCheckoutSession
+            => _sessions.Setup(s => s.Get("en-GB", "GBP", It.IsAny<CancellationToken>())).ReturnsAsync(new UmbCheckout.Shared.Models.UmbCheckoutSession
             {
                 SiteRootCulture = "en-GB",
                 Basket = new UmbCheckout.Shared.Models.Basket { SiteRootCulture = "en-GB", CurrencyCode = "GBP", CheckoutSessionId = checkoutSessionId }
@@ -43,7 +43,7 @@ namespace UmbCheckout.Tests.Services
 
         private Task Succeed(Session session)
         {
-            _stripe.Setup(s => s.GetSessionAsync("cs_test_1")).ReturnsAsync(session);
+            _stripe.Setup(s => s.GetSessionAsync("cs_test_1", It.IsAny<CancellationToken>())).ReturnsAsync(session);
             return Request("https://shop.test/success/?session_id=cs_test_1&success=true");
         }
 
@@ -54,7 +54,7 @@ namespace UmbCheckout.Tests.Services
         {
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = BasketMetadata() });
 
-            _sessions.Verify(s => s.Clear("en-GB", "GBP"), Times.Once);
+            _sessions.Verify(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -63,8 +63,8 @@ namespace UmbCheckout.Tests.Services
             // Checkout sessions created before the upgrade carry no basket metadata, so which basket they paid for is unknown.
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = new Dictionary<string, string>() });
 
-            _sessions.Verify(s => s.Clear(It.IsAny<string?>()), Times.Never);
-            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>()), Times.Never);
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Theory]
@@ -76,7 +76,7 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = BasketMetadata() });
 
-            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>()), Times.Never);
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace UmbCheckout.Tests.Services
         [Fact]
         public async Task A_Stripe_error_is_logged_and_the_page_still_renders()
         {
-            _stripe.Setup(s => s.GetSessionAsync("cs_test_1")).ThrowsAsync(new StripeException("No such checkout.session"));
+            _stripe.Setup(s => s.GetSessionAsync("cs_test_1", It.IsAny<CancellationToken>())).ThrowsAsync(new StripeException("No such checkout.session"));
 
             await Request("https://shop.test/success/?session_id=cs_test_1&success=true"); // no exception escapes
 
@@ -121,7 +121,7 @@ namespace UmbCheckout.Tests.Services
         public async Task A_Stripe_timeout_is_logged_and_the_page_still_renders()
         {
             // Stripe.net rethrows an HttpClient timeout as a raw TaskCanceledException; the customer has just paid.
-            _stripe.Setup(s => s.GetSessionAsync("cs_test_1")).ThrowsAsync(new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout"));
+            _stripe.Setup(s => s.GetSessionAsync("cs_test_1", It.IsAny<CancellationToken>())).ThrowsAsync(new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout"));
 
             await Request("https://shop.test/success/?session_id=cs_test_1&success=true"); // no exception escapes
 
@@ -145,7 +145,7 @@ namespace UmbCheckout.Tests.Services
         public async Task A_failure_clearing_the_basket_is_logged_and_the_page_still_renders()
         {
             // e.g. the session isn't available: the customer has paid and must still see the success page.
-            _sessions.Setup(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>())).ThrowsAsync(new InvalidOperationException("Session has not been configured"));
+            _sessions.Setup(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Session has not been configured"));
 
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = BasketMetadata() }); // no exception escapes
         }
@@ -158,7 +158,7 @@ namespace UmbCheckout.Tests.Services
         {
             await Succeed(new Session { Status = "complete", PaymentStatus = paymentStatus, Currency = "gbp", Metadata = BasketMetadata() });
 
-            _sessions.Verify(s => s.Clear("en-GB", "GBP"), Times.Once);
+            _sessions.Verify(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

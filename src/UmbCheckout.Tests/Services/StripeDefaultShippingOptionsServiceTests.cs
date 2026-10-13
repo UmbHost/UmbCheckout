@@ -21,7 +21,7 @@ namespace UmbCheckout.Tests.Services
             _database.Setup(d => d.GetShippingRatesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(rates.Select(r => new UmbCheckout.Stripe.Models.ShippingRate { Value = r.Id }).ToList());
             foreach (var rate in rates)
             {
-                _api.Setup(a => a.GetShippingRate(rate.Id)).ReturnsAsync(rate);
+                _api.Setup(a => a.GetShippingRate(rate.Id, It.IsAny<CancellationToken>())).ReturnsAsync(rate);
             }
         }
 
@@ -65,7 +65,7 @@ namespace UmbCheckout.Tests.Services
         {
             Rates(Rate("shr_gbp", "gbp"));
             _database.Setup(d => d.GetShippingRatesAsync(It.IsAny<CancellationToken>())).ReturnsAsync([new UmbCheckout.Stripe.Models.ShippingRate { Value = "shr_gone" }, new UmbCheckout.Stripe.Models.ShippingRate { Value = "shr_gbp" }]);
-            _api.Setup(a => a.GetShippingRate("shr_gone")).ThrowsAsync(new StripeException("No such shipping rate"));
+            _api.Setup(a => a.GetShippingRate("shr_gone", It.IsAny<CancellationToken>())).ThrowsAsync(new StripeException("No such shipping rate"));
 
             Assert.Equal(["shr_gbp"], await OfferedFor("GBP"));
         }

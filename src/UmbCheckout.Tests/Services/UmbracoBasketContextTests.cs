@@ -27,7 +27,7 @@ namespace UmbCheckout.Tests.Services
             umbracoContext.Setup(c => c.PublishedRequest).Returns(request.Object);
             var context = umbracoContext.Object;
             _accessor.Setup(a => a.TryGetUmbracoContext(out context)).Returns(true);
-            _currency.Setup(c => c.GetCurrencyForContentAsync(page)).ReturnsAsync("EUR");
+            _currency.Setup(c => c.GetCurrencyForContentAsync(page, It.IsAny<CancellationToken>())).ReturnsAsync("EUR");
 
             Assert.Equal("EUR", await Context().GetCurrencyAsync());
         }

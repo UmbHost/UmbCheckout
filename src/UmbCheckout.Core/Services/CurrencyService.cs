@@ -33,7 +33,10 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<string?> GetCurrencyForContentAsync(IPublishedContent content)
+        public Task<string?> GetCurrencyForContentAsync(IPublishedContent content) => GetCurrencyForContentAsync(content, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<string?> GetCurrencyForContentAsync(IPublishedContent content, CancellationToken cancellationToken)
         {
             var root = await GetRootAsync(content);
             var siteCurrency = root?.GetProperty(Consts.PropertyAlias.CurrencyCode)?.GetValue() as string;
@@ -42,7 +45,7 @@ namespace UmbCheckout.Core.Services
                 return siteCurrency.Trim().ToUpperInvariant();
             }
 
-            var configuration = await _configurationService.GetConfigurationAsync();
+            var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
             if (!string.IsNullOrWhiteSpace(configuration?.CurrencyCode))
             {
                 return configuration.CurrencyCode.Trim().ToUpperInvariant();
@@ -69,11 +72,14 @@ namespace UmbCheckout.Core.Services
         /// <param name="currencyNodeKey">The content item which contains the currency code for the current culture</param>
         /// <returns>The currency code for the current culture or global currency</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<string> GetCurrencyAsync(Guid? currencyNodeKey)
+        public Task<string> GetCurrencyAsync(Guid? currencyNodeKey) => GetCurrencyAsync(currencyNodeKey, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<string> GetCurrencyAsync(Guid? currencyNodeKey, CancellationToken cancellationToken)
         {
             try
             {
-                var configuration = await _configurationService.GetConfigurationAsync();
+                var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
                 var stringBuilder = new StringBuilder();
 
                 if (currencyNodeKey is not null)
@@ -108,7 +114,7 @@ namespace UmbCheckout.Core.Services
 
                 return stringBuilder.ToString();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, "Working out the currency (currency node {CurrencyNodeKey}) failed", currencyNodeKey);
                 throw;

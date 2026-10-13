@@ -66,12 +66,15 @@ namespace UmbCheckout.Core.Services
 
         private HttpContext HttpContext => _contextAccessor.HttpContext ?? throw new InvalidOperationException("HttpContext cannot be null");
 
-        private async Task<UmbCheckoutSession> Create(string? siteRootCulture, string? currencyCode)
+        /// <summary>For the overloads without a token: the request's own (a basket always belongs to a request).</summary>
+        private CancellationToken RequestAborted => _contextAccessor.HttpContext?.RequestAborted ?? CancellationToken.None;
+
+        private async Task<UmbCheckoutSession> Create(string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken)
         {
-            var configuration = await _configurationService.GetConfigurationAsync();
+            var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnSessionCreateStartedNotification());
+            await _eventAggregator.PublishAsync(new OnSessionCreateStartedNotification(), cancellationToken);
 
             var sessionId = HttpContext.Session.Id;
             var session = new UmbCheckoutSession
@@ -88,36 +91,45 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<UmbCheckoutSession> Get() => await Get(await _basketContext.GetCurrencyAsync());
+        public Task<UmbCheckoutSession> Get() => Get(RequestAborted);
 
         /// <inheritdoc />
-        public Task<UmbCheckoutSession> Get(string? currencyCode) => Get(_basketContext.SiteRootCulture, currencyCode);
+        public async Task<UmbCheckoutSession> Get(CancellationToken cancellationToken) => await Get(await _basketContext.GetCurrencyAsync(cancellationToken), cancellationToken);
 
         /// <inheritdoc />
-        public async Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode)
+        public Task<UmbCheckoutSession> Get(string? currencyCode) => Get(currencyCode, RequestAborted);
+
+        /// <inheritdoc />
+        public Task<UmbCheckoutSession> Get(string? currencyCode, CancellationToken cancellationToken) => Get(_basketContext.SiteRootCulture, currencyCode, cancellationToken);
+
+        /// <inheritdoc />
+        public Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode) => Get(siteRootCulture, currencyCode, RequestAborted);
+
+        /// <inheritdoc />
+        public async Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken)
         {
-            var configuration = await _configurationService.GetConfigurationAsync();
+            var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
 
             UmbCheckoutSession session;
             using (var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true))
             {
-                await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
+                await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification(), cancellationToken);
 
                 MigrateLegacyBasket(siteRootCulture, currencyCode);
 
                 var key = BasketKeys.Session(siteRootCulture, currencyCode);
                 session = (HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null)
-                          ?? await Create(siteRootCulture, currencyCode);
+                          ?? await Create(siteRootCulture, currencyCode, cancellationToken);
 
                 scope.Notifications.Publish(new OnSessionGetNotification(HttpContext, session, configuration));
             }
 
             // After the scope: its notifications (the add-on's cookie and database basket restore) have replaced the basket by now.
-            session = await ClearIfPaidAsync(session, siteRootCulture, currencyCode);
+            session = await ClearIfPaidAsync(session, siteRootCulture, currencyCode, cancellationToken);
 
             if (!UmbCheckoutHooks.LoadedSuppressed)
             {
-                await _eventAggregator.PublishAsync(new OnSessionLoadedNotification(session, _eventMessagesFactory.Get()));
+                await _eventAggregator.PublishAsync(new OnSessionLoadedNotification(session, _eventMessagesFactory.Get()), cancellationToken);
             }
             return session;
         }
@@ -127,7 +139,7 @@ namespace UmbCheckout.Core.Services
         /// returned to the success page. Clearing goes through <see cref="Clear(string?, string?)"/>, so the add-on's cookie and
         /// database copies go too. Only baskets that reached checkout carry a session id, so other reads make no lookup.
         /// </summary>
-        private async Task<UmbCheckoutSession> ClearIfPaidAsync(UmbCheckoutSession session, string? siteRootCulture, string? currencyCode)
+        private async Task<UmbCheckoutSession> ClearIfPaidAsync(UmbCheckoutSession session, string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken)
         {
             var checkoutSessionId = session.Basket.CheckoutSessionId;
             if (string.IsNullOrEmpty(checkoutSessionId))
@@ -144,7 +156,7 @@ namespace UmbCheckout.Core.Services
 
             try
             {
-                if (!await _paidCheckoutSessions.IsPaidAsync(checkoutSessionId, HttpContext.RequestAborted))
+                if (!await _paidCheckoutSessions.IsPaidAsync(checkoutSessionId, cancellationToken))
                 {
                     HttpContext.Items[unpaidKey] = true;
                     return session;
@@ -157,8 +169,8 @@ namespace UmbCheckout.Core.Services
                 return session;
             }
 
-            await Clear(siteRootCulture, currencyCode);
-            await _eventAggregator.PublishAsync(new OnPaidBasketClearedNotification(session.Basket, checkoutSessionId));
+            await Clear(siteRootCulture, currencyCode, cancellationToken);
+            await _eventAggregator.PublishAsync(new OnPaidBasketClearedNotification(session.Basket, checkoutSessionId), cancellationToken);
             _logger.LogInformation("Cleared a basket paid with checkout session {CheckoutSessionId}", checkoutSessionId);
 
             var empty = new UmbCheckoutSession
@@ -226,16 +238,19 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<UmbCheckoutSession> Update(Basket basket)
+        public Task<UmbCheckoutSession> Update(Basket basket) => Update(basket, RequestAborted);
+
+        /// <inheritdoc />
+        public async Task<UmbCheckoutSession> Update(Basket basket, CancellationToken cancellationToken)
         {
-            var configuration = await _configurationService.GetConfigurationAsync();
+            var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnSessionUpdateStartedNotification());
+            await _eventAggregator.PublishAsync(new OnSessionUpdateStartedNotification(), cancellationToken);
 
             var siteRootCulture = _basketContext.SiteRootCulture;
             basket.SiteRootCulture = siteRootCulture;
-            basket.CurrencyCode ??= await _basketContext.GetCurrencyAsync();
+            basket.CurrencyCode ??= await _basketContext.GetCurrencyAsync(cancellationToken);
 
             var key = BasketKeys.Session(siteRootCulture, basket.CurrencyCode);
             var stored = HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null;
@@ -257,18 +272,28 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<bool> Clear() => await Clear(await _basketContext.GetCurrencyAsync());
+        public Task<bool> Clear() => Clear(RequestAborted);
 
         /// <inheritdoc />
-        public async Task<bool> Clear(string? currencyCode) => await Clear(_basketContext.SiteRootCulture, currencyCode);
+        public async Task<bool> Clear(CancellationToken cancellationToken) => await Clear(await _basketContext.GetCurrencyAsync(cancellationToken), cancellationToken);
 
         /// <inheritdoc />
-        public async Task<bool> Clear(string? siteRootCulture, string? currencyCode)
+        public Task<bool> Clear(string? currencyCode) => Clear(currencyCode, RequestAborted);
+
+        /// <inheritdoc />
+        public Task<bool> Clear(string? currencyCode, CancellationToken cancellationToken) => Clear(_basketContext.SiteRootCulture, currencyCode, cancellationToken);
+
+        /// <inheritdoc />
+        public Task<bool> Clear(string? siteRootCulture, string? currencyCode) => Clear(siteRootCulture, currencyCode, RequestAborted);
+
+        /// <inheritdoc />
+        /// <remarks>The token stops the clear before it starts; once the basket is removed, the session is committed regardless.</remarks>
+        public async Task<bool> Clear(string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken)
         {
-            var configuration = await _configurationService.GetConfigurationAsync();
+            var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnSessionClearStartedNotification());
+            await _eventAggregator.PublishAsync(new OnSessionClearStartedNotification(), cancellationToken);
 
             var sessionId = HttpContext.Session.Id;
             var key = BasketKeys.Session(siteRootCulture, currencyCode);

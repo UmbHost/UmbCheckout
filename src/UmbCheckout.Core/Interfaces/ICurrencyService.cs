@@ -15,11 +15,18 @@ namespace UmbCheckout.Core.Interfaces
         /// <exception cref="InvalidOperationException"></exception>
         Task<string> GetCurrencyAsync(Guid? currencyNodeKey = null);
 
+        /// <summary>Gets the cultures currency or global currency, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<string> GetCurrencyAsync(Guid? currencyNodeKey, CancellationToken cancellationToken) => GetCurrencyAsync(currencyNodeKey);
+
         /// <summary>
         /// The currency <paramref name="content"/> is sold in: the umbCheckoutCurrencyCode property on its site root, else the
         /// UmbCheckout Configuration currency. This is the currency checkout charges; it never comes from the browser.
         /// </summary>
         /// <returns>The upper-case ISO code, or null (logged) when no currency is configured.</returns>
         Task<string?> GetCurrencyForContentAsync(IPublishedContent content);
+
+        /// <summary>The currency <paramref name="content"/> is sold in, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
+        Task<string?> GetCurrencyForContentAsync(IPublishedContent content, CancellationToken cancellationToken) => GetCurrencyForContentAsync(content);
     }
 }

@@ -43,7 +43,7 @@ namespace UmbCheckout.Tests.Services
                 product.Setup(p => p.GetProperty(Consts.PropertyAlias.PriceAlias)).Returns(property.Object);
             }
 
-            _currency.Setup(c => c.GetCurrencyForContentAsync(product.Object)).ReturnsAsync(currency);
+            _currency.Setup(c => c.GetCurrencyForContentAsync(product.Object, It.IsAny<CancellationToken>())).ReturnsAsync(currency);
             return product.Object;
         }
 
@@ -106,7 +106,7 @@ namespace UmbCheckout.Tests.Services
         public async Task GetPriceAsync_AProductSoldInAnotherCurrencyThanThePageIsRefused()
         {
             // e.g. a shared product library or a listing from another site: its line would go to a basket this page never shows.
-            _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("USD");
+            _basketContext.Setup(b => b.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("USD");
 
             Assert.Null(await Service().GetPriceAsync(Product(10m, "GBP")));
             VerifyLogged(LogLevel.Warning);
@@ -115,7 +115,7 @@ namespace UmbCheckout.Tests.Services
         [Fact]
         public async Task GetPriceAsync_AProductInThePagesCurrencyIsPriced()
         {
-            _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("gbp");
+            _basketContext.Setup(b => b.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("gbp");
 
             Assert.Equal(10m, (await Service().GetPriceAsync(Product(10m, "GBP")))?.Price);
         }

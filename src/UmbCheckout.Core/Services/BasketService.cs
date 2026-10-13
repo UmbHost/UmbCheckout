@@ -39,26 +39,32 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Get()
+        public Task<Basket> Get() => Get(CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Get(CancellationToken cancellationToken)
         {
-            var currentSession = await _sessionService.Get();
+            var currentSession = await _sessionService.Get(cancellationToken);
             return currentSession.Basket;
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Add(LineItem item)
+        public Task<Basket> Add(LineItem item) => Add(item, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Add(LineItem item, CancellationToken cancellationToken)
         {
             ValidateNewLine(item);
 
             // A basket holds one currency: the line goes to its own currency's basket.
-            var basket = await Stored(item.CurrencyCode);
+            var basket = await Stored(item.CurrencyCode, cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnBasketAddStartedNotification(item, basket));
+            await _eventAggregator.PublishAsync(new OnBasketAddStartedNotification(item, basket), cancellationToken);
 
             basket.LineItems = Merge(basket.LineItems, [item]);
             basket.CurrencyCode ??= item.CurrencyCode;
-            (basket, var saved) = await Store(basket);
+            (basket, var saved) = await Store(basket, cancellationToken);
 
             if (saved)
             {
@@ -69,7 +75,10 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Add(IEnumerable<LineItem> items)
+        public Task<Basket> Add(IEnumerable<LineItem> items) => Add(items, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Add(IEnumerable<LineItem> items, CancellationToken cancellationToken)
         {
             var newLines = items.ToList();
             newLines.ForEach(ValidateNewLine);
@@ -80,12 +89,12 @@ namespace UmbCheckout.Core.Services
             }
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnBasketAddManyStartedNotification(newLines));
+            await _eventAggregator.PublishAsync(new OnBasketAddManyStartedNotification(newLines), cancellationToken);
 
-            var basket = await Stored(currencies[0]);
+            var basket = await Stored(currencies[0], cancellationToken);
             basket.LineItems = Merge(basket.LineItems, newLines);
             basket.CurrencyCode ??= currencies[0];
-            (basket, var saved) = await Store(basket);
+            (basket, var saved) = await Store(basket, cancellationToken);
 
             if (saved)
             {
@@ -96,20 +105,20 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <summary>The stored basket, without the Loaded hooks: a change starts from what is stored, never from what a site displays.</summary>
-        private async Task<Basket> Stored(string? currencyCode = null)
+        private async Task<Basket> Stored(string? currencyCode, CancellationToken cancellationToken)
         {
             using (UmbCheckoutHooks.SuppressLoaded())
             {
-                return currencyCode == null ? (await _sessionService.Get()).Basket : (await _sessionService.Get(currencyCode)).Basket;
+                return currencyCode == null ? (await _sessionService.Get(cancellationToken)).Basket : (await _sessionService.Get(currencyCode, cancellationToken)).Basket;
             }
         }
 
         /// <summary>Stores the changed basket; Saved is false when a site's handler cancelled the change (the stored basket comes back unchanged).</summary>
-        private async Task<(Basket Basket, bool Saved)> Store(Basket basket)
+        private async Task<(Basket Basket, bool Saved)> Store(Basket basket, CancellationToken cancellationToken)
         {
             var messages = _eventMessagesFactory.Get();
             var cancelled = messages.CancellationCount();
-            var stored = (await _sessionService.Update(basket)).Basket;
+            var stored = (await _sessionService.Update(basket, cancellationToken)).Basket;
             return (stored, messages.CancellationCount() == cancelled);
         }
 
@@ -157,12 +166,15 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Reduce(Guid key)
+        public Task<Basket> Reduce(Guid key) => Reduce(key, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Reduce(Guid key, CancellationToken cancellationToken)
         {
-            var basket = await Stored();
+            var basket = await Stored(null, cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket));
+            await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket), cancellationToken);
 
             var lineItems = basket.LineItems.ToList();
             if (lineItems.Any(x => x.Key.Equals(key)))
@@ -176,7 +188,7 @@ namespace UmbCheckout.Core.Services
             }
 
             basket.LineItems = lineItems;
-            (basket, var saved) = await Store(basket);
+            (basket, var saved) = await Store(basket, cancellationToken);
 
             if (saved)
             {
@@ -187,12 +199,15 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Remove(Guid key)
+        public Task<Basket> Remove(Guid key) => Remove(key, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Remove(Guid key, CancellationToken cancellationToken)
         {
-            var basket = await Stored();
+            var basket = await Stored(null, cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket));
+            await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket), cancellationToken);
 
             var lineItems = basket.LineItems.ToList();
             if (lineItems.Any(x => x.Key.Equals(key)))
@@ -202,7 +217,7 @@ namespace UmbCheckout.Core.Services
             }
 
             basket.LineItems = lineItems;
-            (basket, var saved) = await Store(basket);
+            (basket, var saved) = await Store(basket, cancellationToken);
 
             if (saved)
             {
@@ -213,12 +228,15 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Remove(IEnumerable<Guid> keys)
+        public Task<Basket> Remove(IEnumerable<Guid> keys) => Remove(keys, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Remove(IEnumerable<Guid> keys, CancellationToken cancellationToken)
         {
-            var basket = await Stored();
+            var basket = await Stored(null, cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket));
+            await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket), cancellationToken);
 
             var lineItems = basket.LineItems.ToList();
 
@@ -232,7 +250,7 @@ namespace UmbCheckout.Core.Services
             }
 
             basket.LineItems = lineItems;
-            (basket, var saved) = await Store(basket);
+            (basket, var saved) = await Store(basket, cancellationToken);
 
             if (saved)
             {
@@ -243,16 +261,19 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Clear()
+        public Task<Basket> Clear() => Clear(CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Clear(CancellationToken cancellationToken)
         {
-            var basket = await Stored();
+            var basket = await Stored(null, cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnBasketClearStartedNotification(basket));
+            await _eventAggregator.PublishAsync(new OnBasketClearStartedNotification(basket), cancellationToken);
 
             var lineItems = Enumerable.Empty<LineItem>();
             basket.LineItems = lineItems;
-            (basket, var saved) = await Store(basket);
+            (basket, var saved) = await Store(basket, cancellationToken);
 
             if (saved)
             {
@@ -263,16 +284,22 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<long> TotalItems()
+        public Task<long> TotalItems() => TotalItems(CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<long> TotalItems(CancellationToken cancellationToken)
         {
-            var basket = await Get();
+            var basket = await Get(cancellationToken);
             return basket.LineItems.Select(x => x.Quantity).Sum();
         }
 
         /// <inheritdoc />
-        public async Task<decimal> SubTotal()
+        public Task<decimal> SubTotal() => SubTotal(CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<decimal> SubTotal(CancellationToken cancellationToken)
         {
-            var basket = await Get();
+            var basket = await Get(cancellationToken);
 
             return basket.LineItems.Sum(lineItem => lineItem.Price * lineItem.Quantity);
         }

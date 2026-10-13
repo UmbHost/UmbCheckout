@@ -67,7 +67,7 @@ namespace UmbCheckout.Tests.Api
         [Fact]
         public async Task StripeRates_StripeNotConfigured_ReturnsProblemDetails()
         {
-            _stripe.Setup(s => s.GetShippingRates()).ThrowsAsync(new UmbCheckout.Stripe.StripeNotConfiguredException(live: false));
+            _stripe.Setup(s => s.GetShippingRates(It.IsAny<CancellationToken>())).ThrowsAsync(new UmbCheckout.Stripe.StripeNotConfiguredException(live: false));
 
             var result = Assert.IsAssignableFrom<ObjectResult>(await Controller.GetStripeShippingRates());
 

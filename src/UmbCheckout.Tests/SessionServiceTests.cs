@@ -155,7 +155,7 @@ namespace UmbCheckout.Tests
         [Fact]
         public async Task Get_UsesTheRequestsCurrencyByDefault()
         {
-            _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("EUR");
+            _basketContext.Setup(b => b.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("EUR");
 
             Assert.Equal("EUR", (await Service().Get()).Basket.CurrencyCode);
         }

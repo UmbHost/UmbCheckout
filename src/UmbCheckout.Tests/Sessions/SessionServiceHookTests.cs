@@ -26,7 +26,7 @@ public sealed class SessionServiceHookTests
     {
         var basketContext = new Mock<IBasketContext>();
         basketContext.Setup(c => c.SiteRootCulture).Returns("en-GB");
-        basketContext.Setup(c => c.GetCurrencyAsync()).ReturnsAsync("GBP");
+        basketContext.Setup(c => c.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("GBP");
         return new SessionService(new EphemeralDataProtectionProvider(), Mock.Of<IHttpContextAccessor>(a => a.HttpContext == _http), NullLogger<SessionService>.Instance,
             _events, new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object, Mock.Of<IConfigurationService>(), TestLicenseService.Create(),
             basketContext.Object, _messages);

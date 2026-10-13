@@ -29,15 +29,16 @@ namespace UmbCheckout.Core.ViewComponents
         public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket", string? linkCssClass = null, BasketLinkType linkType = BasketLinkType.TotalCount, Guid? currencyNodeKey = null)
         {
             // The subtotal is shown in the currency the lines are charged in; the configured chain only applies to an empty basket.
-            var basket = await _basketService.Get();
-            var currencyCode = basket.LineItems.SingleCurrency() ?? await _currencyService.GetCurrencyAsync(currencyNodeKey);
+            var cancellationToken = HttpContext?.RequestAborted ?? CancellationToken.None;
+            var basket = await _basketService.Get(cancellationToken);
+            var currencyCode = basket.LineItems.SingleCurrency() ?? await _currencyService.GetCurrencyAsync(currencyNodeKey, cancellationToken);
 
             var model = new BasketLinkViewModel
             {
                 LinkCssClass = linkCssClass,
                 LinkName = linkName,
-                TotalItems = await _basketService.TotalItems(),
-                SubTotal = await _basketService.SubTotal(),
+                TotalItems = await _basketService.TotalItems(cancellationToken),
+                SubTotal = await _basketService.SubTotal(cancellationToken),
                 LinkType = linkType,
                 CurrencyCode = currencyCode
             };

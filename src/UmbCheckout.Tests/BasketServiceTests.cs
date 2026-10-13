@@ -23,9 +23,9 @@ public class BasketServiceTests
         var coreScopeProvider = new Mock<ICoreScopeProvider>();
 
         var checkoutSession = new UmbCheckoutSession();
-        _sessionService.Setup(x => x.Get()).ReturnsAsync(checkoutSession);
-        _sessionService.Setup(x => x.Get(It.IsAny<string?>())).ReturnsAsync(checkoutSession);
-        _sessionService.Setup(x => x.Update(It.IsAny<Basket>())).ReturnsAsync(checkoutSession);
+        _sessionService.Setup(x => x.Get(It.IsAny<CancellationToken>())).ReturnsAsync(checkoutSession);
+        _sessionService.Setup(x => x.Get(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync(checkoutSession);
+        _sessionService.Setup(x => x.Update(It.IsAny<Basket>(), It.IsAny<CancellationToken>())).ReturnsAsync(checkoutSession);
 
         var mockScope = new Mock<IScope>();
         mockScope.Setup(x => x.Notifications).Returns(new Mock<IScopedNotificationPublisher>().Object);
@@ -302,7 +302,7 @@ public class BasketServiceTests
     {
         await _basketService.Add(new LineItem { Key = Guid.NewGuid(), Quantity = 1, Price = 1m, CurrencyCode = "USD" });
 
-        _sessionService.Verify(s => s.Get("USD"), Times.Once);
+        _sessionService.Verify(s => s.Get("USD", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

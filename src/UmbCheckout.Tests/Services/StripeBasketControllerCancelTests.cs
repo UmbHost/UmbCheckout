@@ -51,7 +51,7 @@ namespace UmbCheckout.Tests.Services
             var accessor = new Mock<IUmbracoContextAccessor>();
             accessor.Setup(a => a.TryGetUmbracoContext(out context)).Returns(true);
             var pricing = new Mock<IStripeLineItemPricingService>();
-            pricing.Setup(p => p.GetPriceAsync(_product.Object)).ReturnsAsync(new LineItemPrice(2.5m, "GBP"));
+            pricing.Setup(p => p.GetPriceAsync(_product.Object, It.IsAny<CancellationToken>())).ReturnsAsync(new LineItemPrice(2.5m, "GBP"));
 
             var controller = new StripeBasketController(accessor.Object, Mock.Of<IUmbracoDatabaseFactory>(), ServiceContext.CreatePartial(), AppCaches.NoCache,
                 Mock.Of<IProfilingLogger>(), Mock.Of<IPublishedUrlProvider>(), _basket.Object, _stripe.Object, pricing.Object, _repricing.Object, _sessions.Object,
@@ -111,8 +111,8 @@ namespace UmbCheckout.Tests.Services
         public async Task A_cancelled_reprice_update_says_why_and_does_not_reach_Stripe()
         {
             var basket = new Basket { CurrencyCode = "GBP", LineItems = [new LineItem { Key = Guid.NewGuid(), Name = "Ball", Price = 1m, Quantity = 1, CurrencyCode = "GBP" }] };
-            _basket.Setup(b => b.Get()).ReturnsAsync(basket);
-            _repricing.Setup(p => p.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, [new RepricedLine(basket.LineItems.Single().Key, "Ball", 1m, 2.5m)]));
+            _basket.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(basket);
+            _repricing.Setup(p => p.RepriceAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new BasketRepricing(basket, [new RepricedLine(basket.LineItems.Single().Key, "Ball", 1m, 2.5m)]));
             var controller = Controller("Prices are frozen");
 
             await controller.Checkout();
