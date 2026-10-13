@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Moq;
 using UmbCheckout.Stripe.Controllers.Api;
 using UmbCheckout.Stripe.Interfaces;
@@ -112,6 +113,116 @@ public sealed class StripeWebhookRouteTests
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode); // reached the action once (an ambiguous match would throw before it)
             secrets.Verify(p => p.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+    }
+
+    /// <summary>A site's own webhook controller: a subclass of the public one.</summary>
+    [Route("shop/stripe-webhook")]
+    public sealed class SiteWebhookWithItsOwnRoute(ILogger<StripeWebhookApiController> logger, IEventAggregator eventAggregator,
+        IStripeWebhookSecretProvider secretProvider, IStripeWebhookEventStore eventStore, SubclassHits hits)
+        : StripeWebhookApiController(logger, eventAggregator, secretProvider, eventStore)
+    {
+        public SubclassHits Hits { get; } = hits.Hit();
+    }
+
+    /// <summary>A site's own webhook controller that keeps the package's URL.</summary>
+    public sealed class SiteWebhookOnTheSameUrl(ILogger<StripeWebhookApiController> logger, IEventAggregator eventAggregator,
+        IStripeWebhookSecretProvider secretProvider, IStripeWebhookEventStore eventStore, SubclassHits hits)
+        : StripeWebhookApiController(logger, eventAggregator, secretProvider, eventStore)
+    {
+        public SubclassHits Hits { get; } = hits.Hit();
+    }
+
+    public sealed class SubclassHits
+    {
+        public int Count { get; private set; }
+
+        public SubclassHits Hit()
+        {
+            Count++;
+            return this;
+        }
+    }
+
+    private static async Task<IHost> Host(Mock<IStripeWebhookSecretProvider> secrets, SubclassHits hits, params Type[] controllers)
+        => await new HostBuilder()
+            .ConfigureWebHost(web => web
+                .UseTestServer()
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton(secrets.Object);
+                    s.AddSingleton(hits);
+                    s.AddSingleton(Mock.Of<IEventAggregator>());
+                    s.AddSingleton(Mock.Of<IStripeWebhookEventStore>());
+                    s.AddLogging();
+                    s.AddAuthorization();
+                    s.AddControllers().ConfigureApplicationPartManager(parts =>
+                    {
+                        parts.ApplicationParts.Clear();
+                        parts.FeatureProviders.Add(new Only(controllers));
+                    });
+                    var builder = new Mock<Umbraco.Cms.Core.DependencyInjection.IUmbracoBuilder>();
+                    builder.SetupGet(b => b.Services).Returns(s);
+                    new UmbCheckout.Stripe.Composers.StripeWebhookRoutingComposer().Compose(builder.Object);
+                })
+                .Configure(app => app.UseRouting().UseAuthorization().UseEndpoints(e => e.MapControllers())))
+            .StartAsync();
+
+    private static Mock<IStripeWebhookSecretProvider> NoSecret()
+    {
+        var secrets = new Mock<IStripeWebhookSecretProvider>();
+        secrets.Setup(p => p.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync((string.Empty, false));
+        return secrets;
+    }
+
+    private static Task<HttpResponseMessage> Post(IHost host, string url)
+        => host.GetTestClient().PostAsync(url, new StringContent("{}", Encoding.UTF8, "application/json"));
+
+    [Fact]
+    public async Task A_subclass_with_its_own_route_is_the_one_webhook_endpoint()
+    {
+        // Review minor: a subclass inherited [Route] as well as declaring its own, so the package URL matched two actions (AmbiguousMatch 500).
+        var secrets = NoSecret();
+        var hits = new SubclassHits();
+        using var host = await Host(secrets, hits, typeof(StripeWebhookApiController), typeof(SiteWebhookWithItsOwnRoute));
+
+        Assert.Equal(HttpStatusCode.InternalServerError, (await Post(host, "/shop/stripe-webhook/checkoutevents")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await Post(host, "/umbraco/api/stripewebhookapi/checkoutevents")).StatusCode);
+
+        Assert.Equal(1, hits.Count);
+        secrets.Verify(p => p.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task A_subclass_without_a_route_takes_over_the_package_url()
+    {
+        var secrets = NoSecret();
+        var hits = new SubclassHits();
+        using var host = await Host(secrets, hits, typeof(StripeWebhookApiController), typeof(SiteWebhookOnTheSameUrl));
+
+        Assert.Equal(HttpStatusCode.InternalServerError, (await Post(host, "/umbraco/api/stripewebhookapi/checkoutevents")).StatusCode);
+
+        Assert.Equal(1, hits.Count);
+    }
+
+    [Fact]
+    public async Task Without_a_subclass_the_package_url_is_unchanged()
+    {
+        var secrets = NoSecret();
+        using var host = await Host(secrets, new SubclassHits(), typeof(StripeWebhookApiController));
+
+        Assert.Equal(HttpStatusCode.InternalServerError, (await Post(host, "/umbraco/api/stripewebhookapi/checkoutevents")).StatusCode);
+        secrets.Verify(p => p.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    private sealed class Only(Type[] controllers) : IApplicationFeatureProvider<ControllerFeature>
+    {
+        public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
+        {
+            foreach (var controller in controllers)
+            {
+                feature.Controllers.Add(controller.GetTypeInfo());
+            }
         }
     }
 

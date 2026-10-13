@@ -52,7 +52,7 @@ public sealed class StripeSettingsSerializerTests
     }
 
     [Fact]
-    public async Task An_older_file_keeps_the_defaults()
+    public async Task An_older_file_on_a_site_with_no_settings_keeps_the_defaults()
     {
         var node = new XElement("StripeSettings", new XAttribute("Id", 1), new XAttribute("Alias", "UmbCheckoutStripeSettings"),
             new XAttribute("Key", Guid.NewGuid()), new XElement("UseLiveApiDetails", true));
@@ -62,6 +62,38 @@ public sealed class StripeSettingsSerializerTests
         var defaults = new UmbCheckoutStripeSettings();
         Assert.True(settings.UseLiveApiDetails);
         Assert.All(Settings.Where(p => p.Name != nameof(UmbCheckoutStripeSettings.UseLiveApiDetails)), p => Assert.Equal(p.GetValue(defaults), p.GetValue(settings)));
+    }
+
+    [Fact]
+    public async Task An_older_file_keeps_the_sites_current_values_for_settings_it_does_not_have()
+    {
+        // Review minor: importing a file from an older version reset every newer setting the site had saved.
+        var stored = new UmbCheckoutStripeSettings { Key = Guid.NewGuid() };
+        foreach (var property in Settings)
+        {
+            property.SetValue(stored, property.PropertyType == typeof(bool) ? true : "GB,US");
+        }
+
+        var service = new Mock<IStripeSettingsService>();
+        service.Setup(s => s.GetStripeSettingsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(stored);
+        var node = new XElement("StripeSettings", new XAttribute("Id", 1), new XAttribute("Alias", "UmbCheckoutStripeSettings"),
+            new XAttribute("Key", stored.Key), new XElement("UseLiveApiDetails", false));
+
+        var settings = await new Exposed(service.Object).Deserialize(node);
+
+        Assert.False(settings.UseLiveApiDetails); // in the file: imported
+        Assert.All(Settings.Where(p => p.Name != nameof(UmbCheckoutStripeSettings.UseLiveApiDetails)), p => Assert.Equal(p.GetValue(stored), p.GetValue(settings)));
+    }
+
+    [Fact]
+    public async Task An_empty_country_list_in_the_file_still_clears_it()
+    {
+        var service = new Mock<IStripeSettingsService>();
+        service.Setup(s => s.GetStripeSettingsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new UmbCheckoutStripeSettings { ShippingAllowedCountries = "GB" });
+        var node = new XElement("StripeSettings", new XAttribute("Id", 1), new XAttribute("Key", Guid.NewGuid()),
+            new XElement("UseLiveApiDetails", false), new XElement("ShippingAllowedCountries", string.Empty));
+
+        Assert.Null((await new Exposed(service.Object).Deserialize(node)).ShippingAllowedCountries);
     }
 
     [Fact]
