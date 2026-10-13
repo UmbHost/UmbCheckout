@@ -129,7 +129,7 @@ public sealed class ConfigurationLicenceRuleTests
             .Returns(scope.Object);
 
         var mapper = new Mock<IUmbracoMapper>();
-        var service = new ConfigurationService(scopeProvider.Object, NullLogger<ConfigurationService>.Instance, mapper.Object, coreScopeProvider.Object, null!);
+        var service = new ConfigurationService(scopeProvider.Object, NullLogger<ConfigurationService>.Instance, mapper.Object, coreScopeProvider.Object, null!, new UmbCheckout.Shared.Persistence.SettingsCache<ConfigurationPoco>());
         return (service, mapper, database);
     }
 }
