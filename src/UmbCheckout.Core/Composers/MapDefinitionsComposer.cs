@@ -66,7 +66,6 @@ namespace UmbCheckout.Core.Composers
         private static void Map(UmbCheckoutBasket source, Basket target, MapperContext context)
         {
             target.LineItems = JsonSerializer.Deserialize<IEnumerable<LineItem>>(source.LineItems) ?? Array.Empty<LineItem>();
-            target.Total = source.BasketTotal;
             if (source.MetaData != null)
                 target.MetaData = JsonSerializer.Deserialize<Dictionary<string, string>>(source.MetaData) ??
                                   new Dictionary<string, string>();
