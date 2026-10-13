@@ -55,7 +55,8 @@ namespace UmbCheckout.Tests.Services
             var stripe = new Mock<IStripeSessionService>();
             stripe.Setup(s => s.CreateSessionAsync(basket, token)).ReturnsAsync(new Session { Id = "cs_test_9", Url = "https://checkout.stripe.com/c/pay/cs_test_9" });
             var sessions = new Mock<ISessionService>();
-            sessions.Setup(s => s.Update(basket, token)).ReturnsAsync(new UmbCheckoutSession());
+            // Recording the session is not cancelled with the request: Stripe already has the session.
+            sessions.Setup(s => s.Update(basket, CancellationToken.None)).ReturnsAsync(new UmbCheckoutSession());
 
             var controller = new StripeBasketController(Mock.Of<IUmbracoContextAccessor>(), Mock.Of<IUmbracoDatabaseFactory>(), ServiceContext.CreatePartial(), AppCaches.NoCache,
                 Mock.Of<IProfilingLogger>(), Mock.Of<IPublishedUrlProvider>(), basketService.Object, stripe.Object, Mock.Of<IStripeLineItemPricingService>(), pricing.Object,
@@ -65,7 +66,8 @@ namespace UmbCheckout.Tests.Services
             };
 
             Assert.IsType<RedirectResult>(await controller.Checkout());
-            sessions.Verify(s => s.Update(basket, token), Times.Once);
+            sessions.Verify(s => s.Update(basket, CancellationToken.None), Times.Once);
+            sessions.Verify(s => s.Update(It.IsAny<Basket>(), token), Times.Never);
         }
     }
 }

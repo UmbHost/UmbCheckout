@@ -57,9 +57,27 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
             return;
         }
 
+        bool shouldMigrate;
         try
         {
-            await MigrateAsync(cancellationToken);
+            shouldMigrate = await ShouldMigrateAsync(cancellationToken);
+        }
+        catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
+        {
+            // Boot must not fail on the decision (e.g. a database error evaluating the licence): no tables now, as on an unlicensed
+            // site. A licensed site that missed them gets them on its first licensed request (DeferredAddonTables) or at the next boot.
+            _logger.LogError(ex, "Deciding whether to migrate the {DbContext} tables failed (e.g. the licence could not be evaluated), so they are not migrated now", typeof(TContext).Name);
+            return;
+        }
+
+        if (!shouldMigrate)
+        {
+            return;
+        }
+
+        try
+        {
+            await MigrateTablesAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -75,6 +93,11 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
             return;
         }
 
+        await MigrateTablesAsync(cancellationToken);
+    }
+
+    private async Task MigrateTablesAsync(CancellationToken cancellationToken)
+    {
         // Any started legacy plan means the tables already exist: finish every started plan, then adopt them once.
         var legacy = false;
         foreach (var plan in LegacyPlans)

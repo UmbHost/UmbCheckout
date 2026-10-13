@@ -64,6 +64,24 @@ namespace UmbCheckout.Tests.Api
             _db.Verify(s => s.CreateShippingRateAsync(It.IsAny<ShippingRate>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
+        [Theory]
+        [InlineData(System.Net.HttpStatusCode.Unauthorized)]
+        [InlineData(System.Net.HttpStatusCode.Forbidden)]
+        public async Task StripeRates_RejectedKey_ShowsAFixedDetailWithoutTheKeyTail(System.Net.HttpStatusCode status)
+        {
+            _stripe.Setup(s => s.GetShippingRates(It.IsAny<CancellationToken>())).ThrowsAsync(new global::Stripe.StripeException("Invalid API Key provided: sk_test_****wxyz")
+            {
+                HttpStatusCode = status,
+                StripeError = new global::Stripe.StripeError { Message = "Invalid API Key provided: sk_test_****wxyz" }
+            });
+
+            var result = Assert.IsAssignableFrom<ObjectResult>(await Controller.GetStripeShippingRates());
+
+            var detail = Assert.IsType<ProblemDetails>(result.Value).Detail;
+            Assert.Equal(UmbCheckout.Stripe.Helpers.StripeKeyRejection.Detail, detail);
+            Assert.DoesNotContain("wxyz", detail);
+        }
+
         [Fact]
         public async Task StripeRates_StripeNotConfigured_ReturnsProblemDetails()
         {

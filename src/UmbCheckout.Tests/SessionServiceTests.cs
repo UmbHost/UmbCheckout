@@ -55,6 +55,20 @@ namespace UmbCheckout.Tests
         }
 
         [Fact]
+        public async Task The_paid_basket_cleared_notification_is_published_with_a_token_that_cannot_be_cancelled()
+        {
+            // The basket is already cleared when this is published: a shopper who left must not lose the notification.
+            _paid.Setup(p => p.IsPaidAsync("cs_test_paid", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            var service = await WithCheckedOutBasket("cs_test_paid");
+            using var cts = new CancellationTokenSource();
+
+            await service.Get("GBP", cts.Token);
+
+            _events.Verify(e => e.PublishAsync(It.IsAny<UmbCheckout.Shared.Notifications.Session.OnPaidBasketClearedNotification>(),
+                It.Is<CancellationToken>(t => !t.CanBeCanceled)), Times.Once);
+        }
+
+        [Fact]
         public async Task A_basket_whose_checkout_session_was_paid_is_cleared_on_the_next_read()
         {
             _paid.Setup(p => p.IsPaidAsync("cs_test_paid", It.IsAny<CancellationToken>())).ReturnsAsync(true);
@@ -99,6 +113,24 @@ namespace UmbCheckout.Tests
             await service.Get("GBP");
 
             _paid.Verify(p => p.IsPaidAsync("cs_test_open", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(" gbp ")]
+        [InlineData("gbp")]
+        [InlineData("GBP ")]
+        public async Task The_currency_is_trimmed_and_upper_cased_for_every_read_update_and_clear(string spelling)
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = spelling, LineItems = [Line("GBP")] });
+
+            var stored = _session.GetObjectFromJson<UmbCheckoutSession>(BasketKeys.Session("en-GB", "GBP"));
+            Assert.Equal("GBP", stored!.Basket.CurrencyCode);
+            Assert.Single((await service.Get(spelling)).Basket.LineItems);
+
+            await service.Clear(spelling);
+
+            Assert.Null(_session.GetObjectFromJson<UmbCheckoutSession>(BasketKeys.Session("en-GB", "GBP")));
         }
 
         [Fact]

@@ -111,6 +111,7 @@ namespace UmbCheckout.Core.Services
         /// <inheritdoc />
         public async Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken)
         {
+            currencyCode = Normalise(currencyCode);
             var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
 
             UmbCheckoutSession session;
@@ -173,7 +174,7 @@ namespace UmbCheckout.Core.Services
             }
 
             await Clear(siteRootCulture, currencyCode, cancellationToken);
-            await _eventAggregator.PublishAsync(new OnPaidBasketClearedNotification(session.Basket, checkoutSessionId), cancellationToken);
+            await _eventAggregator.PublishAsync(new OnPaidBasketClearedNotification(session.Basket, checkoutSessionId), CancellationToken.None);
             _logger.LogInformation("Cleared a basket paid with checkout session {CheckoutSessionId}", checkoutSessionId);
 
             var empty = new UmbCheckoutSession
@@ -254,7 +255,7 @@ namespace UmbCheckout.Core.Services
 
             var siteRootCulture = _basketContext.SiteRootCulture;
             basket.SiteRootCulture = siteRootCulture;
-            basket.CurrencyCode ??= await _basketContext.GetCurrencyAsync(cancellationToken);
+            basket.CurrencyCode = Normalise(basket.CurrencyCode) ?? Normalise(await _basketContext.GetCurrencyAsync(cancellationToken));
 
             var key = BasketKeys.Session(siteRootCulture, basket.CurrencyCode);
             var stored = HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null;
@@ -297,6 +298,7 @@ namespace UmbCheckout.Core.Services
         /// <remarks>The token stops the clear before it starts; once the basket is removed, the session is committed regardless.</remarks>
         public async Task<bool> Clear(string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken)
         {
+            currencyCode = Normalise(currencyCode);
             var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
@@ -316,5 +318,9 @@ namespace UmbCheckout.Core.Services
 
             return HttpContext.Session.Keys.Contains(key);
         }
+
+        /// <summary>A currency code as the baskets are keyed and stored: trimmed and upper case (null when blank).</summary>
+        private static string? Normalise(string? currencyCode)
+            => string.IsNullOrWhiteSpace(currencyCode) ? null : currencyCode.Trim().ToUpperInvariant();
     }
 }
