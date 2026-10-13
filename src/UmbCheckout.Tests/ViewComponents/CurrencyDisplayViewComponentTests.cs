@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.ViewComponents;
@@ -49,6 +51,55 @@ namespace UmbCheckout.Tests.ViewComponents
             var result = await new StripeBasketViewComponent(_basketService.Object, _currencyService.Object).InvokeAsync();
 
             Assert.Equal("GBP", Model<StripeBasketViewModel>(result).FormatCurrency);
+        }
+
+        [Fact]
+        public async Task StripeBasket_TheBasketsOwnCurrencyComesFirst()
+        {
+            _basketService.Setup(b => b.Get()).ReturnsAsync(new Basket { CurrencyCode = "EUR" });
+
+            var result = await new StripeBasketViewComponent(_basketService.Object, _currencyService.Object).InvokeAsync();
+
+            Assert.Equal("EUR", Model<StripeBasketViewModel>(result).FormatCurrency);
+        }
+
+        [Fact]
+        public async Task StripeBasket_ShowsARefusedAddAndChangedPrices()
+        {
+            Basket("GBP");
+            var component = WithTempData(new StripeBasketViewComponent(_basketService.Object, _currencyService.Object), out var tempData);
+            tempData[Shared.Consts.TempData.UmbCheckoutAddToBasketFailed] = Guid.NewGuid();
+            tempData[Shared.Consts.TempData.UmbCheckoutBasketRepriced] = "Jacket, Hat";
+
+            var notices = Model<StripeBasketViewModel>(await component.InvokeAsync(addToBasketFailedText: "Not added.", pricesChangedText: "Prices changed:")).Notices;
+
+            Assert.Equal(new[] { "Not added.", "Prices changed: Jacket, Hat" }, notices);
+        }
+
+        [Fact]
+        public async Task StripeBasket_NoNoticesByDefault()
+        {
+            Basket("GBP");
+            var component = WithTempData(new StripeBasketViewComponent(_basketService.Object, _currencyService.Object), out _);
+
+            Assert.Empty(Model<StripeBasketViewModel>(await component.InvokeAsync()).Notices);
+        }
+
+        [Fact]
+        public async Task BasketLink_TheBasketsOwnCurrencyComesFirst()
+        {
+            _basketService.Setup(b => b.Get()).ReturnsAsync(new Basket { CurrencyCode = "EUR" });
+
+            var result = await new BasketLinkViewComponent(_basketService.Object, Mock.Of<IUmbracoContextAccessor>(), _currencyService.Object).InvokeAsync();
+
+            Assert.Equal("EUR", Model<BasketLinkViewModel>(result).CurrencyCode);
+        }
+
+        private static T WithTempData<T>(T component, out ITempDataDictionary tempData) where T : ViewComponent
+        {
+            tempData = new TempDataDictionary(new Microsoft.AspNetCore.Http.DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+            component.ViewComponentContext = new ViewComponentContext { ViewContext = new ViewContext { TempData = tempData } };
+            return component;
         }
 
         [Fact]

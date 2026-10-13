@@ -32,6 +32,9 @@ namespace UmbCheckout.Tests.Controllers
     {
         private readonly Mock<IBasketService> _basketService = new();
         private readonly Mock<IStripeLineItemPricingService> _pricing = new();
+        private readonly Mock<IStripeBasketPricingService> _repricing = new();
+        private readonly Mock<IStripeSessionService> _stripe = new();
+        private readonly Mock<ISessionService> _sessions = new();
         private readonly RecordingLogger<StripeBasketController> _logger = new();
         private readonly IPublishedContent _product;
         private readonly List<LineItem> _basketLines = new();
@@ -65,7 +68,7 @@ namespace UmbCheckout.Tests.Controllers
             var httpContext = new DefaultHttpContext();
             httpContext.Features.Set(new UmbracoRouteValues(request.Object, new ControllerActionDescriptor()));
 
-            return new StripeBasketController(accessor.Object, Mock.Of<IUmbracoDatabaseFactory>(), ServiceContext.CreatePartial(), AppCaches.NoCache, Mock.Of<IProfilingLogger>(), Mock.Of<IPublishedUrlProvider>(), _basketService.Object, Mock.Of<IStripeSessionService>(), _pricing.Object, _logger)
+            return new StripeBasketController(accessor.Object, Mock.Of<IUmbracoDatabaseFactory>(), ServiceContext.CreatePartial(), AppCaches.NoCache, Mock.Of<IProfilingLogger>(), Mock.Of<IPublishedUrlProvider>(), _basketService.Object, _stripe.Object, _pricing.Object, _repricing.Object, _sessions.Object, _logger)
             {
                 ControllerContext = new ControllerContext { HttpContext = httpContext },
                 TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
@@ -178,11 +181,59 @@ namespace UmbCheckout.Tests.Controllers
         }
 
         [Fact]
+        public async Task Checkout_AnUnchangedBasketGoesToStripe()
+        {
+            var basket = new Basket { CurrencyCode = "GBP", LineItems = new List<LineItem> { new() { Key = _product.Key, Price = 10m, CurrencyCode = "GBP", Quantity = 1 } } };
+            _basketService.Setup(b => b.Get()).ReturnsAsync(basket);
+            _repricing.Setup(r => r.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
+            _stripe.Setup(s => s.CreateSessionAsync(basket)).ReturnsAsync(new global::Stripe.Checkout.Session { Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
+
+            var result = await Controller().Checkout();
+
+            Assert.Equal("https://checkout.stripe.com/c/pay/cs_test_1", Assert.IsType<RedirectResult>(result).Url);
+            _sessions.Verify(s => s.Update(It.IsAny<Basket>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Checkout_ChangedPricesReturnToTheBasketWithANotice()
+        {
+            // The customer sees the current prices before paying; no Stripe session is created on this click.
+            var basket = new Basket { CurrencyCode = "GBP", LineItems = new List<LineItem> { new() { Key = _product.Key, Name = "Jacket", Price = 10m, CurrencyCode = "GBP", Quantity = 1 } } };
+            _basketService.Setup(b => b.Get()).ReturnsAsync(basket);
+            _repricing.Setup(r => r.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, new[] { new RepricedLine(_product.Key, "Jacket", 10m, 12m), new RepricedLine(Guid.NewGuid(), "Hat", 5m, null) }));
+            var controller = Controller();
+
+            var result = await controller.Checkout();
+
+            Assert.IsType<RedirectToUmbracoPageResult>(result);
+            Assert.Equal("Jacket, Hat", controller.TempData[Consts.TempData.UmbCheckoutBasketRepriced]);
+            _sessions.Verify(s => s.Update(basket), Times.Once);
+            _stripe.Verify(s => s.CreateSessionAsync(It.IsAny<Basket>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Checkout_AnEmptyBasketIsNotSentToStripe()
+        {
+            _basketService.Setup(b => b.Get()).ReturnsAsync(new Basket());
+            var controller = Controller();
+
+            await controller.Checkout();
+
+            Assert.Equal(true, controller.TempData[Consts.TempData.UmbCheckoutEmptyBasket]);
+            _repricing.Verify(r => r.RepriceAsync(It.IsAny<Basket>()), Times.Never);
+            _stripe.Verify(s => s.CreateSessionAsync(It.IsAny<Basket>()), Times.Never);
+        }
+
+        [Fact]
+        public void TheOlderConstructorsAreObsolete()
+            => Assert.Equal(2, typeof(StripeBasketController).GetConstructors().Count(c => c.GetCustomAttributes(typeof(ObsoleteAttribute), false).Any()));
+
+        [Fact]
         public void BasketAdd_CurrencyCodeIsObsolete()
             => Assert.NotNull(typeof(BasketAdd).GetProperty("CurrencyCode")!.GetCustomAttributes(typeof(ObsoleteAttribute), false).SingleOrDefault());
 
         [Fact]
-        public void DependencyInjection_UsesTheConstructorWithThePricingService()
+        public void DependencyInjection_UsesTheConstructorWithTheRepricing()
         {
             var services = new ServiceCollection();
             services.AddSingleton(Mock.Of<IUmbracoContextAccessor>());
@@ -194,9 +245,11 @@ namespace UmbCheckout.Tests.Controllers
             services.AddSingleton(_basketService.Object);
             services.AddSingleton(Mock.Of<IStripeSessionService>());
             services.AddSingleton(_pricing.Object);
+            services.AddSingleton(_repricing.Object);
+            services.AddSingleton(_sessions.Object);
             services.AddSingleton<ILogger<StripeBasketController>>(_logger);
 
-            // MVC activates controllers through ActivatorUtilities; two public constructors must not be ambiguous.
+            // MVC activates controllers through ActivatorUtilities; three public constructors must not be ambiguous.
             var factory = ActivatorUtilities.CreateFactory(typeof(StripeBasketController), Type.EmptyTypes);
 
             Assert.IsType<StripeBasketController>(factory(services.BuildServiceProvider(), null));
