@@ -110,7 +110,7 @@ namespace UmbCheckout.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(ex, "Working out the currency (currency node {CurrencyNodeKey}) failed", currencyNodeKey);
                 throw;
             }
         }

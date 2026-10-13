@@ -41,16 +41,8 @@ namespace UmbCheckout.Core.Services
         /// <inheritdoc />
         public async Task<Basket> Get()
         {
-            try
-            {
-                var currentSession = await _sessionService.Get();
-                return currentSession.Basket;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            var currentSession = await _sessionService.Get();
+            return currentSession.Basket;
         }
 
         /// <inheritdoc />
@@ -167,170 +159,122 @@ namespace UmbCheckout.Core.Services
         /// <inheritdoc />
         public async Task<Basket> Reduce(Guid key)
         {
-            try
+            var basket = await Stored();
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket));
+
+            var lineItems = basket.LineItems.ToList();
+            if (lineItems.Any(x => x.Key.Equals(key)))
             {
-                var basket = await Stored();
-
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket));
-
-                var lineItems = basket.LineItems.ToList();
-                if (lineItems.Any(x => x.Key.Equals(key)))
+                var lineItem = lineItems.First(x => x.Key.Equals(key));
+                lineItem.Quantity--;
+                if (lineItem.Quantity <= 0)
                 {
-                    var lineItem = lineItems.First(x => x.Key.Equals(key));
-                    lineItem.Quantity--;
-                    if (lineItem.Quantity <= 0)
-                    {
-                        lineItems.Remove(lineItem);
-                    }
+                    lineItems.Remove(lineItem);
                 }
-
-                basket.LineItems = lineItems;
-                (basket, var saved) = await Store(basket);
-
-                if (saved)
-                {
-                    scope.Notifications.Publish(new OnBasketReducedNotification(key, basket));
-                }
-
-                return basket;
             }
-            catch (Exception ex)
+
+            basket.LineItems = lineItems;
+            (basket, var saved) = await Store(basket);
+
+            if (saved)
             {
-                _logger.LogError(ex, ex.Message);
-                throw;
+                scope.Notifications.Publish(new OnBasketReducedNotification(key, basket));
             }
+
+            return basket;
         }
 
         /// <inheritdoc />
         public async Task<Basket> Remove(Guid key)
         {
-            try
+            var basket = await Stored();
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket));
+
+            var lineItems = basket.LineItems.ToList();
+            if (lineItems.Any(x => x.Key.Equals(key)))
             {
-                var basket = await Stored();
-
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket));
-
-                var lineItems = basket.LineItems.ToList();
-                if (lineItems.Any(x => x.Key.Equals(key)))
-                {
-                    var lineItem = lineItems.First(x => x.Key.Equals(key));
-                    lineItems.Remove(lineItem);
-                }
-
-                basket.LineItems = lineItems;
-                (basket, var saved) = await Store(basket);
-
-                if (saved)
-                {
-                    scope.Notifications.Publish(new OnBasketRemovedNotification(key, basket));
-                }
-
-                return basket;
+                var lineItem = lineItems.First(x => x.Key.Equals(key));
+                lineItems.Remove(lineItem);
             }
-            catch (Exception ex)
+
+            basket.LineItems = lineItems;
+            (basket, var saved) = await Store(basket);
+
+            if (saved)
             {
-                _logger.LogError(ex, ex.Message);
-                throw;
+                scope.Notifications.Publish(new OnBasketRemovedNotification(key, basket));
             }
+
+            return basket;
         }
 
         /// <inheritdoc />
         public async Task<Basket> Remove(IEnumerable<Guid> keys)
         {
-            try
+            var basket = await Stored();
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket));
+
+            var lineItems = basket.LineItems.ToList();
+
+            foreach (var key in keys)
             {
-                var basket = await Stored();
+                if (!lineItems.Any(x => x.Key.Equals(key)))
+                    continue;
 
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket));
-
-                var lineItems = basket.LineItems.ToList();
-
-                foreach (var key in keys)
-                {
-                    if (!lineItems.Any(x => x.Key.Equals(key)))
-                        continue;
-
-                    var lineItem = lineItems.First(x => x.Key.Equals(key));
-                    lineItems.Remove(lineItem);
-                }
-
-                basket.LineItems = lineItems;
-                (basket, var saved) = await Store(basket);
-
-                if (saved)
-                {
-                    scope.Notifications.Publish(new OnBasketRemovedManyNotification(keys, basket));
-                }
-
-                return basket;
+                var lineItem = lineItems.First(x => x.Key.Equals(key));
+                lineItems.Remove(lineItem);
             }
-            catch (Exception ex)
+
+            basket.LineItems = lineItems;
+            (basket, var saved) = await Store(basket);
+
+            if (saved)
             {
-                _logger.LogError(ex, ex.Message);
-                throw;
+                scope.Notifications.Publish(new OnBasketRemovedManyNotification(keys, basket));
             }
+
+            return basket;
         }
 
         /// <inheritdoc />
         public async Task<Basket> Clear()
         {
-            try
+            var basket = await Stored();
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketClearStartedNotification(basket));
+
+            var lineItems = Enumerable.Empty<LineItem>();
+            basket.LineItems = lineItems;
+            (basket, var saved) = await Store(basket);
+
+            if (saved)
             {
-                var basket = await Stored();
-
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketClearStartedNotification(basket));
-
-                var lineItems = Enumerable.Empty<LineItem>();
-                basket.LineItems = lineItems;
-                (basket, var saved) = await Store(basket);
-
-                if (saved)
-                {
-                    scope.Notifications.Publish(new OnBasketClearedNotification(basket));
-                }
-
-                return basket;
+                scope.Notifications.Publish(new OnBasketClearedNotification(basket));
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+
+            return basket;
         }
 
         /// <inheritdoc />
         public async Task<long> TotalItems()
         {
-            try
-            {
-                var basket = await Get();
-                return basket.LineItems.Select(x => x.Quantity).Sum();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            var basket = await Get();
+            return basket.LineItems.Select(x => x.Quantity).Sum();
         }
 
         /// <inheritdoc />
         public async Task<decimal> SubTotal()
         {
-            try
-            {
-                var basket = await Get();
+            var basket = await Get();
 
-                return basket.LineItems.Sum(lineItem => lineItem.Price * lineItem.Quantity);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            return basket.LineItems.Sum(lineItem => lineItem.Price * lineItem.Quantity);
         }
     }
 }
