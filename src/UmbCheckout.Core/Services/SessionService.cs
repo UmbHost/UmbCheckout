@@ -91,18 +91,21 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Get(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
         public Task<UmbCheckoutSession> Get() => Get(RequestAborted);
 
         /// <inheritdoc />
         public async Task<UmbCheckoutSession> Get(CancellationToken cancellationToken) => await Get(await _basketContext.GetCurrencyAsync(cancellationToken), cancellationToken);
 
         /// <inheritdoc />
+        [Obsolete("Use Get(string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
         public Task<UmbCheckoutSession> Get(string? currencyCode) => Get(currencyCode, RequestAborted);
 
         /// <inheritdoc />
         public Task<UmbCheckoutSession> Get(string? currencyCode, CancellationToken cancellationToken) => Get(_basketContext.SiteRootCulture, currencyCode, cancellationToken);
 
         /// <inheritdoc />
+        [Obsolete("Use Get(string?, string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
         public Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode) => Get(siteRootCulture, currencyCode, RequestAborted);
 
         /// <inheritdoc />
@@ -238,6 +241,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Update(Basket, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
         public Task<UmbCheckoutSession> Update(Basket basket) => Update(basket, RequestAborted);
 
         /// <inheritdoc />
@@ -272,18 +276,21 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Clear(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
         public Task<bool> Clear() => Clear(RequestAborted);
 
         /// <inheritdoc />
         public async Task<bool> Clear(CancellationToken cancellationToken) => await Clear(await _basketContext.GetCurrencyAsync(cancellationToken), cancellationToken);
 
         /// <inheritdoc />
+        [Obsolete("Use Clear(string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
         public Task<bool> Clear(string? currencyCode) => Clear(currencyCode, RequestAborted);
 
         /// <inheritdoc />
         public Task<bool> Clear(string? currencyCode, CancellationToken cancellationToken) => Clear(_basketContext.SiteRootCulture, currencyCode, cancellationToken);
 
         /// <inheritdoc />
+        [Obsolete("Use Clear(string?, string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
         public Task<bool> Clear(string? siteRootCulture, string? currencyCode) => Clear(siteRootCulture, currencyCode, RequestAborted);
 
         /// <inheritdoc />
