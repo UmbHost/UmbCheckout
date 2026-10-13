@@ -2,9 +2,9 @@ name: code-scan
 
 on:
   push:
-    branches: [ develop* ]
+    branches: [ dev/v13, release/v13 ]
   pull_request:
-    branches: [ develop* ]
+    branches: [ dev/v13, release/v13 ]
   schedule:
     - cron: "0 12 * * MON"
   workflow_dispatch:
