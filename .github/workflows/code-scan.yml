@@ -1,10 +1,16 @@
 name: code-scan
 
+# Branch triggers live here only. CodeQL runs without a build (build-mode: none), so this open repo
+# needs no closed-source projects and no secrets.
 on:
   push:
-    branches: [ develop* ]
+    branches:
+      - dev/v17
+      - release/v17
   pull_request:
-    branches: [ develop* ]
+    branches:
+      - dev/v17
+      - release/v17
   schedule:
     - cron: "0 12 * * MON"
   workflow_dispatch:
@@ -15,10 +21,12 @@ permissions:
 
 jobs:
   code-ql:
-
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     permissions:
+      actions: read
+      contents: read
       security-events: write
 
     strategy:
@@ -28,24 +36,22 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
-        submodules: 'recursive'
+        submodules: recursive
 
-    - name: Setup dotnet
-      uses: actions/setup-dotnet@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: "8.x"
+        dotnet-version: 10.0.x
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       with:
         languages: ${{ matrix.language }}
-
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+        build-mode: none
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4
       with:
         category: "/language:${{ matrix.language }}"
