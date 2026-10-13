@@ -172,6 +172,10 @@ namespace UmbCheckout.Core.Services
             var sessionId = HttpContext.Session.Id;
             var key = BasketKeys.Session(siteRootCulture, currencyCode);
 
+            // A basket saved before the upgrade (e.g. a checkout started then, paid now) is split first, so its paid lines don't
+            // come back from the legacy key on the next read.
+            MigrateLegacyBasket(siteRootCulture, currencyCode);
+
             // Only this basket: the customer's baskets in other currencies, and other packages' session values, are kept.
             HttpContext.Session.Remove(key);
             await HttpContext.Session.CommitAsync();

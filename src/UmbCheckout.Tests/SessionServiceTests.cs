@@ -187,6 +187,20 @@ namespace UmbCheckout.Tests
         }
 
         [Fact]
+        public async Task Clear_APaidBasketSavedBeforeTheUpgradeIsNotSplitBackLater()
+        {
+            // A checkout started before the upgrade: its basket is still under the culture-only key when the success page clears it.
+            var usd = Line("USD");
+            _session.SetObjectAsJson(BasketKeys.LegacySession("en-GB"), new UmbCheckoutSession { SiteRootCulture = "en-GB", Basket = new Basket { LineItems = new[] { Line("GBP"), usd } } });
+            var service = Service();
+
+            await service.Clear("en-GB", "GBP");
+
+            Assert.Empty((await service.Get("GBP")).Basket.LineItems);
+            Assert.Equal(usd.Key, Assert.Single((await service.Get("USD")).Basket.LineItems).Key);
+        }
+
+        [Fact]
         public async Task Clear_TellsHandlersWhichBasketWasCleared()
         {
             await Service().Clear("en-GB", "USD");
