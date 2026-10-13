@@ -38,6 +38,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="UmbCheckout.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Schema.NET" Version="12.0.0" />
     <!-- UmbHost.Licensing: see Directory.Build.targets -->
   </ItemGroup>

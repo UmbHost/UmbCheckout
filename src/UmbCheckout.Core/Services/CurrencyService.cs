@@ -26,6 +26,36 @@ namespace UmbCheckout.Core.Services
             _umbracoContextAccessor = umbracoContextAccessor;
         }
 
+        /// <summary>1 once "no currency is configured" has been logged in this process (it is asked on every product render).</summary>
+        private static int _noCurrencyLogged;
+
+        /// <summary>Lets tests see the once-per-process log again.</summary>
+        internal static void ResetNoCurrencyLog() => Interlocked.Exchange(ref _noCurrencyLogged, 0);
+
+        /// <inheritdoc />
+        public async Task<string?> GetCurrencyForContentAsync(IPublishedContent content)
+        {
+            var root = content.Root() ?? content;
+            var siteCurrency = root.GetProperty(Consts.PropertyAlias.CurrencyCode)?.GetValue() as string;
+            if (!string.IsNullOrWhiteSpace(siteCurrency))
+            {
+                return siteCurrency.Trim().ToUpperInvariant();
+            }
+
+            var configuration = await _configurationService.GetConfiguration();
+            if (!string.IsNullOrWhiteSpace(configuration?.CurrencyCode))
+            {
+                return configuration.CurrencyCode.Trim().ToUpperInvariant();
+            }
+
+            if (Interlocked.Exchange(ref _noCurrencyLogged, 1) == 0)
+            {
+                _logger.LogError("No currency is configured for content {ContentKey}: set {PropertyAlias} on its site root or the currency in UmbCheckout Configuration. Products can't be added to the basket until one is set; this is logged once per process", content.Key, Consts.PropertyAlias.CurrencyCode);
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Gets the cultures currency or global currency
         /// </summary>
