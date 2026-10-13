@@ -63,7 +63,7 @@
 		<key alias="store_basket_database_expiry_description">How many days the basket should persist in the database</key>
 		<key alias="documentation_description"><![CDATA[Documentation available at <a href="https://docs.umbcheckout.net/" target="_blank">https://docs.umbcheckout.net/</a>]]></key>
 		<key alias="github_report_issues"><![CDATA[Please report any issues in the bug tracker found on the <a target="_blank" href="https://github.com/UmbHost/UmbCheckout/issues">GitHub Repo</a>]]></key>
-		<key alias="support_ticket"><![CDATA[Open a support ticket through <a target="_blank" href="https://my.umbhost.net/submitticket.php?step=2&deptid=8&subject=UmbCheckout:%20[ISSUE%20NAME%20HERE]">My.UmbHost</a>]]></key>
+		<key alias="support_ticket"><![CDATA[Open a support ticket through <a target="_blank" rel="noopener" href="https://www.umbpanel.io">UmbPanel</a>]]></key>
 		<key alias="shipping_rates">Shipping Rates</key>
 		<key alias="shipping_rate">Shipping Rate</key>
 		<key alias="tax_rate">Tax Rate</key>
