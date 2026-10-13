@@ -14,9 +14,10 @@ namespace UmbCheckout.Tests.Services
     public class StripeLineItemPricingServiceTests
     {
         private readonly Mock<ICurrencyService> _currency = new();
+        private readonly Mock<IBasketContext> _page = new();
         private readonly RecordingLogger<StripeLineItemPricingService> _logger = new();
 
-        private StripeLineItemPricingService Service() => new(_currency.Object, _logger);
+        private StripeLineItemPricingService Service() => new(_currency.Object, _page.Object, _logger);
 
         /// <param name="price">The stored value; null leaves the property off the product.</param>
         /// <param name="hasValue">What Umbraco reports for the property (an empty Decimal field converts to 0m but has no value).</param>
@@ -52,6 +53,32 @@ namespace UmbCheckout.Tests.Services
             Assert.Equal(decimal.Parse(expected, CultureInfo.InvariantCulture), result!.Price);
             Assert.Equal(currency, result.CurrencyCode);
         }
+
+        [Fact]
+        public async Task GetPriceAsync_AProductSoldInAnotherCurrencyThanThePageIsRefused()
+        {
+            // The basket shown on this page is in the page's currency: the product would go to a basket the customer never sees here.
+            _page.Setup(p => p.GetCurrencyAsync()).ReturnsAsync("EUR");
+
+            Assert.Null(await Service().GetPriceAsync(Product(10m, "GBP")));
+            Assert.Equal(1, _logger.Count(LogLevel.Warning));
+        }
+
+        [Fact]
+        public async Task GetPriceAsync_AProductInThePagesCurrencyIsPriced()
+        {
+            _page.Setup(p => p.GetCurrencyAsync()).ReturnsAsync("gbp");
+
+            Assert.Equal(new LineItemPriceShape(10m, "GBP"), Shape(await Service().GetPriceAsync(Product(10m, "GBP"))));
+        }
+
+        [Fact]
+        public async Task GetPriceAsync_WithNoPageCurrencyThePriceStands()
+            => Assert.NotNull(await Service().GetPriceAsync(Product(10m, "GBP")));
+
+        private sealed record LineItemPriceShape(decimal Price, string CurrencyCode);
+
+        private static LineItemPriceShape? Shape(UmbCheckout.Stripe.Interfaces.LineItemPrice? price) => price == null ? null : new(price.Price, price.CurrencyCode);
 
         [Fact]
         public async Task GetPriceAsync_WarnsWhenItRounds()

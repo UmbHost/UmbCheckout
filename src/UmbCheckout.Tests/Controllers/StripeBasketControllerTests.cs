@@ -112,29 +112,69 @@ namespace UmbCheckout.Tests.Controllers
         }
 
         [Fact]
-        public async Task Add_AnotherCurrencyThanTheBasketsIsRefused()
+        public async Task Add_ALineTheBasketRefusesIsReported()
         {
-            _basketLines.Add(new LineItem { Key = Guid.NewGuid(), Price = 1m, CurrencyCode = "USD", Quantity = 1 });
+            // A quantity outside 1-999,999, or a 101st product: refused by the basket, shown to the customer, never a 500.
             _pricing.Setup(p => p.GetPriceAsync(_product)).ReturnsAsync(new LineItemPrice(10m, "GBP"));
+            _basketService.Setup(b => b.Add(It.IsAny<LineItem>())).ThrowsAsync(new ArgumentOutOfRangeException("item"));
             var controller = Controller();
 
-            var result = await controller.Add(Posted("USD"));
+            var result = await controller.Add(new BasketAdd { Key = _product.Key, Quantity = 0 });
 
-            Assert.Empty(_added);
             Assert.IsType<RedirectToUmbracoPageResult>(result);
             Assert.Equal(_product.Key, controller.TempData[Consts.TempData.UmbCheckoutAddToBasketFailed]);
+            Assert.False(controller.TempData.ContainsKey(Consts.TempData.UmbCheckoutAddedToBasket));
             Assert.Equal(1, _logger.Count(LogLevel.Warning));
+            Assert.Equal(0, _logger.Count(LogLevel.Error));
         }
 
         [Fact]
-        public async Task Add_TheBasketsOwnCurrencyIsAccepted()
+        public async Task Add_ALineInAnotherCurrencyThanTheBasketsLinesIsAdded()
         {
-            _basketLines.Add(new LineItem { Key = Guid.NewGuid(), Price = 1m, CurrencyCode = "gbp", Quantity = 1 });
+            // Baskets are per currency: the basket service puts the line in its own currency's basket.
+            _basketLines.Add(new LineItem { Key = Guid.NewGuid(), Price = 1m, CurrencyCode = "USD", Quantity = 1 });
             _pricing.Setup(p => p.GetPriceAsync(_product)).ReturnsAsync(new LineItemPrice(10m, "GBP"));
 
             await Controller().Add(Posted());
 
-            Assert.Single(_added);
+            Assert.Equal("GBP", Assert.Single(_added).CurrencyCode);
+        }
+
+        [Fact]
+        public async Task Reduce_IsAwaited()
+        {
+            var reduced = new TaskCompletionSource<Basket>();
+            _basketService.Setup(b => b.Reduce(_product.Key)).Returns(reduced.Task);
+
+            var action = Controller().Reduce(_product.Key);
+
+            Assert.False(action.IsCompleted);
+            reduced.SetResult(new Basket());
+            Assert.IsType<RedirectToUmbracoPageResult>(await action);
+        }
+
+        [Fact]
+        public async Task Remove_IsAwaited()
+        {
+            var removed = new TaskCompletionSource<Basket>();
+            _basketService.Setup(b => b.Remove(_product.Key)).Returns(removed.Task);
+
+            var action = Controller().Remove(_product.Key);
+
+            Assert.False(action.IsCompleted);
+            removed.SetResult(new Basket());
+            Assert.IsType<RedirectToUmbracoPageResult>(await action);
+        }
+
+        [Fact]
+        public async Task Reduce_AFailureIsLoggedWithTheProduct()
+        {
+            _basketService.Setup(b => b.Reduce(_product.Key)).ThrowsAsync(new InvalidOperationException("boom"));
+
+            var result = await Controller().Reduce(_product.Key);
+
+            Assert.Equal(500, Assert.IsType<StatusCodeResult>(result).StatusCode);
+            Assert.Equal(1, _logger.Count(LogLevel.Error));
         }
 
         [Fact]

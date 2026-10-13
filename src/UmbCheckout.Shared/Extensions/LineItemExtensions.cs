@@ -13,9 +13,5 @@ namespace UmbCheckout.Shared.Extensions
             var codes = lineItems.Select(lineItem => lineItem.CurrencyCode?.Trim() ?? string.Empty).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             return codes.Count == 1 && codes[0].Length > 0 ? codes[0].ToUpperInvariant() : null;
         }
-
-        /// <summary>True when a line priced in <paramref name="currency"/> can join these lines: every existing line shares it.</summary>
-        public static bool AcceptsCurrency(this IEnumerable<LineItem> lineItems, string currency)
-            => lineItems.All(lineItem => string.Equals(lineItem.CurrencyCode?.Trim(), currency.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 }
