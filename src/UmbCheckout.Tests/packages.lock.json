@@ -2486,7 +2486,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Components.Web": "[6.0.21, 7.0.0)",
-          "Stripe.net": "[50.3.0, )",
+          "Stripe.net": "[50.3.0, 51.0.0)",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
           "UmbHost.Licensing": "[1.5.0, )",
@@ -4857,7 +4857,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Components.Web": "[8.0.0, 9.0.0)",
-          "Stripe.net": "[50.3.0, )",
+          "Stripe.net": "[50.3.0, 51.0.0)",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
           "UmbHost.Licensing": "[1.5.0, )",
