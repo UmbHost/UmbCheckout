@@ -135,10 +135,18 @@ namespace UmbCheckout.Core.Services
                 return session;
             }
 
+            // An unpaid answer holds for the rest of the request: a page reads its basket several times (page, partials).
+            var unpaidKey = UnpaidCheckoutSessionItem + checkoutSessionId;
+            if (HttpContext.Items.ContainsKey(unpaidKey))
+            {
+                return session;
+            }
+
             try
             {
                 if (!await _paidCheckoutSessions.IsPaidAsync(checkoutSessionId, HttpContext.RequestAborted))
                 {
+                    HttpContext.Items[unpaidKey] = true;
                     return session;
                 }
             }
@@ -160,6 +168,27 @@ namespace UmbCheckout.Core.Services
             };
             HttpContext.Session.SetObjectAsJson(BasketKeys.Session(siteRootCulture, currencyCode), empty);
             return empty;
+        }
+
+        private const string UnpaidCheckoutSessionItem = "UmbCheckout.UnpaidCheckoutSession:";
+
+        /// <summary>
+        /// A basket whose lines change after checkout is no longer the basket that checkout session pays for: it forgets the session,
+        /// so a payment recorded later (delayed methods such as Bacs or SEPA arrive days later) doesn't clear the new lines. Setting
+        /// the session id at checkout (lines unchanged) keeps it.
+        /// </summary>
+        private static void ForgetCheckoutSessionIfChanged(Basket basket, Basket? stored)
+        {
+            if (string.IsNullOrEmpty(basket.CheckoutSessionId) || stored == null || basket.CheckoutSessionId != stored.CheckoutSessionId)
+            {
+                return;
+            }
+
+            static string Lines(Basket b) => string.Join(";", b.LineItems.OrderBy(l => l.Key).Select(l => $"{l.Key}x{l.Quantity}"));
+            if (Lines(basket) != Lines(stored))
+            {
+                basket.CheckoutSessionId = null;
+            }
         }
 
         /// <summary>
@@ -210,6 +239,7 @@ namespace UmbCheckout.Core.Services
 
             var key = BasketKeys.Session(siteRootCulture, basket.CurrencyCode);
             var stored = HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null;
+            ForgetCheckoutSessionIfChanged(basket, stored?.Basket);
             if (await _eventAggregator.PublishCancellingAsync(new OnSessionSavingNotification(basket, stored?.Basket, _eventMessagesFactory.Get()), _eventMessagesFactory.Get()))
             {
                 return stored ?? new UmbCheckoutSession { SiteRootCulture = siteRootCulture, Basket = new Basket { SiteRootCulture = siteRootCulture, CurrencyCode = basket.CurrencyCode } };

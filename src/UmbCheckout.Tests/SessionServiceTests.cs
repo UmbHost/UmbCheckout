@@ -89,6 +89,44 @@ namespace UmbCheckout.Tests
         }
 
         [Fact]
+        public async Task An_unpaid_checkout_session_is_looked_up_once_per_request()
+        {
+            // Review: every basket read (page, partials) of a basket left at checkout made a database lookup.
+            var service = await WithCheckedOutBasket("cs_test_open");
+
+            await service.Get("GBP");
+            await service.Get("GBP");
+            await service.Get("GBP");
+
+            _paid.Verify(p => p.IsPaidAsync("cs_test_open", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Changing_the_lines_after_checkout_forgets_the_checkout_session()
+        {
+            // Review: a delayed payment (Bacs, SEPA) recorded days later cleared lines added after checkout. A changed basket isn't
+            // the one that was paid for, so neither the webhook nor the success page clears it.
+            var service = await WithCheckedOutBasket("cs_test_delayed");
+            var basket = (await service.Get("GBP")).Basket;
+
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [.. basket.LineItems, Line("GBP")], CheckoutSessionId = basket.CheckoutSessionId });
+
+            Assert.Null((await service.Get("GBP")).Basket.CheckoutSessionId);
+        }
+
+        [Fact]
+        public async Task Recording_the_checkout_session_on_an_unchanged_basket_keeps_it()
+        {
+            var service = Service();
+            var line = Line("GBP");
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [line] });
+
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [line], CheckoutSessionId = "cs_test_new" });
+
+            Assert.Equal("cs_test_new", (await service.Get("GBP")).Basket.CheckoutSessionId);
+        }
+
+        [Fact]
         public async Task A_failed_lookup_keeps_the_basket_and_does_not_fail_the_read()
         {
             _paid.Setup(p => p.IsPaidAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("database down"));
