@@ -36,10 +36,12 @@ public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlSe
         var (database, store) = await Arrange(provider);
         await using var _ = database;
 
-        Assert.Equal(StripeWebhookEventClaim.Claimed, await store.TryClaimAsync("evt_1"));
-        await store.CompleteAsync("evt_1");
+        var claim = await store.ClaimAsync("evt_1");
+        Assert.Equal(StripeWebhookEventClaim.Claimed, claim.Claim);
+        Assert.False(string.IsNullOrEmpty(claim.LeaseToken));
+        await store.CompleteAsync("evt_1", claim.LeaseToken!);
 
-        Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, await store.TryClaimAsync("evt_1"));
+        Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, (await store.ClaimAsync("evt_1")).Claim);
     }
 
     [Theory]
@@ -49,9 +51,9 @@ public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlSe
         var (database, store) = await Arrange(provider);
         await using var _ = database;
 
-        Assert.Equal(StripeWebhookEventClaim.Claimed, await store.TryClaimAsync("evt_1"));
+        Assert.Equal(StripeWebhookEventClaim.Claimed, (await store.ClaimAsync("evt_1")).Claim);
 
-        Assert.Equal(StripeWebhookEventClaim.InProgress, await store.TryClaimAsync("evt_1"));
+        Assert.Equal(StripeWebhookEventClaim.InProgress, (await store.ClaimAsync("evt_1")).Claim);
     }
 
     [Theory]
@@ -62,9 +64,9 @@ public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlSe
         var (database, store) = await Arrange(provider, lease: TimeSpan.Zero);
         await using var _ = database;
 
-        Assert.Equal(StripeWebhookEventClaim.Claimed, await store.TryClaimAsync("evt_1"));
+        Assert.Equal(StripeWebhookEventClaim.Claimed, (await store.ClaimAsync("evt_1")).Claim);
 
-        Assert.Equal(StripeWebhookEventClaim.Claimed, await store.TryClaimAsync("evt_1"));
+        Assert.Equal(StripeWebhookEventClaim.Claimed, (await store.ClaimAsync("evt_1")).Claim);
     }
 
     [Theory]
@@ -74,10 +76,10 @@ public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlSe
         var (database, store) = await Arrange(provider);
         await using var _ = database;
 
-        await store.TryClaimAsync("evt_1");
-        await store.ForgetAsync("evt_1");
+        var claim = await store.ClaimAsync("evt_1");
+        await store.ForgetAsync("evt_1", claim.LeaseToken!);
 
-        Assert.Equal(StripeWebhookEventClaim.Claimed, await store.TryClaimAsync("evt_1"));
+        Assert.Equal(StripeWebhookEventClaim.Claimed, (await store.ClaimAsync("evt_1")).Claim);
     }
 
     [Theory]
@@ -102,5 +104,40 @@ public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlSe
         await using var _ = database;
 
         await Assert.ThrowsAsync<DbUpdateException>(() => store.TryClaimAsync(new string('x', 300)));
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_stale_attempt_cannot_release_the_claim_of_the_delivery_that_took_over(TestProvider provider)
+    {
+        // The first attempt outlives its lease, a retry takes the event over, then the first attempt's handler fails and it
+        // releases "its" claim. It must not delete the retry's claim (a third delivery would run the handlers alongside the retry).
+        var (database, store) = await Arrange(provider, lease: TimeSpan.Zero);
+        await using var _ = database;
+        var stale = await store.ClaimAsync("evt_1");
+        var takeover = await store.ClaimAsync("evt_1");
+        Assert.Equal(StripeWebhookEventClaim.Claimed, takeover.Claim);
+        Assert.NotEqual(stale.LeaseToken, takeover.LeaseToken);
+
+        await store.ForgetAsync("evt_1", stale.LeaseToken!);
+
+        Assert.Equal(1, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutStripeWebhookEvents"));
+        Assert.Equal(takeover.LeaseToken, await database.ScalarAsync<string>("SELECT LeaseToken FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
+    public async Task A_stale_attempt_cannot_complete_the_claim_of_the_delivery_that_took_over(TestProvider provider)
+    {
+        var (database, store) = await Arrange(provider, lease: TimeSpan.Zero);
+        await using var _ = database;
+        var stale = await store.ClaimAsync("evt_1");
+        var takeover = await store.ClaimAsync("evt_1");
+
+        await store.CompleteAsync("evt_1", stale.LeaseToken!);
+
+        Assert.Equal(0, await database.ScalarAsync<int>("SELECT Status FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
+        await store.CompleteAsync("evt_1", takeover.LeaseToken!);
+        Assert.Equal(1, await database.ScalarAsync<int>("SELECT Status FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
     }
 }
