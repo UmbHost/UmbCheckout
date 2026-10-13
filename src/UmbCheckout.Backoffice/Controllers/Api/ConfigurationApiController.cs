@@ -14,6 +14,8 @@ using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Cms.Web.Common.Attributes;
+using Microsoft.AspNetCore.Authorization;
+using Umbraco.Cms.Web.Common.Authorization;
 
 namespace UmbCheckout.Backoffice.Controllers.Api
 {
@@ -21,6 +23,8 @@ namespace UmbCheckout.Backoffice.Controllers.Api
     /// UmbracoAuthorizedApiController to retrieve the configuration settings for the backoffice
     /// </summary>
     [PluginController(Consts.PackageName)]
+    // Settings section users only (the screens live in the Settings tree), as v17
+    [Authorize(Policy = AuthorizationPolicies.SectionAccessSettings)]
     public class ConfigurationApiController : UmbracoAuthorizedApiController
     {
         private readonly IConfigurationService _configuration;
@@ -82,19 +86,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                 var enableShipping =
                     configValues.EnableShipping.ToBoolean();
 
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    storeBasketInCookie = false;
-                    storeBasketInDatabase = false;
-                }
-                else
-                {
-                    if (storeBasketInDatabase)
-                    {
-                        storeBasketInCookie = true;
-                    }
-                }
-
+                // Basket storage is a licensed add-on feature; the add-on applies its licence rules when this is saved
                 var configuration = new Shared.Models.UmbCheckoutConfiguration
                 {
                     BasketInCookieExpiry = configValues.BasketInCookieExpiry,

@@ -28,6 +28,10 @@ namespace UmbCheckout.Shared.Models
 
         public IEnumerable<LineItem> LineItems { get; set; } = Enumerable.Empty<LineItem>();
 
+        /// <summary>
+        /// The number of lines in the basket, not the number of items: two of one product and one of another is 2.
+        /// For the quantity of items (what a basket link shows), use <c>IBasketService.TotalItems</c>, which sums each line's quantity.
+        /// </summary>
         public long ItemCount => LineItems.Count();
 
         /// <summary>Always computed from the lines; never stored, so it cannot go stale.</summary>

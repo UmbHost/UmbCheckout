@@ -39,6 +39,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="UmbCheckout.Tests" />
+    <!-- Moq proxies NPoco queries over the internal POCOs in the open tests -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <ItemGroup>
