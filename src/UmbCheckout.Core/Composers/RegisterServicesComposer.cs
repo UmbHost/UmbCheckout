@@ -24,7 +24,8 @@ namespace UmbCheckout.Core.Composers
             builder
                 .AddNotificationAsyncHandler<OnLicenseCheckCompletedNotification,
                     UmbCheckoutTelemetryNotificationHandler>();
-            builder.Services.AddTransient<ISessionService, SessionService>();
+            // SessionService keeps its old public constructor (obsolete): ActivatorUtilities picks the new one.
+            builder.Services.AddTransient(CreateSessionService);
             builder.Services.AddTransient<IBasketService, BasketService>();
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
             builder.Services.AddTransient<IDatabaseService, DatabaseService>();
@@ -32,5 +33,9 @@ namespace UmbCheckout.Core.Composers
             builder.Services.AddTransient<IBasketContext, UmbracoBasketContext>();
             builder.Services.AddTransient<IDatabaseMapperService, DatabaseMapperService>();
         }
+
+        /// <summary>Creates the session service through its <see cref="ActivatorUtilitiesConstructorAttribute"/> constructor.</summary>
+        internal static ISessionService CreateSessionService(IServiceProvider serviceProvider)
+            => ActivatorUtilities.CreateInstance<SessionService>(serviceProvider);
     }
 }
