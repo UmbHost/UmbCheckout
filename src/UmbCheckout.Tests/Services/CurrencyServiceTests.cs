@@ -1,3 +1,4 @@
+﻿using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using UmbCheckout.Core.Interfaces;
@@ -17,9 +18,9 @@ namespace UmbCheckout.Tests.Services
         private readonly Mock<IConfigurationService> _configuration = new();
         private readonly RecordingLogger<CurrencyService> _logger = new();
 
-        public CurrencyServiceTests() => CurrencyService.ResetNoCurrencyLog();
+        public CurrencyServiceTests() => CurrencyService.ResetOncePerProcessLogs();
 
-        public void Dispose() => CurrencyService.ResetNoCurrencyLog();
+        public void Dispose() => CurrencyService.ResetOncePerProcessLogs();
 
         private CurrencyService Service() => new(_configuration.Object, _logger, Mock.Of<IUmbracoContextAccessor>());
 
@@ -71,14 +72,30 @@ namespace UmbCheckout.Tests.Services
             Assert.Equal("JPY", await Service().GetCurrencyForContentAsync(Content(Content(null, ""))));
         }
 
+        /// <summary>Runs <paramref name="action"/> with <paramref name="culture"/> as the current UI culture (the last fallback).</summary>
+        private static async Task<T> InUICulture<T>(string culture, Func<Task<T>> action)
+        {
+            var previous = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
+                return await action();
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previous;
+            }
+        }
+
         [Fact]
         public async Task GetCurrencyForContentAsync_IsNullWhenNothingIsConfigured_LoggedOncePerProcess()
         {
             _configuration.Setup(c => c.GetConfiguration()).ReturnsAsync(new UmbCheckoutConfiguration());
 
+            // Only a UI culture with no region (invariant) leaves no currency at all.
             // Called from every product render (the add-to-basket button): the error is logged once, not per render.
-            Assert.Null(await Service().GetCurrencyForContentAsync(Content(Content(null))));
-            Assert.Null(await Service().GetCurrencyForContentAsync(Content(Content(null))));
+            Assert.Null(await InUICulture("", () => Service().GetCurrencyForContentAsync(Content(Content(null)))));
+            Assert.Null(await InUICulture("", () => Service().GetCurrencyForContentAsync(Content(Content(null)))));
 
             Assert.Equal(1, _logger.Count(LogLevel.Error));
         }
@@ -88,7 +105,47 @@ namespace UmbCheckout.Tests.Services
         {
             _configuration.Setup(c => c.GetConfiguration()).ReturnsAsync((UmbCheckoutConfiguration?)null);
 
-            Assert.Null(await Service().GetCurrencyForContentAsync(Content(null)));
+            Assert.Null(await InUICulture("", () => Service().GetCurrencyForContentAsync(Content(null))));
+        }
+
+        [Theory]
+        [InlineData("en-GB", "GBP")]
+        [InlineData("ja-JP", "JPY")]
+        [InlineData("de-DE", "EUR")]
+        public async Task GetCurrencyForContentAsync_FallsBackToTheUICulturesCurrency_WarnedOncePerProcess(string culture, string expected)
+        {
+            _configuration.Setup(c => c.GetConfiguration()).ReturnsAsync(new UmbCheckoutConfiguration());
+
+            // As before the update (the old chain ended in the UI culture's currency), so an upgraded site keeps selling.
+            Assert.Equal(expected, await InUICulture(culture, () => Service().GetCurrencyForContentAsync(Content(Content(null)))));
+            Assert.Equal(expected, await InUICulture(culture, () => Service().GetCurrencyForContentAsync(Content(Content(null)))));
+
+            var warning = Assert.Single(_logger.Entries, e => e.Level == LogLevel.Warning);
+            Assert.Contains(expected, warning.Message);
+            Assert.Contains(Consts.PropertyAlias.CurrencyCode, warning.Message);
+            Assert.Equal(0, _logger.Count(LogLevel.Error));
+        }
+
+        [Fact]
+        public async Task GetCurrencyForContentAsync_TheUICultureIsOnlyTheLastFallback()
+        {
+            _configuration.Setup(c => c.GetConfiguration()).ReturnsAsync(new UmbCheckoutConfiguration { CurrencyCode = "USD" });
+
+            Assert.Equal("USD", await InUICulture("en-GB", () => Service().GetCurrencyForContentAsync(Content(Content(null)))));
+            Assert.Equal("EUR", await InUICulture("en-GB", () => Service().GetCurrencyForContentAsync(Content(Content(null, "EUR")))));
+            Assert.Empty(_logger.Entries);
+        }
+
+        [Fact]
+        public async Task GetCurrencyForContentAsync_NullContentIsNull()
+        {
+            _configuration.Setup(c => c.GetConfiguration()).ReturnsAsync(new UmbCheckoutConfiguration { CurrencyCode = "USD" });
+
+            string? currency = "not called";
+            var exception = await Record.ExceptionAsync(async () => currency = await Service().GetCurrencyForContentAsync(null!));
+
+            Assert.Null(exception);
+            Assert.Null(currency);
         }
 
         /// <summary>A third-party ICurrencyService written before GetCurrencyForContentAsync existed.</summary>

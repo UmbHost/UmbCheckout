@@ -78,6 +78,26 @@ namespace UmbCheckout.Tests
             Assert.Equal(price.FormatCurrency(currency, EnGb), UmbCheckout.Stripe.Money.StripeCurrency.Round(price, currency).FormatCurrency(currency, EnGb));
         }
 
+        public static IEnumerable<object[]> StripeSupportedCodes()
+            => UmbCheckout.Stripe.Money.StripeCurrency.SupportedCodes.OrderBy(c => c, StringComparer.Ordinal).Select(c => new object[] { c.ToUpperInvariant() });
+
+        /// <summary>The decimal places in the formatted amount: the digits after a decimal point that follows a digit (symbols such as "د.إ." contain points too).</summary>
+        private static int DisplayedDecimals(string formatted)
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(formatted, @"\d\.(\d+)");
+            return match.Success ? match.Groups[1].Value.Length : 0;
+        }
+
+        [Theory]
+        [MemberData(nameof(StripeSupportedCodes))]
+        public void FormatCurrency_ShowsAsManyDecimalsAsTheChargeHas(string currency)
+        {
+            // Display and charge share one minor-unit table: .NET's first culture for AFN, ALL, LAK, LBP, MMK, RSD, SOS and YER shows 0 decimals, Stripe charges 2.
+            var formatted = 1234.5678m.FormatCurrency(currency, EnGb);
+
+            Assert.Equal(UmbCheckout.Stripe.Money.StripeCurrency.ChargeableDigits(currency), DisplayedDecimals(formatted));
+        }
+
         [Fact]
         public void FormatCurrency_UnknownCodeIsShownAfterTheAmount()
             => Assert.Equal("10.00 XYZ", 10m.FormatCurrency("XYZ", EnGb));

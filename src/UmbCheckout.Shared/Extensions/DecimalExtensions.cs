@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using UmbCheckout.Shared.Money;
 
 namespace UmbCheckout.Shared.Extensions
 {
@@ -37,14 +38,19 @@ namespace UmbCheckout.Shared.Extensions
             }
 
             currencyCode = currencyCode.Trim();
+
+            // The decimal places come from the same table as the charge (CurrencyDecimals), never from .NET's culture for the currency:
+            // the first culture for AFN, ALL, LAK, LBP, MMK, RSD, SOS or YER shows 0 decimals, while they are charged with 2.
+            var digits = CurrencyDecimals.ChargeableDigits(currencyCode);
             if (!ISOCurrenciesToACultureMap.TryGetValue(currencyCode, out var currencyCulture))
             {
-                return $"{amount.ToString("N2", culture)} {currencyCode.ToUpperInvariant()}";
+                return $"{amount.ToString("N" + digits, culture)} {currencyCode.ToUpperInvariant()}";
             }
 
+            // The currency's culture gives only its symbol; the site culture gives the pattern and separators.
             var format = (NumberFormatInfo)culture.NumberFormat.Clone();
             format.CurrencySymbol = currencyCulture.NumberFormat.CurrencySymbol;
-            format.CurrencyDecimalDigits = currencyCulture.NumberFormat.CurrencyDecimalDigits;
+            format.CurrencyDecimalDigits = digits;
             return amount.ToString("C", format);
         }
     }

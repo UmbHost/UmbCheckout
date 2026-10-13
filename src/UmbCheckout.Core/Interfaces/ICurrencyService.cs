@@ -17,13 +17,14 @@ namespace UmbCheckout.Core.Interfaces
 
         /// <summary>
         /// The currency <paramref name="content"/> is sold in: the umbCheckoutCurrencyCode property on its site root, else the
-        /// UmbCheckout Configuration currency. This is the currency checkout charges; it never comes from the browser.
+        /// UmbCheckout Configuration currency, else (as before this member existed, with a warning logged once) the current UI culture's currency.
+        /// This is the currency checkout charges; it never comes from the browser.
         /// </summary>
         /// <remarks>
         /// The default implementation (for implementations written before this member existed) returns <see cref="GetCurrencyAsync"/>'s
         /// result when it is shaped like an ISO 4217 code (three ASCII letters), else null. Payment providers still check the code is one they support.
         /// </remarks>
-        /// <returns>The upper-case ISO code, or null when no currency is configured.</returns>
+        /// <returns>The upper-case ISO code, or null when no currency is configured (or <paramref name="content"/> is null).</returns>
         async Task<string?> GetCurrencyForContentAsync(IPublishedContent content)
         {
             var code = (await GetCurrencyAsync())?.Trim();
