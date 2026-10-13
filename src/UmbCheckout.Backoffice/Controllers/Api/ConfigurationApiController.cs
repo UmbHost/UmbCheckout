@@ -82,19 +82,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
                 var enableShipping =
                     configValues.EnableShipping.ToBoolean();
 
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    storeBasketInCookie = false;
-                    storeBasketInDatabase = false;
-                }
-                else
-                {
-                    if (storeBasketInDatabase)
-                    {
-                        storeBasketInCookie = true;
-                    }
-                }
-
+                // Basket storage is a licensed add-on feature; the add-on applies its licence rules when this is saved
                 var configuration = new Shared.Models.UmbCheckoutConfiguration
                 {
                     BasketInCookieExpiry = configValues.BasketInCookieExpiry,

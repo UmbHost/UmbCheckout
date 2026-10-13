@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Shared.Notifications.Configuration;
-using UmbHost.Licensing.Models;
 using UmbHost.Licensing.Services;
 using Umbraco.Cms.Core.Mapping;
 using Umbraco.Cms.Core.Scoping;
@@ -11,7 +10,8 @@ using UmbCheckoutConfiguration = UmbCheckout.Core.Pocos.UmbCheckoutConfiguration
 namespace UmbCheckout.Core.Services
 {
     /// <summary>
-    /// A service which Gets or Updates the configuration
+    /// A service which Gets or Updates the configuration. The basket storage options are stored and read as given: basket storage is a
+    /// licensed add-on feature, and the add-on applies its licence rules by wrapping this service.
     /// </summary>
     internal class ConfigurationService : IConfigurationService
     {
@@ -36,15 +36,6 @@ namespace UmbCheckout.Core.Services
                 using var scope = _scopeProvider.CreateScope(autoComplete: true);
                 var result = await scope.Database.QueryAsync<UmbCheckoutConfiguration>().SingleOrDefault();
 
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    if (result != null)
-                    {
-                        result.StoreBasketInDatabase = false;
-                        result.StoreBasketInDatabase = false;
-                    }
-                }
-
                 return _mapper.Map<UmbCheckoutConfiguration, Shared.Models.UmbCheckoutConfiguration>(result);
             }
             catch (Exception ex)
@@ -59,12 +50,6 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    configuration.StoreBasketInDatabase = false;
-                    configuration.StoreBasketInCookie = false;
-                }
-
                 using var coreScope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
                 var configurationPoco = _mapper.Map<Shared.Models.UmbCheckoutConfiguration, UmbCheckoutConfiguration>(configuration);
                 var existingConfiguration = await GetConfiguration();
@@ -108,12 +93,6 @@ namespace UmbCheckout.Core.Services
         {
             try
             {
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    configuration.StoreBasketInDatabase = false;
-                    configuration.StoreBasketInCookie = false;
-                }
-
                 using var scope = _scopeProvider.CreateScope(autoComplete: true);
                 var db = scope.Database;
                 var result = await db.InsertAsync(configuration);
