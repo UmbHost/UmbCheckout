@@ -1,4 +1,4 @@
-function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, notificationsService, formHelper, localizationService) {
+function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, notificationsService, formHelper, localizationService, umbCheckoutHelpers) {
     var vm = this;
     vm.saveButtonState = "init";
     vm.checkLicenceButtonState = "init";
@@ -11,8 +11,11 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
     umbCheckoutResources.getConfiguration()
         .then(function (response) {
             vm.properties = response.data
-        }
-    );
+        })
+        .catch(function (response) {
+            // Settings section users only (403 for anyone else)
+            umbCheckoutHelpers.requestFailed(response, "umbcheckout_settings_access_denied_message");
+        });
 
     umbCheckoutResources.getHasUmbracoApplicationUrlSet()
         .then(function (response) {

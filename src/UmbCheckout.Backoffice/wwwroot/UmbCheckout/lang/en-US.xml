@@ -26,6 +26,11 @@
 		<key alias="configuration_failed_save_title">Configuration failed to save</key>
 		<key alias="configuration_failed_save_message">There was an issue trying to save the configuration</key>
 		<key alias="configuration_saved_message">The configuration has been saved successfully</key>
+		<key alias="request_failed_title">UmbCheckout request failed</key>
+		<key alias="request_failed_message">There was an issue trying to complete the request, please check the logs for details</key>
+		<key alias="access_denied_title">Access denied</key>
+		<key alias="access_denied_message">You don't have access to this, please ask an administrator</key>
+		<key alias="settings_access_denied_message">You need access to the Settings section to manage the UmbCheckout settings</key>
 		<key alias="license_status">License Status</key>
 		<key alias="license_check_requested_title">License check requested</key>
 		<key alias="license_check_requested_message">A license check has been requested, please wait for the window to reload</key>
