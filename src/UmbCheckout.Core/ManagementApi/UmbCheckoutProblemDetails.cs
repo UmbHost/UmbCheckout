@@ -10,7 +10,13 @@ namespace UmbCheckout.Core.ManagementApi
         public const string StripeUnreachableTitle = "Stripe could not be reached";
         public const string InvalidValueTitle = "Invalid value";
 
-        /// <summary>The ProblemDetails type of a save or delete a notification handler cancelled; the title is the handler's message.</summary>
+        /// <summary>The ProblemDetails type of a save or delete a notification handler cancelled; the detail is the handler's message.</summary>
         public const string CancelledType = "urn:umbcheckout:cancelled";
+
+        /// <summary>The title of a save a notification handler cancelled (the handler's message is the detail).</summary>
+        public const string SaveCancelledTitle = "Save cancelled";
+
+        /// <summary>The title of a delete a notification handler cancelled (the handler's message is the detail).</summary>
+        public const string DeleteCancelledTitle = "Delete cancelled";
     }
 }

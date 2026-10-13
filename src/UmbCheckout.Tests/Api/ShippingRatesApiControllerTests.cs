@@ -105,7 +105,10 @@ namespace UmbCheckout.Tests.Api
                 .CreateShippingRate(new CreateShippingRateRequestModel { Name = "A", Value = "shr_1" }));
 
             Assert.Equal(400, result.StatusCode);
-            Assert.Equal("Rates are locked", Assert.IsType<ProblemDetails>(result.Value).Title);
+            var problem = Assert.IsType<ProblemDetails>(result.Value);
+            // A short title and the handler's message once (the toast shows both).
+            Assert.Equal(UmbCheckout.Core.ManagementApi.UmbCheckoutProblemDetails.SaveCancelledTitle, problem.Title);
+            Assert.Equal("Rates are locked", problem.Detail);
         }
 
         [Fact]
@@ -119,7 +122,10 @@ namespace UmbCheckout.Tests.Api
                 .UpdateShippingRate(key, new UpdateShippingRateRequestModel { Name = "B", Value = "shr_1" }));
 
             Assert.Equal(400, result.StatusCode);
-            Assert.Equal("Rates are locked", Assert.IsType<ProblemDetails>(result.Value).Title);
+            var problem = Assert.IsType<ProblemDetails>(result.Value);
+            // A short title and the handler's message once (the toast shows both).
+            Assert.Equal(UmbCheckout.Core.ManagementApi.UmbCheckoutProblemDetails.SaveCancelledTitle, problem.Title);
+            Assert.Equal("Rates are locked", problem.Detail);
         }
 
         [Fact]
@@ -130,7 +136,10 @@ namespace UmbCheckout.Tests.Api
             var result = Assert.IsAssignableFrom<ObjectResult>(await CancelledRequest.With(Controller, "Rates are locked").DeleteShippingRate(Guid.NewGuid()));
 
             Assert.Equal(400, result.StatusCode);
-            Assert.Equal("Rates are locked", Assert.IsType<ProblemDetails>(result.Value).Title);
+            var problem = Assert.IsType<ProblemDetails>(result.Value);
+            // A short title and the handler's message once (the toast shows both).
+            Assert.Equal(UmbCheckout.Core.ManagementApi.UmbCheckoutProblemDetails.DeleteCancelledTitle, problem.Title);
+            Assert.Equal("Rates are locked", problem.Detail);
         }
 
         [Fact]
@@ -143,6 +152,17 @@ namespace UmbCheckout.Tests.Api
 
             Assert.Equal(400, result.StatusCode);
             Assert.Equal("A shipping rate with this Stripe ID already exists", Assert.IsType<ProblemDetails>(result.Value).Title);
+        }
+
+        [Fact]
+        public async Task A_cancel_already_reported_does_not_turn_a_later_404_into_a_400()
+        {
+            // Review minor: the request's cancel marker is cleared once it has been reported.
+            _db.Setup(s => s.DeleteShippingRateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+            var controller = CancelledRequest.With(Controller, "Rates are locked");
+
+            Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(await controller.DeleteShippingRate(Guid.NewGuid())).StatusCode);
+            Assert.Equal(404, Assert.IsAssignableFrom<ObjectResult>(await controller.DeleteShippingRate(Guid.NewGuid())).StatusCode);
         }
 
         [Fact]

@@ -110,7 +110,10 @@ namespace UmbCheckout.Tests.Api
 
             var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
             Assert.Equal(400, objectResult.StatusCode);
-            Assert.Equal("Currency changes are frozen", Assert.IsType<ProblemDetails>(objectResult.Value).Title);
+            var problem = Assert.IsType<ProblemDetails>(objectResult.Value);
+            // A short title and the handler's message once (the toast shows both).
+            Assert.Equal(UmbCheckout.Core.ManagementApi.UmbCheckoutProblemDetails.SaveCancelledTitle, problem.Title);
+            Assert.Equal("Currency changes are frozen", problem.Detail);
         }
 
         [Fact]

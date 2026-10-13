@@ -19,15 +19,41 @@ namespace UmbCheckout.Shared.Notifications
         public static int CancellationCount(this EventMessages? messages)
             => messages?.GetAll().Count(m => m.Category == CancelledCategory) ?? 0;
 
+        /// <summary>The category of the marker <see cref="TakeCancellationMessage"/> adds: cancels before it have been reported.</summary>
+        public const string CancellationReadCategory = "UmbCheckout.CancellationRead";
+
         /// <summary>
-        /// When a handler cancelled an operation in this request, the message for the person who tried: the handler's first Error or
-        /// Warning message, or <see cref="DefaultCancellationMessage"/>. Null when nothing was cancelled (a Warning on its own is not a cancel).
+        /// When a handler cancelled an operation in this request (since the last <see cref="TakeCancellationMessage"/>), the message for the
+        /// person who tried: the handler's first Error or Warning message, or <see cref="DefaultCancellationMessage"/>. Null when nothing
+        /// was cancelled (a Warning on its own is not a cancel).
         /// </summary>
         public static string? CancellationMessage(this EventMessages? messages)
-            => messages.CancellationCount() == 0
-                ? null
-                : messages!.GetAll().FirstOrDefault(m => m.Category != CancelledCategory && m.MessageType is EventMessageType.Error or EventMessageType.Warning)?.Message
-                  ?? DefaultCancellationMessage;
+        {
+            if (messages is null)
+            {
+                return null;
+            }
+
+            // Umbraco's EventMessages can't remove a message: a read marker hides everything before it.
+            var all = messages.GetAll().ToList();
+            var unread = all.Skip(all.FindLastIndex(m => m.Category == CancellationReadCategory) + 1).ToList();
+            return unread.Any(m => m.Category == CancelledCategory)
+                ? unread.FirstOrDefault(m => m.Category is not (CancelledCategory or CancellationReadCategory) && m.MessageType is EventMessageType.Error or EventMessageType.Warning)?.Message
+                  ?? DefaultCancellationMessage
+                : null;
+        }
+
+        /// <summary>As <see cref="CancellationMessage"/>, and clears the cancel once read, so a later failure in the same request isn't reported as cancelled.</summary>
+        public static string? TakeCancellationMessage(this EventMessages? messages)
+        {
+            var message = messages.CancellationMessage();
+            if (message is not null)
+            {
+                messages!.Add(new EventMessage(CancellationReadCategory, string.Empty, EventMessageType.Info));
+            }
+
+            return message;
+        }
 
         /// <summary>
         /// Publishes a before-save or before-delete notification and records a cancel. Skipped (not cancelled) inside

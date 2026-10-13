@@ -56,7 +56,8 @@ namespace UmbCheckout.Tests.Api
 
             Assert.Equal(400, result.StatusCode);
             var problem = Assert.IsType<ProblemDetails>(result.Value);
-            Assert.Equal("Live mode needs approval", problem.Title);
+            Assert.Equal(UmbCheckout.Core.ManagementApi.UmbCheckoutProblemDetails.SaveCancelledTitle, problem.Title);
+            Assert.Equal("Live mode needs approval", problem.Detail);
             // The settings screen has its own failure toast; the type tells it to show the handler's message instead.
             Assert.Equal(UmbCheckout.Core.ManagementApi.UmbCheckoutProblemDetails.CancelledType, problem.Type);
         }

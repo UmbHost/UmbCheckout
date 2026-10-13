@@ -38,6 +38,24 @@ public sealed class EventMessagesExtensionsTests
     }
 
     [Fact]
+    public void A_cancel_read_once_is_cleared_so_a_later_failure_in_the_request_is_not_reported_as_cancelled()
+    {
+        // Review minor: a stale cancel in one request turned a later 404 into a 400.
+        var messages = new EventMessages();
+        messages.Add(new EventMessage("Rates", "Rates are locked", EventMessageType.Error));
+        messages.MarkCancelled();
+
+        Assert.Equal("Rates are locked", messages.TakeCancellationMessage());
+        Assert.Null(messages.TakeCancellationMessage());
+        Assert.Null(messages.CancellationMessage());
+
+        // A new cancel after the read is reported with its own message, not the earlier one.
+        messages.Add(new EventMessage("Rates", "Rates are frozen", EventMessageType.Warning));
+        messages.MarkCancelled();
+        Assert.Equal("Rates are frozen", messages.TakeCancellationMessage());
+    }
+
+    [Fact]
     public void Cancels_are_counted_so_one_operation_can_tell_if_it_was_cancelled()
     {
         var messages = new EventMessages();
