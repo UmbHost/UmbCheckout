@@ -32,14 +32,14 @@ namespace UmbCheckout.Core.Services
             _eventMessagesFactory = eventMessagesFactory;
         }
 
-        [Obsolete("Use the constructor that takes an IEventMessagesFactory. Scheduled for removal in the next major version.")]
+        [Obsolete("Use the constructor that takes an IEventMessagesFactory. Scheduled for removal in 17.1.")]
         public BasketService(ISessionService sessionService, ILogger<BasketService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider)
             : this(sessionService, logger, eventAggregator, coreScopeProvider, StaticServiceProvider.Instance.GetRequiredService<IEventMessagesFactory>())
         {
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Get(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Get(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Get() => Get(CancellationToken.None);
 
         /// <inheritdoc />
@@ -50,7 +50,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Add(LineItem, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Add(LineItem, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Add(LineItem item) => Add(item, CancellationToken.None);
 
         /// <inheritdoc />
@@ -77,7 +77,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Add(IEnumerable<LineItem>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Add(IEnumerable<LineItem>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Add(IEnumerable<LineItem> items) => Add(items, CancellationToken.None);
 
         /// <inheritdoc />
@@ -169,7 +169,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Reduce(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Reduce(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Reduce(Guid key) => Reduce(key, CancellationToken.None);
 
         /// <inheritdoc />
@@ -203,7 +203,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Remove(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Remove(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Remove(Guid key) => Remove(key, CancellationToken.None);
 
         /// <inheritdoc />
@@ -233,7 +233,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Remove(IEnumerable<Guid>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Remove(IEnumerable<Guid>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Remove(IEnumerable<Guid> keys) => Remove(keys, CancellationToken.None);
 
         /// <inheritdoc />
@@ -267,7 +267,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Clear(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Clear(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Clear() => Clear(CancellationToken.None);
 
         /// <inheritdoc />
@@ -291,7 +291,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use TotalItems(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use TotalItems(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<long> TotalItems() => TotalItems(CancellationToken.None);
 
         /// <inheritdoc />
@@ -302,7 +302,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use SubTotal(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use SubTotal(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<decimal> SubTotal() => SubTotal(CancellationToken.None);
 
         /// <inheritdoc />

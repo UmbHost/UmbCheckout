@@ -9,7 +9,7 @@ namespace UmbCheckout.Core.Interfaces
         string? SiteRootCulture { get; }
 
         /// <summary>The currency the current page sells in, else the Configuration currency, else null.</summary>
-        [Obsolete("Use GetCurrencyAsync(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use GetCurrencyAsync(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         Task<string?> GetCurrencyAsync();
 
         /// <summary>The current page's currency, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>

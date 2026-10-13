@@ -44,7 +44,7 @@ namespace UmbCheckout.Core.NotificationHandlers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        [Obsolete("Use the constructor that takes an ILogger. Scheduled for removal in the next major version.")]
+        [Obsolete("Use the constructor that takes an ILogger. Scheduled for removal in 17.1.")]
         public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IWebHostEnvironment webHostEnvironment)
             : this(umbCheckoutConfiguration, globalSettings, httpClientFactory, umbracoVersion, webHostEnvironment, NullLogger<UmbCheckoutTelemetryNotificationHandler>.Instance)
         {
