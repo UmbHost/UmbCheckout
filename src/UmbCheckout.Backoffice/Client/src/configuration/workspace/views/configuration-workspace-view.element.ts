@@ -41,6 +41,8 @@ const LABEL_KEYS: Record<string, string> = {
 
 /** The licence server's placeholder for "no date". */
 const NO_DATE = "0000-00-00";
+/** The licence status during a request for a domain the licence doesn't list (UmbHost.Licensing). */
+const DOMAIN_NOT_LICENSED = "Domain not licensed";
 
 /** v13's Settings → UmbCheckout page: Help & Support and Configuration on the left, licence details on the right. */
 @customElement("umbcheckout-configuration-workspace-view")
@@ -154,6 +156,15 @@ export class UmbCheckoutConfigurationWorkspaceViewElement extends UmbLitElement 
     </umb-property-layout>`;
   }
 
+  /** The licence's comma-separated domain list, readable. */
+  #domains(validDomains?: string) {
+    return (validDomains ?? "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter((d) => d.length > 0)
+      .join(", ");
+  }
+
   #renderLicense() {
     const license = this._license;
     return html`<uui-box headline=${this.localize.term("umbcheckout_license_details")}>
@@ -165,11 +176,16 @@ export class UmbCheckoutConfigurationWorkspaceViewElement extends UmbLitElement 
                 >${this.localize.term("umbcheckout_application_url_unset_link")}</a
               >.<br />${this.localize.term("umbcheckout_application_url_unset_after")}
             </div>`}
+        ${license?.status === DOMAIN_NOT_LICENSED
+          ? html`<div class="umbcheckout-alert" role="alert">
+              ${this.localize.term("umbcheckout_domain_not_licensed")} <strong>${this.#domains(license.validDomains)}</strong>.<br />${this.localize.term("umbcheckout_domain_not_licensed_after")}
+            </div>`
+          : nothing}
         ${license
           ? html`${license.isDevelopmentLicense ? this.#row("umbcheckout_license_development", this.localize.term("umbcheckout_license_development_true")) : nothing}
               ${this.#row("umbcheckout_license_status", license.status)} ${this.#row("umbcheckout_registration_date", license.regDate)}
               ${license.expiryDateTime && license.expiryDateTime !== NO_DATE ? this.#row("umbcheckout_expiry_date", license.expiryDateTime) : nothing}
-              ${this.#row("umbcheckout_valid_domains", license.validDomains)} ${this.#row("umbcheckout_valid_path", license.validPaths)}`
+              ${this.#row("umbcheckout_valid_domains", this.#domains(license.validDomains))} ${this.#row("umbcheckout_valid_path", license.validPaths)}`
           : html`<uui-loader></uui-loader>`}
         <uui-button look="primary" .state=${this._checkState} ?disabled=${this._checkState === "waiting"} @click=${this.#recheckLicense}
           >${this.localize.term("umbcheckout_recheck_license")}</uui-button

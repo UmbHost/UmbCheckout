@@ -38,6 +38,8 @@ export default {
     registration_date: "Registration Date",
     expiry_date: "Expiry Date",
     valid_domains: "Valid Domains",
+    domain_not_licensed: "This domain isn't on your license, so licensed features are off for requests to it and visitors see a license warning. Licensed domains:",
+    domain_not_licensed_after: "Contact UmbHost to add a domain to your license.",
     valid_path: "Valid Path",
     recheck_license: "Re-Check License",
     currency_code_label: "Fallback Currency Code",
