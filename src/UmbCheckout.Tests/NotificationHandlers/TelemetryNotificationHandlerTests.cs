@@ -9,7 +9,9 @@ using UmbCheckout.Shared.Models;
 using UmbCheckout.Shared.Notifications.Configuration;
 using Umbraco.Cms.Core.Configuration;
 using Umbraco.Cms.Core.Configuration.Models;
+using Umbraco.Cms.Core.Packaging;
 using Umbraco.Cms.Core.Semver;
+using Umbraco.Cms.Core.Services;
 using Xunit;
 
 namespace UmbCheckout.Tests.NotificationHandlers;
@@ -30,9 +32,15 @@ public sealed class TelemetryNotificationHandlerTests
         version.SetupGet(v => v.SemanticVersion).Returns(new SemVersion(17, 6, 0));
         var environment = new Mock<IWebHostEnvironment>();
         environment.SetupGet(e => e.EnvironmentName).Returns("Development");
+        var packaging = new Mock<IPackagingService>();
+        packaging.Setup(p => p.GetAllInstalledPackagesAsync()).ReturnsAsync(new[]
+        {
+            new InstalledPackage { PackageName = "UmbCheckout.Stripe" },
+            new InstalledPackage { PackageName = "Some.Other.Package" },
+        });
 
         return new UmbCheckoutTelemetryNotificationHandler(Options.Create(new UmbCheckoutAppSettings()), Options.Create(new GlobalSettings { Id = Guid.NewGuid().ToString() }),
-            _clients.Object, version.Object, environment.Object, _logger);
+            _clients.Object, version.Object, environment.Object, packaging.Object, _logger);
     }
 
     [Fact]
@@ -81,6 +89,25 @@ public sealed class TelemetryNotificationHandlerTests
         using var client = new HttpClient();
         UmbCheckoutTelemetryNotificationHandler.ConfigureClient(client);
         Assert.Equal(TimeSpan.FromSeconds(5), client.Timeout);
+    }
+
+    [Fact]
+    public async Task Reports_the_installed_UmbCheckout_packages()
+    {
+        var body = new TaskCompletionSource<string>();
+        var handler = Handler(new Server(async (request, _) =>
+        {
+            var base64 = await request.Content!.ReadAsStringAsync();
+            body.TrySetResult(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64)));
+            return new HttpResponseMessage();
+        }));
+
+        await handler.HandleAsync(new OnConfigurationSavedNotification(new UmbCheckoutConfiguration()), CancellationToken.None);
+        var json = await body.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Contains("installedPackages", json);
+        Assert.Contains("UmbCheckout.Stripe", json);
+        Assert.DoesNotContain("Some.Other.Package", json);
     }
 
     private sealed class Server(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
