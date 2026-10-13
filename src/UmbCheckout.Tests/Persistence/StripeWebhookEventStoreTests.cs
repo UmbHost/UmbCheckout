@@ -15,7 +15,7 @@ namespace UmbCheckout.Tests.Persistence
     {
         private readonly SqliteTestDatabase _database = new();
 
-        public StripeWebhookEventStoreTests() => _database.Migrate(c => new AddUmbCheckoutStripeWebhookEventsTable(c));
+        public StripeWebhookEventStoreTests() => _database.Migrate(c => new AddUmbCheckoutStripeWebhookEventsTable(c), c => new AddUmbCheckoutStripeWebhookEventLeaseToken(c));
 
         public void Dispose() => _database.Dispose();
 
@@ -28,21 +28,23 @@ namespace UmbCheckout.Tests.Persistence
         {
             var store = Store();
 
-            Assert.Equal(StripeWebhookEventClaim.Claimed, await store.TryClaimAsync("evt_1"));
-            Assert.Equal(StripeWebhookEventClaim.InProgress, await store.TryClaimAsync("evt_1"));
-            await store.CompleteAsync("evt_1");
-            Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, await store.TryClaimAsync("evt_1"));
+            var claim = await store.TryClaimAsync("evt_1");
+            Assert.Equal(StripeWebhookEventClaim.Claimed, claim.Claim);
+            Assert.False(string.IsNullOrEmpty(claim.LeaseToken));
+            Assert.Equal(StripeWebhookEventClaim.InProgress, (await store.TryClaimAsync("evt_1")).Claim);
+            await store.CompleteAsync("evt_1", claim.LeaseToken!);
+            Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, (await store.TryClaimAsync("evt_1")).Claim);
         }
 
         [Fact]
         public async Task A_forgotten_event_is_claimed_again()
         {
             var store = Store();
-            await store.TryClaimAsync("evt_1");
+            var claim = await store.TryClaimAsync("evt_1");
 
-            await store.ForgetAsync("evt_1");
+            await store.ForgetAsync("evt_1", claim.LeaseToken!);
 
-            Assert.Equal(StripeWebhookEventClaim.Claimed, await store.TryClaimAsync("evt_1"));
+            Assert.Equal(StripeWebhookEventClaim.Claimed, (await store.TryClaimAsync("evt_1")).Claim);
         }
 
         [Fact]
@@ -52,17 +54,61 @@ namespace UmbCheckout.Tests.Persistence
             var store = Store(TimeSpan.Zero);
             await store.TryClaimAsync("evt_1");
 
-            Assert.Equal(StripeWebhookEventClaim.Claimed, await store.TryClaimAsync("evt_1"));
+            Assert.Equal(StripeWebhookEventClaim.Claimed, (await store.TryClaimAsync("evt_1")).Claim);
         }
 
         [Fact]
         public async Task A_done_event_is_never_taken_over()
         {
             var store = Store(TimeSpan.Zero);
-            await store.TryClaimAsync("evt_1");
-            await store.CompleteAsync("evt_1");
+            var claim = await store.TryClaimAsync("evt_1");
+            await store.CompleteAsync("evt_1", claim.LeaseToken!);
 
-            Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, await store.TryClaimAsync("evt_1"));
+            Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, (await store.TryClaimAsync("evt_1")).Claim);
+        }
+
+        [Fact]
+        public async Task A_stale_attempt_cannot_release_the_claim_of_the_delivery_that_took_over()
+        {
+            // Group 4 review M4: the first attempt outlives its lease, a retry takes the event over, then the first attempt's
+            // handler fails and it releases "its" claim. It must not delete the retry's claim (a third delivery would run the
+            // handlers alongside the retry).
+            var store = Store(TimeSpan.Zero);
+            var stale = await store.TryClaimAsync("evt_1");
+            var takeover = await store.TryClaimAsync("evt_1");
+            Assert.Equal(StripeWebhookEventClaim.Claimed, takeover.Claim);
+            Assert.NotEqual(stale.LeaseToken, takeover.LeaseToken);
+
+            await store.ForgetAsync("evt_1", stale.LeaseToken!);
+
+            Assert.Equal(1, Rows);
+            Assert.Equal(takeover.LeaseToken, _database.Scalar<string>("SELECT LeaseToken FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
+        }
+
+        [Fact]
+        public async Task A_stale_attempt_cannot_complete_the_claim_of_the_delivery_that_took_over()
+        {
+            var store = Store(TimeSpan.Zero);
+            var stale = await store.TryClaimAsync("evt_1");
+            var takeover = await store.TryClaimAsync("evt_1");
+
+            await store.CompleteAsync("evt_1", stale.LeaseToken!);
+
+            Assert.Equal(0, _database.Scalar<int>("SELECT Status FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
+            await store.CompleteAsync("evt_1", takeover.LeaseToken!);
+            Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, (await store.TryClaimAsync("evt_1")).Claim);
+        }
+
+        [Fact]
+        public async Task The_delivery_that_took_over_releases_its_own_claim()
+        {
+            var store = Store(TimeSpan.Zero);
+            await store.TryClaimAsync("evt_1");
+            var takeover = await store.TryClaimAsync("evt_1");
+
+            await store.ForgetAsync("evt_1", takeover.LeaseToken!);
+
+            Assert.Equal(0, Rows);
         }
 
         [Fact]
@@ -74,7 +120,7 @@ namespace UmbCheckout.Tests.Persistence
             await Store().TryClaimAsync("evt_new");
 
             Assert.Equal(2, Rows);
-            Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, await Store().TryClaimAsync("evt_recent"));
+            Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, (await Store().TryClaimAsync("evt_recent")).Claim);
         }
 
         [Fact]
@@ -83,7 +129,7 @@ namespace UmbCheckout.Tests.Persistence
             // Two servers (or two deliveries) both find no row; the primary key lets one insert, the other answers "in progress".
             _database.Execute("INSERT INTO UmbCheckoutStripeWebhookEvents (EventId, ReceivedUtc, Status, LeaseUntilUtc) VALUES ('evt_1', @0, 0, @1)", DateTime.UtcNow, DateTime.UtcNow.AddMinutes(10));
 
-            Assert.Equal(StripeWebhookEventClaim.InProgress, await Store().InsertOrReportAsync("evt_1", DateTime.UtcNow, CancellationToken.None));
+            Assert.Equal(StripeWebhookEventClaim.InProgress, (await Store().InsertOrReportAsync("evt_1", DateTime.UtcNow, "token", CancellationToken.None)).Claim);
         }
 
         [Fact]
@@ -92,15 +138,36 @@ namespace UmbCheckout.Tests.Persistence
             var plan = RunUmbCheckoutStripeWebhookEventsMigration.CreatePlan();
 
             Assert.Equal(typeof(AddUmbCheckoutStripeWebhookEventsTable), plan.Transitions[string.Empty]!.MigrationType);
-            Assert.Equal(plan.Transitions[string.Empty]!.TargetState, plan.FinalState);
         }
 
         [Fact]
         public void The_migration_is_idempotent()
         {
-            _database.Migrate(c => new AddUmbCheckoutStripeWebhookEventsTable(c));
+            _database.Migrate(c => new AddUmbCheckoutStripeWebhookEventsTable(c), c => new AddUmbCheckoutStripeWebhookEventLeaseToken(c));
 
             Assert.Equal(0, Rows);
+        }
+
+        [Fact]
+        public void The_lease_token_column_is_added_to_a_table_created_without_it()
+        {
+            // A site that ran the first step before the lease token existed: the second step adds the column.
+            using var database = new SqliteTestDatabase();
+            database.Execute("CREATE TABLE UmbCheckoutStripeWebhookEvents (EventId TEXT NOT NULL PRIMARY KEY, ReceivedUtc TEXT NOT NULL, Status INTEGER NOT NULL, LeaseUntilUtc TEXT NULL)");
+
+            database.Migrate(c => new AddUmbCheckoutStripeWebhookEventLeaseToken(c));
+
+            Assert.Equal(0, database.Scalar<int>("SELECT COUNT(LeaseToken) FROM UmbCheckoutStripeWebhookEvents"));
+        }
+
+        [Fact]
+        public void The_lease_token_comes_from_the_open_plan_after_the_table()
+        {
+            var plan = RunUmbCheckoutStripeWebhookEventsMigration.CreatePlan();
+            var first = plan.Transitions[string.Empty]!.TargetState;
+
+            Assert.Equal(typeof(AddUmbCheckoutStripeWebhookEventLeaseToken), plan.Transitions[first]!.MigrationType);
+            Assert.Equal(plan.Transitions[first]!.TargetState, plan.FinalState);
         }
     }
 }
