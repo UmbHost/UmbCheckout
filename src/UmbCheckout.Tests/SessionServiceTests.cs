@@ -23,6 +23,9 @@ namespace UmbCheckout.Tests
         private readonly InMemorySession _session = new();
         private readonly Mock<IBasketContext> _basketContext = new();
 
+        private readonly Mock<IEventAggregator> _events = new();
+        private readonly Mock<IPaidCheckoutSessions> _paid = new();
+
         private SessionService Service()
         {
             var httpContext = new DefaultHttpContext { Session = _session };
@@ -33,12 +36,65 @@ namespace UmbCheckout.Tests
                 new EphemeralDataProtectionProvider(),
                 Mock.Of<IHttpContextAccessor>(a => a.HttpContext == httpContext),
                 NullLogger<SessionService>.Instance,
-                Mock.Of<IEventAggregator>(),
+                _events.Object,
                 new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object,
                 Mock.Of<IConfigurationService>(),
                 licenseService,
                 _basketContext.Object,
-                new UmbCheckout.Testing.TestEventMessagesFactory());
+                new UmbCheckout.Testing.TestEventMessagesFactory(),
+                _paid.Object);
+        }
+
+        // Sub-project B: a customer who paid and never came back to the success page keeps the paid basket; the webhook records
+        // the paid checkout session, and the next basket read clears it.
+        private async Task<SessionService> WithCheckedOutBasket(string checkoutSessionId)
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [Line("GBP")], CheckoutSessionId = checkoutSessionId });
+            return service;
+        }
+
+        [Fact]
+        public async Task A_basket_whose_checkout_session_was_paid_is_cleared_on_the_next_read()
+        {
+            _paid.Setup(p => p.IsPaidAsync("cs_test_paid", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            var service = await WithCheckedOutBasket("cs_test_paid");
+
+            var session = await service.Get("GBP");
+
+            Assert.Empty(session.Basket.LineItems);
+            Assert.Null(session.Basket.CheckoutSessionId);
+            Assert.Empty(_session.GetObjectFromJson<UmbCheckoutSession>(BasketKeys.Session("en-GB", "GBP"))?.Basket.LineItems ?? []);
+            _events.Verify(e => e.PublishAsync(It.Is<UmbCheckout.Shared.Notifications.Session.OnPaidBasketClearedNotification>(n =>
+                n.CheckoutSessionId == "cs_test_paid" && n.Basket.LineItems.Count() == 1), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task A_basket_whose_checkout_session_is_not_paid_stays()
+        {
+            var service = await WithCheckedOutBasket("cs_test_open");
+
+            Assert.Single((await service.Get("GBP")).Basket.LineItems);
+        }
+
+        [Fact]
+        public async Task A_basket_that_never_reached_checkout_makes_no_lookup()
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [Line("GBP")] });
+
+            await service.Get("GBP");
+
+            _paid.Verify(p => p.IsPaidAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task A_failed_lookup_keeps_the_basket_and_does_not_fail_the_read()
+        {
+            _paid.Setup(p => p.IsPaidAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("database down"));
+            var service = await WithCheckedOutBasket("cs_test_paid");
+
+            Assert.Single((await service.Get("GBP")).Basket.LineItems);
         }
 
         private static LineItem Line(string currency) => new() { Key = Guid.NewGuid(), CurrencyCode = currency, Price = 1m, Quantity = 1 };

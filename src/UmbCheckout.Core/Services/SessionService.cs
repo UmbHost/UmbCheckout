@@ -29,11 +29,13 @@ namespace UmbCheckout.Core.Services
         private readonly IConfigurationService _configurationService;
         private readonly IBasketContext _basketContext;
         private readonly IEventMessagesFactory _eventMessagesFactory;
+        private readonly IPaidCheckoutSessions _paidCheckoutSessions;
 
         public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext,
-            IEventMessagesFactory eventMessagesFactory)
+            IEventMessagesFactory eventMessagesFactory, IPaidCheckoutSessions paidCheckoutSessions)
         {
             _eventMessagesFactory = eventMessagesFactory;
+            _paidCheckoutSessions = paidCheckoutSessions;
             _dataProtectionProvider = dataProtectionProvider;
             _contextAccessor = contextAccessor;
             _logger = logger;
@@ -43,12 +45,24 @@ namespace UmbCheckout.Core.Services
             _basketContext = basketContext;
         }
 
-        [Obsolete("Use the constructor that takes an IEventMessagesFactory. Scheduled for removal in the next major version.")]
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
+        [Obsolete("Use the constructor that takes an IPaidCheckoutSessions. Scheduled for removal in the next major version.")]
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext,
+            IEventMessagesFactory eventMessagesFactory)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
-                StaticServiceProvider.Instance.GetRequiredService<IEventMessagesFactory>())
+                eventMessagesFactory, PaidCheckoutSessionsOrNone())
         {
         }
+
+        [Obsolete("Use the constructor that takes an IEventMessagesFactory and an IPaidCheckoutSessions. Scheduled for removal in the next major version.")]
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
+            : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
+                StaticServiceProvider.Instance.GetRequiredService<IEventMessagesFactory>(), PaidCheckoutSessionsOrNone())
+        {
+        }
+
+        /// <summary>For the obsolete constructors: the registered store, or "none paid" when there is no container (e.g. built by hand).</summary>
+        private static IPaidCheckoutSessions PaidCheckoutSessionsOrNone()
+            => (StaticServiceProvider.Instance as IServiceProvider)?.GetService(typeof(IPaidCheckoutSessions)) as IPaidCheckoutSessions ?? new NoPaidCheckoutSessions();
 
         private HttpContext HttpContext => _contextAccessor.HttpContext ?? throw new InvalidOperationException("HttpContext cannot be null");
 
@@ -99,11 +113,53 @@ namespace UmbCheckout.Core.Services
             }
 
             // After the scope: its notifications (the add-on's cookie and database basket restore) have replaced the basket by now.
+            session = await ClearIfPaidAsync(session, siteRootCulture, currencyCode);
+
             if (!UmbCheckoutHooks.LoadedSuppressed)
             {
                 await _eventAggregator.PublishAsync(new OnSessionLoadedNotification(session, _eventMessagesFactory.Get()));
             }
             return session;
+        }
+
+        /// <summary>
+        /// A basket whose checkout session the payment provider has reported paid (webhook) is cleared: the customer paid but never
+        /// returned to the success page. Clearing goes through <see cref="Clear(string?, string?)"/>, so the add-on's cookie and
+        /// database copies go too. Only baskets that reached checkout carry a session id, so other reads make no lookup.
+        /// </summary>
+        private async Task<UmbCheckoutSession> ClearIfPaidAsync(UmbCheckoutSession session, string? siteRootCulture, string? currencyCode)
+        {
+            var checkoutSessionId = session.Basket.CheckoutSessionId;
+            if (string.IsNullOrEmpty(checkoutSessionId))
+            {
+                return session;
+            }
+
+            try
+            {
+                if (!await _paidCheckoutSessions.IsPaidAsync(checkoutSessionId, HttpContext.RequestAborted))
+                {
+                    return session;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // The basket stays until a later read can check it; the read itself mustn't fail.
+                _logger.LogWarning(ex, "Could not check whether checkout session {CheckoutSessionId} was paid", checkoutSessionId);
+                return session;
+            }
+
+            await Clear(siteRootCulture, currencyCode);
+            await _eventAggregator.PublishAsync(new OnPaidBasketClearedNotification(session.Basket, checkoutSessionId));
+            _logger.LogInformation("Cleared a basket paid with checkout session {CheckoutSessionId}", checkoutSessionId);
+
+            var empty = new UmbCheckoutSession
+            {
+                SiteRootCulture = siteRootCulture,
+                Basket = new Basket { SessionId = HttpContext.Session.Id, SiteRootCulture = siteRootCulture, CurrencyCode = currencyCode }
+            };
+            HttpContext.Session.SetObjectAsJson(BasketKeys.Session(siteRootCulture, currencyCode), empty);
+            return empty;
         }
 
         /// <summary>

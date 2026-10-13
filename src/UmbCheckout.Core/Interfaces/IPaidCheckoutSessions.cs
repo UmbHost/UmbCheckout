@@ -1,0 +1,18 @@
+namespace UmbCheckout.Core.Interfaces
+{
+    /// <summary>
+    /// Checkout sessions the payment provider has reported paid (e.g. by webhook). A basket read clears a basket whose checkout
+    /// session is paid, so a customer who paid but never returned to the success page doesn't keep the paid basket.
+    /// </summary>
+    public interface IPaidCheckoutSessions
+    {
+        /// <summary>True when the checkout session has been reported paid.</summary>
+        Task<bool> IsPaidAsync(string checkoutSessionId, CancellationToken cancellationToken = default);
+    }
+
+    /// <summary>No payment provider records paid sessions: nothing is cleared on read.</summary>
+    internal sealed class NoPaidCheckoutSessions : IPaidCheckoutSessions
+    {
+        public Task<bool> IsPaidAsync(string checkoutSessionId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+    }
+}

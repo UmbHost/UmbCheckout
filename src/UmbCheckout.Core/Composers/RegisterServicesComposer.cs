@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.NotificationHandlers;
 using UmbCheckout.Core.Services;
@@ -26,6 +27,8 @@ namespace UmbCheckout.Core.Composers
                     UmbCheckoutTelemetryNotificationHandler>();
             builder.Services.AddHttpClient(UmbCheckoutTelemetryNotificationHandler.HttpClientName, UmbCheckoutTelemetryNotificationHandler.ConfigureClient);
             builder.Services.AddTransient<ISessionService, SessionService>();
+            // A payment provider (UmbCheckout.Stripe) replaces this with the sessions its webhook recorded as paid.
+            builder.Services.TryAddSingleton<IPaidCheckoutSessions, NoPaidCheckoutSessions>();
             builder.Services.AddTransient<IBasketService, BasketService>();
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
             builder.Services.AddTransient<ICurrencyService, CurrencyService>();
