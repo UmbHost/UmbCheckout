@@ -28,6 +28,11 @@ namespace UmbCheckout.Tests.Models
             => Assert.DoesNotContain("\"Total\"", JsonSerializer.Serialize(new Basket { LineItems = [new LineItem { Price = 1m, Quantity = 1 }] }));
 
         [Fact]
+        public void ItemCount_CountsLinesNotQuantity()
+            // As v13: ItemCount is the number of distinct lines; IBasketService.TotalItems sums the quantities.
+            => Assert.Equal(2, new Basket { LineItems = [new LineItem { Price = 10m, Quantity = 3 }, new LineItem { Price = 5m, Quantity = 2 }] }.ItemCount);
+
+        [Fact]
         public void CurrencyCode_RoundTrips()
             => Assert.Equal("GBP", JsonSerializer.Deserialize<Basket>(JsonSerializer.Serialize(new Basket { CurrencyCode = "GBP" }))!.CurrencyCode);
     }

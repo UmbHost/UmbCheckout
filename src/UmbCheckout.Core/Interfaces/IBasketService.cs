@@ -79,7 +79,7 @@ namespace UmbCheckout.Core.Interfaces
         Task<Basket> Clear(CancellationToken cancellationToken) => Clear();
 
         /// <summary>
-        /// Gets the total items held within the Basket
+        /// Gets the total items held within the Basket: the sum of every line's quantity (unlike <see cref="Basket.ItemCount"/>, which counts lines)
         /// </summary>
         /// <returns>Count of items in the Basket</returns>
         Task<long> TotalItems();
