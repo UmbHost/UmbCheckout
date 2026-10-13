@@ -94,5 +94,23 @@ namespace UmbCheckout.Tests.uSync
             Assert.Null(imported.ShippingAllowedCountries);
             Assert.False(imported.CollectPhoneNumber);
         }
+
+        [Fact]
+        public void A_refused_save_fails_the_import()
+        {
+            // The save's answer was ignored, so uSync reported success for settings that were never stored.
+            _service.Setup(s => s.UpdateStripeSettings(It.IsAny<UmbCheckoutStripeSettings>())).ReturnsAsync(false);
+
+            Assert.Throws<InvalidOperationException>(() => Serializer().SaveItem(new UmbCheckoutStripeSettings()));
+        }
+
+        [Fact]
+        public void A_failed_save_fails_the_import()
+        {
+            // The save was fire-and-forget: its failure was never seen.
+            _service.Setup(s => s.UpdateStripeSettings(It.IsAny<UmbCheckoutStripeSettings>())).ThrowsAsync(new InvalidOperationException("database down"));
+
+            Assert.Throws<InvalidOperationException>(() => Serializer().SaveItem(new UmbCheckoutStripeSettings()));
+        }
     }
 }

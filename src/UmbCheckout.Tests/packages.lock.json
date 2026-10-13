@@ -2919,6 +2919,16 @@
           "uSync.BackOffice": "[10.7.0, 11.0.0)"
         }
       },
+      "umbcheckout.usync": {
+        "type": "Project",
+        "dependencies": {
+          "UmbCheckout.Core": "[1.0.0, )",
+          "UmbCheckout.Shared": "[1.0.0, )",
+          "Umbraco.Cms.Core": "[10.8.8, 11.0.0)",
+          "uSync.BackOffice": "[10.7.0, 11.0.0)",
+          "uSync.Core": "[10.7.0, 11.0.0)"
+        }
+      },
       "umbhost.licensing": {
         "type": "Project",
         "dependencies": {
@@ -6011,6 +6021,16 @@
           "Umbraco.Cms.Web.BackOffice": "[13.5.3, 14.0.0)",
           "Umbraco.Cms.Web.Common": "[13.5.3, 14.0.0)",
           "uSync.BackOffice": "[13.0.0, 14.0.0)"
+        }
+      },
+      "umbcheckout.usync": {
+        "type": "Project",
+        "dependencies": {
+          "UmbCheckout.Core": "[1.0.0, )",
+          "UmbCheckout.Shared": "[1.0.0, )",
+          "Umbraco.Cms.Core": "[13.5.3, 14.0.0)",
+          "uSync.BackOffice": "[13.0.0, 14.0.0)",
+          "uSync.Core": "[13.0.0, 14.0.0)"
         }
       },
       "umbhost.licensing": {
