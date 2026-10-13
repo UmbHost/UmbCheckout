@@ -25,8 +25,15 @@ namespace UmbCheckout.Tests
         private readonly InMemorySession _session = new();
         private readonly Mock<IBasketContext> _basketContext = new();
         private readonly List<INotification> _published = new();
+        private readonly Mock<IEventAggregator> _events = new();
+        private readonly Mock<IPaidCheckoutSessions> _paid = new();
+        private readonly DefaultHttpContext _httpContext;
 
-        public SessionServiceTests() => _basketContext.Setup(b => b.SiteRootCulture).Returns("en-GB");
+        public SessionServiceTests()
+        {
+            _basketContext.Setup(b => b.SiteRootCulture).Returns("en-GB");
+            _httpContext = new DefaultHttpContext { Session = _session };
+        }
 
         private ICoreScopeProvider Scopes()
         {
@@ -40,20 +47,139 @@ namespace UmbCheckout.Tests
             return scopes.Object;
         }
 
-        private SessionService Service()
+        private SessionService Service(ILogger<SessionService>? logger = null)
         {
-            var httpContext = new DefaultHttpContext { Session = _session };
-
             // The licence service is not used by the session service.
             return new SessionService(
                 new EphemeralDataProtectionProvider(),
-                Mock.Of<IHttpContextAccessor>(a => a.HttpContext == httpContext),
-                NullLogger<SessionService>.Instance,
-                Mock.Of<IEventAggregator>(),
+                Mock.Of<IHttpContextAccessor>(a => a.HttpContext == _httpContext),
+                logger ?? NullLogger<SessionService>.Instance,
+                _events.Object,
                 Scopes(),
                 Mock.Of<IConfigurationService>(),
                 null!,
-                _basketContext.Object);
+                _basketContext.Object,
+                _paid.Object);
+        }
+
+        // Group 5 (v17 sub-project B): a customer who paid and never came back to the success page keeps the paid basket; the
+        // webhook records the paid checkout session, and the next basket read clears it.
+        private async Task<SessionService> WithCheckedOutBasket(string checkoutSessionId)
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { Line("GBP") }, CheckoutSessionId = checkoutSessionId });
+            return service;
+        }
+
+        [Fact]
+        public async Task A_basket_whose_checkout_session_was_paid_is_cleared_on_the_next_read()
+        {
+            _paid.Setup(p => p.IsPaidAsync("cs_test_paid", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            var service = await WithCheckedOutBasket("cs_test_paid");
+
+            var session = await service.Get("GBP");
+
+            Assert.Empty(session.Basket.LineItems);
+            Assert.Null(session.Basket.CheckoutSessionId);
+            Assert.Equal("GBP", session.Basket.CurrencyCode);
+            Assert.Empty(_session.GetObjectFromJson<UmbCheckoutSession>(BasketKeys.Session("en-GB", "GBP"))?.Basket.LineItems ?? Enumerable.Empty<LineItem>());
+            var cleared = Assert.Single(_published.OfType<OnSessionClearedNotification>());
+            Assert.Equal(("en-GB", "GBP"), (cleared.SiteRootCulture, cleared.CurrencyCode));
+            _events.Verify(e => e.PublishAsync(It.Is<OnPaidBasketClearedNotification>(n =>
+                n.CheckoutSessionId == "cs_test_paid" && n.Basket.LineItems.Count() == 1), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task The_paid_basket_is_cleared_once()
+        {
+            _paid.Setup(p => p.IsPaidAsync("cs_test_paid", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            var service = await WithCheckedOutBasket("cs_test_paid");
+
+            await service.Get("GBP");
+            Assert.Empty((await service.Get("GBP")).Basket.LineItems);
+
+            _events.Verify(e => e.PublishAsync(It.IsAny<OnPaidBasketClearedNotification>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task A_basket_whose_checkout_session_is_not_paid_stays()
+        {
+            var service = await WithCheckedOutBasket("cs_test_open");
+
+            Assert.Single((await service.Get("GBP")).Basket.LineItems);
+            Assert.Empty(_published.OfType<OnSessionClearedNotification>());
+        }
+
+        [Fact]
+        public async Task A_basket_that_never_reached_checkout_makes_no_lookup()
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { Line("GBP") } });
+
+            await service.Get("GBP");
+
+            _paid.Verify(p => p.IsPaidAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task An_unpaid_checkout_session_is_looked_up_once_per_request()
+        {
+            // v17 review: every basket read (page, partials) of a basket left at checkout made a database lookup.
+            var service = await WithCheckedOutBasket("cs_test_open");
+
+            await service.Get("GBP");
+            await service.Get("GBP");
+            await Service().Get("GBP");
+
+            _paid.Verify(p => p.IsPaidAsync("cs_test_open", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Changing_the_lines_after_checkout_forgets_the_checkout_session()
+        {
+            // v17 review: a delayed payment (Bacs, SEPA) recorded days later cleared lines added after checkout. A changed basket
+            // is not the one that was paid for, so neither the webhook nor the success page clears it.
+            var service = await WithCheckedOutBasket("cs_test_delayed");
+            var basket = (await service.Get("GBP")).Basket;
+
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = basket.LineItems.Append(Line("GBP")).ToArray(), CheckoutSessionId = basket.CheckoutSessionId });
+
+            Assert.Null((await service.Get("GBP")).Basket.CheckoutSessionId);
+        }
+
+        [Fact]
+        public async Task Changing_a_quantity_after_checkout_forgets_the_checkout_session()
+        {
+            var service = await WithCheckedOutBasket("cs_test_delayed");
+            var line = Assert.Single((await service.Get("GBP")).Basket.LineItems);
+            line.Quantity = 5;
+
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { line }, CheckoutSessionId = "cs_test_delayed" });
+
+            Assert.Null((await service.Get("GBP")).Basket.CheckoutSessionId);
+        }
+
+        [Fact]
+        public async Task Recording_the_checkout_session_on_an_unchanged_basket_keeps_it()
+        {
+            var service = Service();
+            var line = Line("GBP");
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { line } });
+
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { line }, CheckoutSessionId = "cs_test_new" });
+
+            Assert.Equal("cs_test_new", (await service.Get("GBP")).Basket.CheckoutSessionId);
+        }
+
+        [Fact]
+        public async Task A_failed_lookup_keeps_the_basket_and_does_not_fail_the_read()
+        {
+            _paid.Setup(p => p.IsPaidAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("database down"));
+            var logger = new UmbCheckout.Tests.Helpers.RecordingLogger<SessionService>();
+            await WithCheckedOutBasket("cs_test_paid");
+
+            Assert.Single((await Service(logger).Get("GBP")).Basket.LineItems);
+            Assert.Equal(1, logger.Count(LogLevel.Warning));
         }
 
         private static LineItem Line(string currency) => new() { Key = Guid.NewGuid(), CurrencyCode = currency, Price = 1m, Quantity = 1 };
@@ -244,6 +370,7 @@ namespace UmbCheckout.Tests
             services.AddSingleton(Mock.Of<IUmbracoContextAccessor>());
             services.AddSingleton(_basketContext.Object);
             services.AddSingleton(LicenceServiceStandIn());
+            services.AddSingleton<IPaidCheckoutSessions, NoPaidCheckoutSessions>();
 
             // Both public constructors can be satisfied here: the registration must choose the new one, not fail as ambiguous.
             Assert.IsType<SessionService>(RegisterServicesComposer.CreateSessionService(services.BuildServiceProvider()));
@@ -253,6 +380,30 @@ namespace UmbCheckout.Tests
         public void TheOldConstructorIsObsolete()
             => Assert.Single(typeof(SessionService).GetConstructors(), c => c.GetCustomAttributes(typeof(ObsoleteAttribute), false).Any()
                                                                           && c.GetParameters().Last().ParameterType == typeof(IUmbracoContextAccessor));
+
+        [Fact]
+        public void The_constructor_without_the_paid_session_store_is_kept_obsolete_and_DI_picks_the_new_one()
+        {
+            var constructors = typeof(SessionService).GetConstructors();
+
+            Assert.Single(constructors, c => c.GetCustomAttributes(typeof(ObsoleteAttribute), false).Any()
+                                             && c.GetParameters().Last().ParameterType == typeof(IBasketContext));
+            var current = Assert.Single(constructors, c => c.GetCustomAttributes(typeof(ActivatorUtilitiesConstructorAttribute), false).Any());
+            Assert.Equal(typeof(IPaidCheckoutSessions), current.GetParameters().Last().ParameterType);
+            Assert.Empty(current.GetCustomAttributes(typeof(ObsoleteAttribute), false));
+        }
+
+        [Fact]
+        public async Task The_obsolete_constructor_without_a_container_asks_no_store()
+        {
+#pragma warning disable CS0618 // the obsolete constructor is the subject
+            var service = new SessionService(new EphemeralDataProtectionProvider(), Mock.Of<IHttpContextAccessor>(a => a.HttpContext == _httpContext),
+                NullLogger<SessionService>.Instance, _events.Object, Scopes(), Mock.Of<IConfigurationService>(), null!, _basketContext.Object);
+#pragma warning restore CS0618
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { Line("GBP") }, CheckoutSessionId = "cs_test_paid" });
+
+            Assert.Single((await service.Get("GBP")).Basket.LineItems);
+        }
 
         /// <summary>The session service never calls its licence service: an uninitialised instance stands in.</summary>
         private static UmbHost.Licensing.Services.LicenseService LicenceServiceStandIn()

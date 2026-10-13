@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.NotificationHandlers;
 using UmbCheckout.Core.Services;
@@ -26,6 +27,8 @@ namespace UmbCheckout.Core.Composers
                     UmbCheckoutTelemetryNotificationHandler>();
             // SessionService keeps its old public constructor (obsolete): ActivatorUtilities picks the new one.
             builder.Services.AddTransient(CreateSessionService);
+            // A payment provider (UmbCheckout.Stripe) replaces this with the sessions its webhook recorded as paid.
+            builder.Services.TryAddSingleton<IPaidCheckoutSessions, NoPaidCheckoutSessions>();
             builder.Services.AddTransient<IBasketService, BasketService>();
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
             builder.Services.AddTransient<IDatabaseService, DatabaseService>();

@@ -28,16 +28,26 @@ namespace UmbCheckout.Core.Services
         private readonly ILogger<SessionService> _logger;
         private readonly IConfigurationService _configurationService;
         private readonly IBasketContext _basketContext;
+        private readonly IPaidCheckoutSessions _paidCheckoutSessions;
 
-        [Obsolete("Use the constructor that takes an IBasketContext. This one builds the basket context from the application's services.")]
+        [Obsolete("Use the constructor that takes an IBasketContext and an IPaidCheckoutSessions. This one builds the basket context from the application's services.")]
         public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IUmbracoContextAccessor umbracoContextAccessor)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService,
-                new UmbracoBasketContext(umbracoContextAccessor, StaticServiceProvider.Instance.GetRequiredService<ICurrencyService>(), configurationService))
+                new UmbracoBasketContext(umbracoContextAccessor, StaticServiceProvider.Instance.GetRequiredService<ICurrencyService>(), configurationService),
+                PaidCheckoutSessionsOrNone())
+        {
+        }
+
+        [Obsolete("Use the constructor that takes an IPaidCheckoutSessions. This one resolves it from the application's services.")]
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
+            : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
+                PaidCheckoutSessionsOrNone())
         {
         }
 
         [ActivatorUtilitiesConstructor]
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext,
+            IPaidCheckoutSessions paidCheckoutSessions)
         {
             _dataProtectionProvider = dataProtectionProvider;
             _contextAccessor = contextAccessor;
@@ -46,7 +56,12 @@ namespace UmbCheckout.Core.Services
             _coreScopeProvider = coreScopeProvider;
             _configurationService = configurationService;
             _basketContext = basketContext;
+            _paidCheckoutSessions = paidCheckoutSessions;
         }
+
+        /// <summary>For the obsolete constructors: the registered store, or "none paid" when there is no container (e.g. built by hand).</summary>
+        private static IPaidCheckoutSessions PaidCheckoutSessionsOrNone()
+            => StaticServiceProvider.Instance?.GetService<IPaidCheckoutSessions>() ?? new NoPaidCheckoutSessions();
 
         private HttpContext HttpContext => _contextAccessor.HttpContext ?? throw new InvalidOperationException("HttpContext cannot be null");
 
@@ -86,17 +101,93 @@ namespace UmbCheckout.Core.Services
             currencyCode = Normalise(currencyCode);
             var configuration = await _configurationService.GetConfiguration();
 
-            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
+            UmbCheckoutSession session;
+            using (var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true))
+            {
+                await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
 
-            MigrateLegacyBasket(siteRootCulture, currencyCode);
+                MigrateLegacyBasket(siteRootCulture, currencyCode);
 
-            var key = BasketKeys.Session(siteRootCulture, currencyCode);
-            var session = (HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null)
+                var key = BasketKeys.Session(siteRootCulture, currencyCode);
+                session = (HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null)
                           ?? await Create(siteRootCulture, currencyCode);
 
-            scope.Notifications.Publish(new OnSessionGetNotification(HttpContext, session, configuration));
-            return session;
+                scope.Notifications.Publish(new OnSessionGetNotification(HttpContext, session, configuration));
+            }
+
+            // After the scope: its notifications (the add-on's cookie restore) have replaced the basket by now.
+            return await ClearIfPaidAsync(session, siteRootCulture, currencyCode);
+        }
+
+        private const string UnpaidCheckoutSessionItem = "UmbCheckout.UnpaidCheckoutSession:";
+
+        /// <summary>
+        /// A basket whose checkout session the payment provider has reported paid (webhook) is cleared: the customer paid but never
+        /// returned to the success page. Clearing goes through <see cref="Clear(string?, string?)"/>, so the add-on's cookie and
+        /// database copies go too. Only baskets that reached checkout carry a session id, so other reads make no lookup, and an
+        /// unpaid answer holds for the rest of the request.
+        /// </summary>
+        private async Task<UmbCheckoutSession> ClearIfPaidAsync(UmbCheckoutSession session, string? siteRootCulture, string? currencyCode)
+        {
+            var checkoutSessionId = session.Basket.CheckoutSessionId;
+            if (string.IsNullOrEmpty(checkoutSessionId))
+            {
+                return session;
+            }
+
+            // A page reads its basket several times (page, partials): one lookup per checkout session per request.
+            var unpaidKey = UnpaidCheckoutSessionItem + checkoutSessionId;
+            if (HttpContext.Items.ContainsKey(unpaidKey))
+            {
+                return session;
+            }
+
+            try
+            {
+                if (!await _paidCheckoutSessions.IsPaidAsync(checkoutSessionId, HttpContext.RequestAborted))
+                {
+                    HttpContext.Items[unpaidKey] = true;
+                    return session;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // The basket stays until a later read can check it; the read itself mustn't fail.
+                _logger.LogWarning(ex, "Could not check whether checkout session {CheckoutSessionId} was paid", checkoutSessionId);
+                return session;
+            }
+
+            await Clear(siteRootCulture, currencyCode);
+            await _eventAggregator.PublishAsync(new OnPaidBasketClearedNotification(session.Basket, checkoutSessionId));
+            _logger.LogInformation("Cleared a basket paid with checkout session {CheckoutSessionId}", checkoutSessionId);
+
+            var empty = new UmbCheckoutSession
+            {
+                SiteRootCulture = siteRootCulture,
+                Basket = new Basket { SessionId = HttpContext.Session.Id, SiteRootCulture = siteRootCulture, CurrencyCode = currencyCode }
+            };
+            HttpContext.Session.SetObjectAsJson(BasketKeys.Session(siteRootCulture, currencyCode), empty);
+            return empty;
+        }
+
+        /// <summary>
+        /// A basket whose lines change after checkout is no longer the basket that checkout session pays for: it forgets the session,
+        /// so a payment recorded later (delayed methods such as Bacs or SEPA arrive days later) doesn't clear the new lines. Setting
+        /// the session id at checkout (lines unchanged) keeps it.
+        /// </summary>
+        private static void ForgetCheckoutSessionIfChanged(Basket basket, Basket? stored)
+        {
+            if (string.IsNullOrEmpty(basket.CheckoutSessionId) || stored == null
+                || !string.Equals(basket.CheckoutSessionId, stored.CheckoutSessionId, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            static string Lines(Basket b) => string.Join(";", b.LineItems.OrderBy(l => l.Key).Select(l => $"{l.Key}x{l.Quantity}"));
+            if (Lines(basket) != Lines(stored))
+            {
+                basket.CheckoutSessionId = null;
+            }
         }
 
         /// <summary>
@@ -147,8 +238,14 @@ namespace UmbCheckout.Core.Services
             basket.CurrencyCode = Normalise(basket.CurrencyCode) ?? Normalise(await _basketContext.GetCurrencyAsync());
             var session = new UmbCheckoutSession { SiteRootCulture = siteRootCulture, Basket = basket };
 
+            var key = BasketKeys.Session(siteRootCulture, basket.CurrencyCode);
+            if (!string.IsNullOrEmpty(basket.CheckoutSessionId) && HttpContext.Session.Keys.Contains(key))
+            {
+                ForgetCheckoutSessionIfChanged(basket, HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key)?.Basket);
+            }
+
             var sessionId = HttpContext.Session.Id;
-            HttpContext.Session.SetObjectAsJson(BasketKeys.Session(siteRootCulture, basket.CurrencyCode), session);
+            HttpContext.Session.SetObjectAsJson(key, session);
 
             var encryptedBasket = EncryptionHelper.Encrypt(JsonSerializer.Serialize(basket), _dataProtectionProvider);
             scope.Notifications.Publish(new OnSessionUpdatedNotification(HttpContext, sessionId, basket, encryptedBasket, configuration));
