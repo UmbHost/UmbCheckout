@@ -14,16 +14,18 @@ namespace UmbCheckout.Core.Interfaces
         Task<Basket> Get();
 
         /// <summary>
-        /// Adds an item to the Basket
+        /// Adds an item to the basket in its own currency (a basket belongs to one currency); a line already there for the same product gets the added quantity and the item's price
         /// </summary>
         /// <param name="item">Item to be added to the Basket</param>
+        /// <exception cref="ArgumentException">A line has no currency or a quantity outside 1 to <see cref="Shared.Consts.MaxLineQuantity"/> (also once added to the line already in the basket), it would be a product beyond <see cref="Shared.Consts.MaxLineItems"/>, or (for several items) there are none or they are in more than one currency. The basket is left unchanged.</exception>
         /// <returns>The updated Basket</returns>
         Task<Basket> Add(LineItem item);
 
         /// <summary>
-        /// Adds multiple items to the Basket
+        /// Adds multiple items, all in one currency, to that currency's basket; lines already there for the same products get the added quantities and the items' prices
         /// </summary>
         /// <param name="items">Items to be added to the Basket</param>
+        /// <exception cref="ArgumentException">A line has no currency or a quantity outside 1 to <see cref="Shared.Consts.MaxLineQuantity"/> (also once added to the line already in the basket), it would be a product beyond <see cref="Shared.Consts.MaxLineItems"/>, or (for several items) there are none or they are in more than one currency. The basket is left unchanged.</exception>
         /// <returns>The updated Basket</returns>
         Task<Basket> Add(IEnumerable<LineItem> items);
 
