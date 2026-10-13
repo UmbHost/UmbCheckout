@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // these tests cover the overloads without a token, which are obsolete but kept
 using System.Net;
 using System.Text;
 using Moq;

@@ -26,6 +26,7 @@ namespace UmbCheckout.Core.Services
         public string? SiteRootCulture => CurrentPage?.Root()?.GetCultureFromDomains();
 
         /// <inheritdoc />
+        [Obsolete("Use GetCurrencyAsync(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<string?> GetCurrencyAsync() => GetCurrencyAsync(CancellationToken.None);
 
         /// <inheritdoc />

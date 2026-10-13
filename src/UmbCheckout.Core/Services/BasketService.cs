@@ -27,24 +27,18 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Get(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Get() => Get(CancellationToken.None);
 
         /// <inheritdoc />
         public async Task<Basket> Get(CancellationToken cancellationToken)
         {
-            try
-            {
-                var currentSession = await _sessionService.Get(cancellationToken);
-                return currentSession.Basket;
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            var currentSession = await _sessionService.Get(cancellationToken);
+            return currentSession.Basket;
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Add(LineItem, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Add(LineItem item) => Add(item, CancellationToken.None);
 
         /// <inheritdoc />
@@ -69,6 +63,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Add(IEnumerable<LineItem>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Add(IEnumerable<LineItem> items) => Add(items, CancellationToken.None);
 
         /// <inheritdoc />
@@ -155,178 +150,136 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Reduce(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Reduce(Guid key) => Reduce(key, CancellationToken.None);
 
         /// <inheritdoc />
         public async Task<Basket> Reduce(Guid key, CancellationToken cancellationToken)
         {
-            try
+            var basket = await Get(cancellationToken);
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket), cancellationToken);
+
+            var lineItems = basket.LineItems.ToList();
+            if (lineItems.Any(x => x.Key.Equals(key)))
             {
-                var basket = await Get(cancellationToken);
-
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket), cancellationToken);
-
-                var lineItems = basket.LineItems.ToList();
-                if (lineItems.Any(x => x.Key.Equals(key)))
+                var lineItem = lineItems.First(x => x.Key.Equals(key));
+                lineItem.Quantity--;
+                if (lineItem.Quantity <= 0)
                 {
-                    var lineItem = lineItems.First(x => x.Key.Equals(key));
-                    lineItem.Quantity--;
-                    if (lineItem.Quantity <= 0)
-                    {
-                        lineItems.Remove(lineItem);
-                    }
+                    lineItems.Remove(lineItem);
                 }
-
-                basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket, cancellationToken);
-                basket = updateResponse.Basket;
-
-                scope.Notifications.Publish(new OnBasketReducedNotification(key, basket));
-                return basket;
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+
+            basket.LineItems = lineItems;
+            var updateResponse = await _sessionService.Update(basket, cancellationToken);
+            basket = updateResponse.Basket;
+
+            scope.Notifications.Publish(new OnBasketReducedNotification(key, basket));
+            return basket;
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Remove(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Remove(Guid key) => Remove(key, CancellationToken.None);
 
         /// <inheritdoc />
         public async Task<Basket> Remove(Guid key, CancellationToken cancellationToken)
         {
-            try
+            var basket = await Get(cancellationToken);
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket), cancellationToken);
+
+            var lineItems = basket.LineItems.ToList();
+            if (lineItems.Any(x => x.Key.Equals(key)))
             {
-                var basket = await Get(cancellationToken);
-
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket), cancellationToken);
-
-                var lineItems = basket.LineItems.ToList();
-                if (lineItems.Any(x => x.Key.Equals(key)))
-                {
-                    var lineItem = lineItems.First(x => x.Key.Equals(key));
-                    lineItems.Remove(lineItem);
-                }
-
-                basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket, cancellationToken);
-                basket = updateResponse.Basket;
-
-                scope.Notifications.Publish(new OnBasketRemovedNotification(key, basket));
-                return basket;
+                var lineItem = lineItems.First(x => x.Key.Equals(key));
+                lineItems.Remove(lineItem);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+
+            basket.LineItems = lineItems;
+            var updateResponse = await _sessionService.Update(basket, cancellationToken);
+            basket = updateResponse.Basket;
+
+            scope.Notifications.Publish(new OnBasketRemovedNotification(key, basket));
+            return basket;
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Remove(IEnumerable<Guid>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Remove(IEnumerable<Guid> keys) => Remove(keys, CancellationToken.None);
 
         /// <inheritdoc />
         public async Task<Basket> Remove(IEnumerable<Guid> keys, CancellationToken cancellationToken)
         {
-            try
+            var basket = await Get(cancellationToken);
+
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket), cancellationToken);
+
+            var lineItems = basket.LineItems.ToList();
+
+            foreach (var key in keys)
             {
-                var basket = await Get(cancellationToken);
+                if (!lineItems.Any(x => x.Key.Equals(key)))
+                    continue;
 
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket), cancellationToken);
-
-                var lineItems = basket.LineItems.ToList();
-
-                foreach (var key in keys)
-                {
-                    if (!lineItems.Any(x => x.Key.Equals(key)))
-                        continue;
-
-                    var lineItem = lineItems.First(x => x.Key.Equals(key));
-                    lineItems.Remove(lineItem);
-                }
-
-                basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket, cancellationToken);
-                basket = updateResponse.Basket;
-
-                scope.Notifications.Publish(new OnBasketRemovedManyNotification(keys, basket));
-                return basket;
+                var lineItem = lineItems.First(x => x.Key.Equals(key));
+                lineItems.Remove(lineItem);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+
+            basket.LineItems = lineItems;
+            var updateResponse = await _sessionService.Update(basket, cancellationToken);
+            basket = updateResponse.Basket;
+
+            scope.Notifications.Publish(new OnBasketRemovedManyNotification(keys, basket));
+            return basket;
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Clear(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<Basket> Clear() => Clear(CancellationToken.None);
 
         /// <inheritdoc />
         public async Task<Basket> Clear(CancellationToken cancellationToken)
         {
-            try
-            {
-                var basket = await Get(cancellationToken);
+            var basket = await Get(cancellationToken);
 
-                using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketClearStartedNotification(basket), cancellationToken);
+            using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
+            await _eventAggregator.PublishAsync(new OnBasketClearStartedNotification(basket), cancellationToken);
 
-                var lineItems = Enumerable.Empty<LineItem>();
-                basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket, cancellationToken);
-                basket = updateResponse.Basket;
+            var lineItems = Enumerable.Empty<LineItem>();
+            basket.LineItems = lineItems;
+            var updateResponse = await _sessionService.Update(basket, cancellationToken);
+            basket = updateResponse.Basket;
 
-                scope.Notifications.Publish(new OnBasketClearedNotification(basket));
-                return basket;
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            scope.Notifications.Publish(new OnBasketClearedNotification(basket));
+            return basket;
         }
 
         /// <inheritdoc />
+        [Obsolete("Use TotalItems(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<long> TotalItems() => TotalItems(CancellationToken.None);
 
         /// <inheritdoc />
         public async Task<long> TotalItems(CancellationToken cancellationToken)
         {
-            try
-            {
-                var basket = await Get(cancellationToken);
-                return basket.LineItems.Select(x => x.Quantity).Sum();
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            var basket = await Get(cancellationToken);
+            return basket.LineItems.Select(x => x.Quantity).Sum();
         }
 
         /// <inheritdoc />
+        [Obsolete("Use SubTotal(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<decimal> SubTotal() => SubTotal(CancellationToken.None);
 
         /// <inheritdoc />
         public async Task<decimal> SubTotal(CancellationToken cancellationToken)
         {
-            try
-            {
-                var basket = await Get(cancellationToken);
+            var basket = await Get(cancellationToken);
 
-                return basket.LineItems.Sum(lineItem => lineItem.Price * lineItem.Quantity);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            return basket.LineItems.Sum(lineItem => lineItem.Price * lineItem.Quantity);
         }
     }
 }

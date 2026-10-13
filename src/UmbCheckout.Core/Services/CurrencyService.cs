@@ -40,6 +40,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use GetCurrencyForContentAsync(IPublishedContent, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<string?> GetCurrencyForContentAsync(IPublishedContent content) => GetCurrencyForContentAsync(content, CancellationToken.None);
 
         /// <inheritdoc />
@@ -114,6 +115,7 @@ namespace UmbCheckout.Core.Services
         /// <param name="currencyNodeKey">The content item which contains the currency code for the current culture</param>
         /// <returns>The currency code for the current culture or global currency</returns>
         /// <exception cref="InvalidOperationException"></exception>
+        [Obsolete("Use GetCurrencyAsync(Guid?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<string> GetCurrencyAsync(Guid? currencyNodeKey) => GetCurrencyAsync(currencyNodeKey, CancellationToken.None);
 
         /// <inheritdoc />
@@ -159,7 +161,7 @@ namespace UmbCheckout.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(ex, "Working out the currency (currency node {CurrencyNodeKey}) failed", currencyNodeKey);
                 throw;
             }
         }

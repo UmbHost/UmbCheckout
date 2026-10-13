@@ -25,6 +25,7 @@ namespace UmbCheckout.Core.Composers
             builder
                 .AddNotificationAsyncHandler<OnLicenseCheckCompletedNotification,
                     UmbCheckoutTelemetryNotificationHandler>();
+            builder.Services.AddHttpClient(UmbCheckoutTelemetryNotificationHandler.HttpClientName, UmbCheckoutTelemetryNotificationHandler.ConfigureClient);
             // SessionService keeps its old public constructor (obsolete): ActivatorUtilities picks the new one.
             builder.Services.AddTransient(CreateSessionService);
             // A payment provider (UmbCheckout.Stripe) replaces this with the sessions its webhook recorded as paid.

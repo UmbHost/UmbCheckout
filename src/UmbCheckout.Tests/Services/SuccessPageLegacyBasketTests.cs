@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // these tests cover the overloads without a token, which are obsolete but kept
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;

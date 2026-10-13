@@ -42,15 +42,7 @@ namespace UmbCheckout.Core.Services
         /// <inheritdoc />
         public async Task<Shared.Models.UmbCheckoutConfiguration?> GetConfiguration()
         {
-            try
-            {
-                return _mapper.Map<UmbCheckoutConfiguration, Shared.Models.UmbCheckoutConfiguration>(await ReadAsync());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
-            }
+            return _mapper.Map<UmbCheckoutConfiguration, Shared.Models.UmbCheckoutConfiguration>(await ReadAsync());
         }
 
         /// <summary>The stored row: cached, or read (and cached unless the read is inside someone else's scope).</summary>
@@ -84,11 +76,6 @@ namespace UmbCheckout.Core.Services
                 {
                     return await SaveAsync(configuration);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                throw;
             }
             finally
             {

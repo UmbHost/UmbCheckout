@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿#pragma warning disable CS0618 // these tests cover the overloads without a token, which are obsolete but kept
+using System.Data;
 using Microsoft.Extensions.Logging;
 using Moq;
 using UmbCheckout.Core.Interfaces;

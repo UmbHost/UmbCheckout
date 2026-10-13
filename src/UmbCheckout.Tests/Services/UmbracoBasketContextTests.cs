@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // these tests cover the overloads without a token, which are obsolete but kept
 using Moq;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.Services;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿#pragma warning disable CS0618 // these tests cover the overloads without a token, which are obsolete but kept
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Stripe.Interfaces;

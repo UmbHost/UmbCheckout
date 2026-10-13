@@ -55,7 +55,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(ex, "Backoffice API {Action} failed", "GetConfiguration");
                 throw;
             }
         }
@@ -112,7 +112,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(ex, "Backoffice API {Action} failed", "UpdateConfiguration");
                 throw;
             }
         }
@@ -251,7 +251,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(ex, "Backoffice API {Action} failed", "UpdateConfiguration");
                 throw;
             }
         }

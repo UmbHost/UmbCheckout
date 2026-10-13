@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿#pragma warning disable CS0618 // these tests cover the overloads without a token, which are obsolete but kept
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using UmbCheckout.Core.Interfaces;

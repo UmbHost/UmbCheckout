@@ -32,5 +32,21 @@ namespace UmbCheckout.Tests.uSync
 
             Assert.Throws<InvalidOperationException>(() => Serializer().SaveItem(new UmbCheckoutConfiguration()));
         }
+
+        [Fact]
+        public void The_cookie_expiry_and_the_database_expiry_are_imported_each_from_its_own_element()
+        {
+            // The import set the cookie expiry from the database expiry's element.
+            UmbCheckoutConfiguration? saved = null;
+            _service.Setup(s => s.UpdateConfiguration(It.IsAny<UmbCheckoutConfiguration>())).Callback<UmbCheckoutConfiguration>(c => saved = c).ReturnsAsync(true);
+            var exported = new UmbCheckoutConfiguration { BasketInCookieExpiry = 7, BasketInDatabaseExpiry = 45 };
+
+            var node = Serializer().Serialize(exported, new SyncSerializerOptions()).Item;
+            var attempt = Serializer().Deserialize(node, new SyncSerializerOptions());
+
+            Assert.True(attempt.Success, attempt.Message);
+            Assert.Equal(7, (saved ?? attempt.Item).BasketInCookieExpiry);
+            Assert.Equal(45, (saved ?? attempt.Item).BasketInDatabaseExpiry);
+        }
     }
 }

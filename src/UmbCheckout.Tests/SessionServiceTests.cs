@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.DataProtection;
+﻿#pragma warning disable CS0618 // these tests cover the overloads without a token, which are obsolete but kept
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -428,7 +429,6 @@ namespace UmbCheckout.Tests
 #pragma warning disable CS0618 // the obsolete constructor is the subject
             var service = new SessionService(new EphemeralDataProtectionProvider(), Mock.Of<IHttpContextAccessor>(a => a.HttpContext == _httpContext),
                 NullLogger<SessionService>.Instance, _events.Object, Scopes(), Mock.Of<IConfigurationService>(), null!, _basketContext.Object);
-#pragma warning restore CS0618
             await service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { Line("GBP") }, CheckoutSessionId = "cs_test_paid" });
 
             Assert.Single((await service.Get("GBP")).Basket.LineItems);

@@ -30,7 +30,7 @@ namespace UmbCheckout.Core.Services
         private readonly IBasketContext _basketContext;
         private readonly IPaidCheckoutSessions _paidCheckoutSessions;
 
-        [Obsolete("Use the constructor that takes an IBasketContext and an IPaidCheckoutSessions. This one builds the basket context from the application's services.")]
+        [Obsolete("Use the constructor that takes an IBasketContext and an IPaidCheckoutSessions. Scheduled for removal in 17.1.")]
         public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IUmbracoContextAccessor umbracoContextAccessor)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService,
                 new UmbracoBasketContext(umbracoContextAccessor, StaticServiceProvider.Instance.GetRequiredService<ICurrencyService>(), configurationService),
@@ -38,7 +38,7 @@ namespace UmbCheckout.Core.Services
         {
         }
 
-        [Obsolete("Use the constructor that takes an IPaidCheckoutSessions. This one resolves it from the application's services.")]
+        [Obsolete("Use the constructor that takes an IPaidCheckoutSessions. Scheduled for removal in 17.1.")]
         public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
                 PaidCheckoutSessionsOrNone())
@@ -95,18 +95,21 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Get(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<UmbCheckoutSession> Get() => Get(RequestAborted);
 
         /// <inheritdoc />
         public async Task<UmbCheckoutSession> Get(CancellationToken cancellationToken) => await Get(await _basketContext.GetCurrencyAsync(cancellationToken), cancellationToken);
 
         /// <inheritdoc />
+        [Obsolete("Use Get(string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<UmbCheckoutSession> Get(string? currencyCode) => Get(currencyCode, RequestAborted);
 
         /// <inheritdoc />
         public Task<UmbCheckoutSession> Get(string? currencyCode, CancellationToken cancellationToken) => Get(_basketContext.SiteRootCulture, currencyCode, cancellationToken);
 
         /// <inheritdoc />
+        [Obsolete("Use Get(string?, string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode) => Get(siteRootCulture, currencyCode, RequestAborted);
 
         /// <inheritdoc />
@@ -243,6 +246,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Update(Basket, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<UmbCheckoutSession> Update(Basket basket) => Update(basket, RequestAborted);
 
         /// <inheritdoc />
@@ -277,18 +281,21 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Clear(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<bool> Clear() => Clear(RequestAborted);
 
         /// <inheritdoc />
         public async Task<bool> Clear(CancellationToken cancellationToken) => await Clear(await _basketContext.GetCurrencyAsync(cancellationToken), cancellationToken);
 
         /// <inheritdoc />
+        [Obsolete("Use Clear(string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<bool> Clear(string? currencyCode) => Clear(currencyCode, RequestAborted);
 
         /// <inheritdoc />
         public Task<bool> Clear(string? currencyCode, CancellationToken cancellationToken) => Clear(_basketContext.SiteRootCulture, currencyCode, cancellationToken);
 
         /// <inheritdoc />
+        [Obsolete("Use Clear(string?, string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<bool> Clear(string? siteRootCulture, string? currencyCode) => Clear(siteRootCulture, currencyCode, RequestAborted);
 
         /// <inheritdoc />
