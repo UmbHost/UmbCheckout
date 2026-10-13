@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net.Mime;
 using System.Text;
@@ -26,9 +28,23 @@ namespace UmbCheckout.Core.NotificationHandlers
         private readonly IUmbracoVersion _umbracoVersion;
         private readonly IPackagingService _packagingService;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly ILogger<UmbCheckoutTelemetryNotificationHandler> _logger;
 
+        /// <summary>The named HttpClient telemetry posts through (5 second timeout).</summary>
+        internal const string HttpClientName = "UmbCheckout.Telemetry";
+
+        internal static void ConfigureClient(HttpClient client) => client.Timeout = TimeSpan.FromSeconds(5);
+
+        [Obsolete("Use the constructor that takes an ILogger. Scheduled for removal in 17.1.")]
         public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IPackagingService packagingService, IWebHostEnvironment webHostEnvironment)
+            : this(umbCheckoutConfiguration, globalSettings, httpClientFactory, umbracoVersion, packagingService, webHostEnvironment, NullLogger<UmbCheckoutTelemetryNotificationHandler>.Instance)
         {
+        }
+
+        public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IPackagingService packagingService, IWebHostEnvironment webHostEnvironment,
+            ILogger<UmbCheckoutTelemetryNotificationHandler> logger)
+        {
+            _logger = logger;
 
             _umbCheckoutConfiguration = umbCheckoutConfiguration.Value;
             _globalSettings = globalSettings.Value;
@@ -38,34 +54,43 @@ namespace UmbCheckout.Core.NotificationHandlers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public async Task HandleAsync(OnConfigurationSavedNotification notification, CancellationToken cancellationToken)
+        // The licence check awaits these handlers: start the post and return, so telemetry never delays licensing or Refresh.
+        public Task HandleAsync(OnConfigurationSavedNotification notification, CancellationToken cancellationToken)
         {
-            await PingTelemetryServer(cancellationToken);
+            PingTelemetryServer();
+            return Task.CompletedTask;
         }
 
-        public async Task HandleAsync(OnLicenseCheckCompletedNotification notification, CancellationToken cancellationToken)
+        public Task HandleAsync(OnLicenseCheckCompletedNotification notification, CancellationToken cancellationToken)
         {
-            await PingTelemetryServer(cancellationToken);
+            PingTelemetryServer();
+            return Task.CompletedTask;
         }
 
-        private async Task PingTelemetryServer(CancellationToken cancellationToken)
+        private void PingTelemetryServer()
+        {
+            if (_umbCheckoutConfiguration.DisableTelemetry)
+            {
+                return;
+            }
+
+            var umbracoId = Guid.TryParse(_globalSettings.Id, out var telemetrySiteIdentifier)
+                ? telemetrySiteIdentifier
+                : Guid.Empty;
+
+            if (umbracoId.Equals(Guid.Empty))
+            {
+                return;
+            }
+
+            // Not the notification's token: the post outlives the request that triggered it, bounded by the client's timeout.
+            _ = Task.Run(() => PostAsync(umbracoId));
+        }
+
+        private async Task PostAsync(Guid umbracoId)
         {
             try
             {
-                if (_umbCheckoutConfiguration.DisableTelemetry)
-                {
-                    return;
-                }
-
-                var umbracoId = Guid.TryParse(_globalSettings.Id, out var telemetrySiteIdentifier)
-                    ? telemetrySiteIdentifier
-                    : Guid.Empty;
-
-                if (umbracoId.Equals(Guid.Empty) == true)
-                {
-                    return;
-                }
-
                 var installedPackages = _packagingService.GetAllInstalledPackages()
                     .Where(x => !string.IsNullOrEmpty(x.PackageName) && x.PackageName.StartsWith("UmbCheckout."));
 
@@ -82,14 +107,15 @@ namespace UmbCheckout.Core.NotificationHandlers
 
                 var json = JsonConvert.SerializeObject(data, Formatting.None);
                 var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
-                var payload = new StringContent(base64, Encoding.UTF8, MediaTypeNames.Text.Plain);
-                var address = new Uri(Consts.TelemetryUrl);
+                using var payload = new StringContent(base64, Encoding.UTF8, MediaTypeNames.Text.Plain);
 
-                using var client = _httpClientFactory.CreateClient();
-                using var post = await client.PostAsync(address, payload, cancellationToken);
+                using var client = _httpClientFactory.CreateClient(HttpClientName);
+                using var post = await client.PostAsync(new Uri(Consts.TelemetryUrl), payload);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Telemetry is best effort: an unreachable or slow server is not the site's problem.
+                _logger.LogDebug(ex, "Posting UmbCheckout telemetry failed");
             }
         }
     }

@@ -42,6 +42,10 @@
                                     <umb-box-header title-key="umbcheckout_license_details"></umb-box-header>
                                     <umb-box-content class="block-form ">
                                         <div ng-if="!vm.HasUmbracoApplicationUrlSet" class="alert alert-danger" ng-bind-html="vm.UmbracoApplicationUrlNotSetMessage"></div>
+                                        <div ng-if="vm.LicenseState.DomainNotLicensed" class="alert alert-danger" role="alert">
+                                            <localize key="umbcheckout_domain_not_licensed"></localize> <strong>{{vm.LicenseState.ValidDomains}}</strong>.<br />
+                                            <localize key="umbcheckout_domain_not_licensed_after"></localize>
+                                        </div>
                                         <div class="umb-property" localize="label" label="@umbcheckout_license_development" ng-if="vm.LicenseState.Status.isDevelopmentLicense">
                                             <div class="control-group umb-control-group">
                                                 <div class="umb-el-wrap">
@@ -96,7 +100,7 @@
                                                     <label class="control-label" for=""> <span><localize key="umbcheckout_valid_domains"></localize></span></label>
                                                     <div class="controls">
                                                         <div style="display: flex; justify-content: space-between;align-items: center;">
-                                                            <div>{{vm.LicenseState.Status.validDomains}}</div>
+                                                            <div>{{vm.LicenseState.ValidDomains}}</div>
                                                         </div>
                                                     </div>
                                                 </div>

@@ -26,6 +26,11 @@
 		<key alias="configuration_failed_save_title">Configuration failed to save</key>
 		<key alias="configuration_failed_save_message">There was an issue trying to save the configuration</key>
 		<key alias="configuration_saved_message">The configuration has been saved successfully</key>
+		<key alias="request_failed_title">UmbCheckout request failed</key>
+		<key alias="request_failed_message">There was an issue trying to complete the request, please check the logs for details</key>
+		<key alias="access_denied_title">Access denied</key>
+		<key alias="access_denied_message">You don't have access to this, please ask an administrator</key>
+		<key alias="settings_access_denied_message">You need access to the Settings section to manage the UmbCheckout settings</key>
 		<key alias="license_status">License Status</key>
 		<key alias="license_check_requested_title">License check requested</key>
 		<key alias="license_check_requested_message">A license check has been requested, please wait for the window to reload</key>
@@ -40,6 +45,8 @@
 		<key alias="license_details">License Details</key>
 		<key alias="registration_date">Registration Date</key>
 		<key alias="valid_domains">Valid Domains</key>
+		<key alias="domain_not_licensed">This domain isn't on your license, so licensed features are off for requests to it and visitors see a license warning. Licensed domains:</key>
+		<key alias="domain_not_licensed_after">Contact UmbHost to add a domain to your license.</key>
 		<key alias="valid_path">Valid Path</key>
 		<key alias="recheck_license">Re-Check License</key>
 		<key alias="expiry_date">Expiry Date</key>
@@ -61,7 +68,7 @@
 		<key alias="store_basket_database_expiry_description">How many days the basket should persist in the database</key>
 		<key alias="documentation_description"><![CDATA[Documentation available at <a href="https://docs.umbcheckout.net/" target="_blank">https://docs.umbcheckout.net/</a>]]></key>
 		<key alias="github_report_issues"><![CDATA[Please report any issues in the bug tracker found on the <a target="_blank" href="https://github.com/UmbHost/UmbCheckout/issues">GitHub Repo</a>]]></key>
-		<key alias="support_ticket"><![CDATA[Open a support ticket through <a target="_blank" href="https://my.umbhost.net/submitticket.php?step=2&deptid=8&subject=UmbCheckout:%20[ISSUE%20NAME%20HERE]">My.UmbHost</a>]]></key>
+		<key alias="support_ticket"><![CDATA[Open a support ticket through <a target="_blank" rel="noopener" href="https://www.umbpanel.io">UmbPanel</a>]]></key>
 		<key alias="shipping_rates">Shipping Rates</key>
 		<key alias="shipping_rate">Shipping Rate</key>
 		<key alias="tax_rate">Tax Rate</key>

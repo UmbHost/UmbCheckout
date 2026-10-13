@@ -31,6 +31,17 @@ public sealed class StripeSessionOptionsHookTests
         // The friendly HasValue/Value extensions the options builder uses resolve these from Umbraco's static service provider.
         var services = new ServiceCollection();
         services.AddSingleton(Mock.Of<IPublishedValueFallback>());
+        services.AddSingleton(Mock.Of<Umbraco.Cms.Core.Services.IMemberTypeService>());
+        services.AddSingleton(Mock.Of<Umbraco.Cms.Core.Services.IMediaTypeService>());
+        services.AddSingleton(Mock.Of<Umbraco.Cms.Core.Services.IContentTypeService>());
+        services.AddSingleton(Microsoft.Extensions.Options.Options.Create(new Umbraco.Cms.Core.Configuration.Models.WebRoutingSettings()));
+        services.AddSingleton(Mock.Of<Umbraco.Cms.Core.Services.IFileService>());
+        services.AddSingleton(Mock.Of<Examine.IExamineManager>());
+        services.AddSingleton(Mock.Of<Umbraco.Cms.Core.Routing.ISiteDomainMapper>());
+        services.AddSingleton(Mock.Of<Umbraco.Cms.Core.Web.IUmbracoContextAccessor>());
+        services.AddSingleton(Mock.Of<Umbraco.Cms.Core.Services.IUserService>());
+        services.AddSingleton(Mock.Of<Umbraco.Cms.Core.Routing.IPublishedUrlProvider>());
+        services.AddSingleton(Mock.Of<IPublishedModelFactory>());
         services.AddSingleton(Mock.Of<IVariationContextAccessor>());
         services.AddSingleton(Mock.Of<IPublishedSnapshotAccessor>());
         StaticServiceProvider.Instance = services.BuildServiceProvider();
@@ -74,13 +85,13 @@ public sealed class StripeSessionOptionsHookTests
 
     private Basket Basket() => new()
     {
-        LineItems = new List<LineItem> { new() { Key = _key, Name = "Ping Pong Ball", Description = "Table tennis ball", Price = 2m, Quantity = 1 } }
+        LineItems = new List<LineItem> { new() { Key = _key, Name = "Ping Pong Ball", Description = "Table tennis ball", CurrencyCode = "GBP", Price = 2m, Quantity = 1 } }
     };
 
     private static async Task<SessionCreateOptions> BuildOptions(object service, Basket basket)
     {
-        var method = ServiceType.GetMethod("CreateSessionOptions", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        return (await (Task<SessionCreateOptions?>)method.Invoke(service, new object[] { basket })!)!;
+        var method = ServiceType.GetMethod("CreateSessionOptions", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(Basket), typeof(CancellationToken) }, null)!;
+        return (await (Task<SessionCreateOptions?>)method.Invoke(service, new object[] { basket, CancellationToken.None })!)!;
     }
 
     private void On<TNotification>(Action<TNotification> handler) where TNotification : INotification

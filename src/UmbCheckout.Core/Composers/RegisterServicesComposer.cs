@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.NotificationHandlers;
 using UmbCheckout.Core.Services;
@@ -24,12 +25,21 @@ namespace UmbCheckout.Core.Composers
             builder
                 .AddNotificationAsyncHandler<OnLicenseCheckCompletedNotification,
                     UmbCheckoutTelemetryNotificationHandler>();
-            builder.Services.AddTransient<ISessionService, SessionService>();
+            builder.Services.AddHttpClient(UmbCheckoutTelemetryNotificationHandler.HttpClientName, UmbCheckoutTelemetryNotificationHandler.ConfigureClient);
+            // SessionService keeps its old public constructor (obsolete): ActivatorUtilities picks the new one.
+            builder.Services.AddTransient(CreateSessionService);
+            // A payment provider (UmbCheckout.Stripe) replaces this with the sessions its webhook recorded as paid.
+            builder.Services.TryAddSingleton<IPaidCheckoutSessions, NoPaidCheckoutSessions>();
             builder.Services.AddTransient<IBasketService, BasketService>();
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
             builder.Services.AddTransient<IDatabaseService, DatabaseService>();
             builder.Services.AddTransient<ICurrencyService, CurrencyService>();
+            builder.Services.AddTransient<IBasketContext, UmbracoBasketContext>();
             builder.Services.AddTransient<IDatabaseMapperService, DatabaseMapperService>();
         }
+
+        /// <summary>Creates the session service through its <see cref="ActivatorUtilitiesConstructorAttribute"/> constructor.</summary>
+        internal static ISessionService CreateSessionService(IServiceProvider serviceProvider)
+            => ActivatorUtilities.CreateInstance<SessionService>(serviceProvider);
     }
 }

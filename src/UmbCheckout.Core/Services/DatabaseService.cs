@@ -22,34 +22,25 @@ namespace UmbCheckout.Core.Services
             _logger = logger;
             _scopeProvider = scopeProvider;
             _databaseMapperService = databaseMapperService;
-            licenseService.RunLicenseCheck();
         }
 
         /// <inheritdoc />
         public async Task<Basket?> GetBasket(string sessionId)
         {
-            try
+            if (!UmbCheckoutSettings.IsLicensed)
             {
-                if (!UmbCheckoutSettings.IsLicensed)
-                {
-                    return null;
-                }
-                using var dbScope = _scopeProvider.CreateScope(autoComplete: true);
-                var db = dbScope.Database;
-                var existingBasket = await db.QueryAsync<UmbCheckoutBasket>().Where(x => x.SessionId == sessionId).SingleOrDefault();
-                if (existingBasket != null)
-                {
-                    var basket = _databaseMapperService.ToBasket(existingBasket);
-                    return basket;
-                }
-
                 return null;
             }
-            catch (Exception ex)
+            using var dbScope = _scopeProvider.CreateScope(autoComplete: true);
+            var db = dbScope.Database;
+            var existingBasket = await db.QueryAsync<UmbCheckoutBasket>().Where(x => x.SessionId == sessionId).SingleOrDefault();
+            if (existingBasket != null)
             {
-                _logger.LogError(ex, ex.Message);
-                throw;
+                var basket = _databaseMapperService.ToBasket(existingBasket);
+                return basket;
             }
+
+            return null;
         }
     }
 }
