@@ -33,7 +33,6 @@ namespace UmbCheckout.Backoffice.Controllers.Api
             _configuration = configuration;
             _logger = logger;
             _localizedTextService = localizedTextService;
-            licenseService.RunLicenseCheck();
             _umbracoWebRoutingSettings = umbracoWebRoutingSettings.Value;
         }
 

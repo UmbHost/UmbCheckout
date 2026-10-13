@@ -22,7 +22,6 @@ namespace UmbCheckout.Core.Services
             _logger = logger;
             _scopeProvider = scopeProvider;
             _databaseMapperService = databaseMapperService;
-            licenseService.RunLicenseCheck();
         }
 
         /// <inheritdoc />

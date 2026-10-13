@@ -27,13 +27,24 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
         .then(function (response) {
             vm.LicenseState.Status = response.data;
 
-            if (response.data.status == "Invalid" || response.data.status == "Unlicensed" || response.data.status == "Expired") {
+            // The licence's comma-separated domain list, readable.
+            vm.LicenseState.ValidDomains = (response.data.validDomains || "")
+                .split(",")
+                .map(function (domain) { return domain.trim(); })
+                .filter(function (domain) { return domain.length > 0; })
+                .join(", ");
+
+            // The status during a request for a domain the licence doesn't list (UmbHost.Licensing).
+            vm.LicenseState.DomainNotLicensed = response.data.status == "Domain not licensed";
+
+            // Only Active and Development are licensed; anything else (Invalid, Expired, Suspended, Unlicensed, Domain not licensed) is not.
+            if (response.data.status != "Active" && response.data.status != "Development") {
                 vm.LicenseState.Valid = false;
                 localizationService.localize("umbcheckout_unlicensed_warning").then(function (value) {
                     vm.LicenseState.Message = value;
                 });
             }
-            else if (response.data.status == "Active") {
+            else {
                 vm.LicenseState.Valid = true;
             }
         }

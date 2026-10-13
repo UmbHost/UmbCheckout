@@ -38,7 +38,6 @@ namespace UmbCheckout.Core.Services
             _coreScopeProvider = coreScopeProvider;
             _configurationService = configurationService;
             _umbracoContextAccessor = umbracoContextAccessor;
-            licenseService.RunLicenseCheck();
         }
 
         /// <summary>
