@@ -37,6 +37,33 @@ namespace UmbCheckout.Tests.Services
             Assert.Equal(10m, result.Basket.LineItems.Single().Price);
         }
 
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        [InlineData(1_000_000)]
+        public async Task A_legacy_line_outside_the_quantity_range_is_removed(long quantity)
+        {
+            var line = Line(10m, new LineItemPrice(10m, "GBP"));
+            line.Quantity = quantity;
+
+            var result = await Service().RepriceAsync(Basket(line));
+
+            Assert.True(Assert.Single(result.Changes).Removed);
+            Assert.Empty(result.Basket.LineItems);
+        }
+
+        [Fact]
+        public async Task A_legacy_basket_keeps_the_first_100_lines_and_removes_the_rest()
+        {
+            var lines = Enumerable.Range(0, 102).Select(_ => Line(10m, new LineItemPrice(10m, "GBP"))).ToArray();
+
+            var result = await Service().RepriceAsync(Basket(lines));
+
+            Assert.Equal(100, result.Basket.LineItems.Count());
+            Assert.Equal(2, result.Changes.Count(c => c.Removed));
+            Assert.Equal(lines.Take(100).Select(l => l.Key), result.Basket.LineItems.Select(l => l.Key));
+        }
+
         [Fact]
         public async Task RepriceAsync_LeavesAnUnchangedBasketAlone()
         {

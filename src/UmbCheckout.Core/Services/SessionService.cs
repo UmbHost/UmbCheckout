@@ -45,7 +45,7 @@ namespace UmbCheckout.Core.Services
             _basketContext = basketContext;
         }
 
-        [Obsolete("Use the constructor that takes an IPaidCheckoutSessions. Scheduled for removal in the next major version.")]
+        [Obsolete("Use the constructor that takes an IPaidCheckoutSessions. Scheduled for removal in 17.1.")]
         public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext,
             IEventMessagesFactory eventMessagesFactory)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
@@ -53,7 +53,7 @@ namespace UmbCheckout.Core.Services
         {
         }
 
-        [Obsolete("Use the constructor that takes an IEventMessagesFactory and an IPaidCheckoutSessions. Scheduled for removal in the next major version.")]
+        [Obsolete("Use the constructor that takes an IEventMessagesFactory and an IPaidCheckoutSessions. Scheduled for removal in 17.1.")]
         public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
                 StaticServiceProvider.Instance.GetRequiredService<IEventMessagesFactory>(), PaidCheckoutSessionsOrNone())
@@ -91,26 +91,27 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Get(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Get(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<UmbCheckoutSession> Get() => Get(RequestAborted);
 
         /// <inheritdoc />
         public async Task<UmbCheckoutSession> Get(CancellationToken cancellationToken) => await Get(await _basketContext.GetCurrencyAsync(cancellationToken), cancellationToken);
 
         /// <inheritdoc />
-        [Obsolete("Use Get(string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Get(string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<UmbCheckoutSession> Get(string? currencyCode) => Get(currencyCode, RequestAborted);
 
         /// <inheritdoc />
         public Task<UmbCheckoutSession> Get(string? currencyCode, CancellationToken cancellationToken) => Get(_basketContext.SiteRootCulture, currencyCode, cancellationToken);
 
         /// <inheritdoc />
-        [Obsolete("Use Get(string?, string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Get(string?, string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode) => Get(siteRootCulture, currencyCode, RequestAborted);
 
         /// <inheritdoc />
         public async Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken)
         {
+            currencyCode = Normalise(currencyCode);
             var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
 
             UmbCheckoutSession session;
@@ -173,7 +174,7 @@ namespace UmbCheckout.Core.Services
             }
 
             await Clear(siteRootCulture, currencyCode, cancellationToken);
-            await _eventAggregator.PublishAsync(new OnPaidBasketClearedNotification(session.Basket, checkoutSessionId), cancellationToken);
+            await _eventAggregator.PublishAsync(new OnPaidBasketClearedNotification(session.Basket, checkoutSessionId), CancellationToken.None);
             _logger.LogInformation("Cleared a basket paid with checkout session {CheckoutSessionId}", checkoutSessionId);
 
             var empty = new UmbCheckoutSession
@@ -241,7 +242,7 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Update(Basket, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Update(Basket, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<UmbCheckoutSession> Update(Basket basket) => Update(basket, RequestAborted);
 
         /// <inheritdoc />
@@ -254,7 +255,7 @@ namespace UmbCheckout.Core.Services
 
             var siteRootCulture = _basketContext.SiteRootCulture;
             basket.SiteRootCulture = siteRootCulture;
-            basket.CurrencyCode ??= await _basketContext.GetCurrencyAsync(cancellationToken);
+            basket.CurrencyCode = Normalise(basket.CurrencyCode) ?? Normalise(await _basketContext.GetCurrencyAsync(cancellationToken));
 
             var key = BasketKeys.Session(siteRootCulture, basket.CurrencyCode);
             var stored = HttpContext.Session.Keys.Contains(key) ? HttpContext.Session.GetObjectFromJson<UmbCheckoutSession>(key) : null;
@@ -276,27 +277,28 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Clear(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Clear(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<bool> Clear() => Clear(RequestAborted);
 
         /// <inheritdoc />
         public async Task<bool> Clear(CancellationToken cancellationToken) => await Clear(await _basketContext.GetCurrencyAsync(cancellationToken), cancellationToken);
 
         /// <inheritdoc />
-        [Obsolete("Use Clear(string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Clear(string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<bool> Clear(string? currencyCode) => Clear(currencyCode, RequestAborted);
 
         /// <inheritdoc />
         public Task<bool> Clear(string? currencyCode, CancellationToken cancellationToken) => Clear(_basketContext.SiteRootCulture, currencyCode, cancellationToken);
 
         /// <inheritdoc />
-        [Obsolete("Use Clear(string?, string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in the next major version.")]
+        [Obsolete("Use Clear(string?, string?, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
         public Task<bool> Clear(string? siteRootCulture, string? currencyCode) => Clear(siteRootCulture, currencyCode, RequestAborted);
 
         /// <inheritdoc />
         /// <remarks>The token stops the clear before it starts; once the basket is removed, the session is committed regardless.</remarks>
         public async Task<bool> Clear(string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken)
         {
+            currencyCode = Normalise(currencyCode);
             var configuration = await _configurationService.GetConfigurationAsync(cancellationToken);
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
@@ -316,5 +318,9 @@ namespace UmbCheckout.Core.Services
 
             return HttpContext.Session.Keys.Contains(key);
         }
+
+        /// <summary>A currency code as the baskets are keyed and stored: trimmed and upper case (null when blank).</summary>
+        private static string? Normalise(string? currencyCode)
+            => string.IsNullOrWhiteSpace(currencyCode) ? null : currencyCode.Trim().ToUpperInvariant();
     }
 }

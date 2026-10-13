@@ -32,8 +32,9 @@ namespace UmbCheckout.Tests.Services
             var sessions = new Mock<ISessionService>();
             Basket? saved = null;
             var suppressed = false;
+            CancellationToken updateToken = new(true);
             sessions.Setup(s => s.Update(It.IsAny<Basket>(), It.IsAny<CancellationToken>()))
-                .Callback<Basket, CancellationToken>((b, _) => { saved = b; suppressed = UmbCheckoutHooks.SavingSuppressed; })
+                .Callback<Basket, CancellationToken>((b, t) => { saved = b; updateToken = t; suppressed = UmbCheckoutHooks.SavingSuppressed; })
                 .ReturnsAsync(new UmbCheckoutSession());
             var httpContext = new DefaultHttpContext();
 
@@ -46,6 +47,9 @@ namespace UmbCheckout.Tests.Services
             Assert.Equal("cs_test_forms", saved?.CheckoutSessionId);
             Assert.True(suppressed, "Recording the session is bookkeeping: a site's Saving handlers must not refuse it");
             Assert.False(UmbCheckoutHooks.SavingSuppressed);
+            // Not cancelled with the request: Stripe already has the session.
+            Assert.False(updateToken.CanBeCanceled);
+            Assert.False(updateToken.IsCancellationRequested);
             Assert.Equal("https://checkout.stripe.com/c/pay/cs_test_forms", httpContext.Items[Constants.ItemKeys.RedirectAfterFormSubmitUrl]);
         }
     }

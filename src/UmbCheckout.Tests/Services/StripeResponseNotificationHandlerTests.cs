@@ -37,12 +37,13 @@ namespace UmbCheckout.Tests.Services
             _matcher.Setup(m => m.IsSuccessPageAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(isSuccessPage);
             var request = new Mock<IPublishedRequestBuilder>();
             request.Setup(r => r.Uri).Returns(new Uri(url));
-            return new StripeResponseNotificationHandler(_stripe.Object, _sessions.Object, _matcher.Object, NullLogger<StripeResponseNotificationHandler>.Instance)
+            return new StripeResponseNotificationHandler(_stripe.Object, _sessions.Object, _matcher.Object, NullLogger<StripeResponseNotificationHandler>.Instance, _ => "en-GB")
                 .HandleAsync(new RoutingRequestNotification(request.Object), CancellationToken.None);
         }
 
         private Task Succeed(Session session)
         {
+            session.Id ??= "cs_test_1";
             _stripe.Setup(s => s.GetSessionAsync("cs_test_1", It.IsAny<CancellationToken>())).ReturnsAsync(session);
             return Request("https://shop.test/success/?session_id=cs_test_1&success=true");
         }
@@ -57,13 +58,66 @@ namespace UmbCheckout.Tests.Services
             _sessions.Verify(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>()), Times.Once);
         }
 
-        [Fact]
-        public async Task A_session_without_basket_metadata_keeps_the_basket()
-        {
-            // Checkout sessions created before the upgrade carry no basket metadata, so which basket they paid for is unknown.
-            await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = new Dictionary<string, string>() });
+        private const string NoCheckoutSession = null;
 
-            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        [Fact]
+        public async Task ASessionWithoutBasketMetadataClearsItsCurrencyBasketOfTheRoutedPagesCulture()
+        {
+            // Checkout sessions created before the upgrade carry no basket metadata; their basket records no checkout session.
+            CurrentBasketCheckedOutAs(NoCheckoutSession);
+
+            await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Created = DateTime.UtcNow.AddMinutes(-10), Metadata = new Dictionary<string, string>() });
+
+            _sessions.Verify(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ASessionWithoutBasketMetadataKeepsABasketSentToANewerCheckout()
+        {
+            CurrentBasketCheckedOutAs("cs_test_newer");
+
+            await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddMinutes(-10), Metadata = new Dictionary<string, string>() });
+
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task A_session_without_basket_metadata_clears_the_basket_that_records_it_whatever_its_age()
+        {
+            // The basket names this checkout session, so it is the paid one; the 24-hour rule is only for a basket that records none.
+            CurrentBasketCheckedOutAs("cs_test_1");
+
+            await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddDays(-3), Metadata = new Dictionary<string, string>() });
+
+            _sessions.Verify(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task A_session_without_basket_metadata_compares_the_recorded_id_ordinally()
+        {
+            CurrentBasketCheckedOutAs("CS_TEST_1");
+
+            await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddMinutes(-10), Metadata = new Dictionary<string, string>() });
+
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AnOldSessionWithoutBasketMetadataKeepsTheBasket()
+        {
+            // A stale link to a session from before the upgrade, revisited days later: the basket records no checkout session.
+            CurrentBasketCheckedOutAs(NoCheckoutSession);
+
+            await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddDays(-3), Metadata = new Dictionary<string, string>() });
+
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task A_session_without_metadata_or_currency_keeps_the_basket()
+        {
+            await Succeed(new Session { Status = "complete", Created = DateTime.UtcNow.AddMinutes(-10), Metadata = new Dictionary<string, string>() });
+
             _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -135,7 +189,7 @@ namespace UmbCheckout.Tests.Services
             request.Setup(r => r.Uri).Returns(new Uri("https://shop.test/success/?session_id=cs_test_1&success=true"));
             _matcher.Setup(m => m.IsSuccessPageAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("database down"));
 
-            await new StripeResponseNotificationHandler(_stripe.Object, _sessions.Object, _matcher.Object, NullLogger<StripeResponseNotificationHandler>.Instance)
+            await new StripeResponseNotificationHandler(_stripe.Object, _sessions.Object, _matcher.Object, NullLogger<StripeResponseNotificationHandler>.Instance, _ => "en-GB")
                 .HandleAsync(new RoutingRequestNotification(request.Object), CancellationToken.None); // no exception escapes
 
             _stripe.VerifyNoOtherCalls();

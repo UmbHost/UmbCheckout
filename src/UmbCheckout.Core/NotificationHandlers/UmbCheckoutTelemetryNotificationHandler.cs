@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -16,6 +16,9 @@ using Umbraco.Extensions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using UmbCheckoutAppSettings = UmbCheckout.Shared.Models.UmbCheckoutAppSettings;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Umbraco.Cms.Core.DependencyInjection;
+using Umbraco.Cms.Core.Services;
 
 namespace UmbCheckout.Core.NotificationHandlers
 {
@@ -26,6 +29,7 @@ namespace UmbCheckout.Core.NotificationHandlers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IUmbracoVersion _umbracoVersion;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IPackagingService _packagingService;
         private readonly ILogger<UmbCheckoutTelemetryNotificationHandler> _logger;
 
         /// <summary>The named HttpClient telemetry posts through (5 second timeout).</summary>
@@ -34,9 +38,10 @@ namespace UmbCheckout.Core.NotificationHandlers
         internal static void ConfigureClient(HttpClient client) => client.Timeout = TimeSpan.FromSeconds(5);
 
         public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IWebHostEnvironment webHostEnvironment,
-            ILogger<UmbCheckoutTelemetryNotificationHandler> logger)
+            IPackagingService packagingService, ILogger<UmbCheckoutTelemetryNotificationHandler> logger)
         {
             _logger = logger;
+            _packagingService = packagingService;
             _umbCheckoutConfiguration = umbCheckoutConfiguration.Value;
             _globalSettings = globalSettings.Value;
             _httpClientFactory = httpClientFactory;
@@ -44,9 +49,16 @@ namespace UmbCheckout.Core.NotificationHandlers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        [Obsolete("Use the constructor that takes an ILogger. Scheduled for removal in the next major version.")]
+        [Obsolete("Use the constructor that takes an IPackagingService and an ILogger. Scheduled for removal in 17.1.")]
+        public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IWebHostEnvironment webHostEnvironment,
+            ILogger<UmbCheckoutTelemetryNotificationHandler> logger)
+            : this(umbCheckoutConfiguration, globalSettings, httpClientFactory, umbracoVersion, webHostEnvironment, StaticServiceProvider.Instance.GetRequiredService<IPackagingService>(), logger)
+        {
+        }
+
+        [Obsolete("Use the constructor that takes an IPackagingService and an ILogger. Scheduled for removal in 17.1.")]
         public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IWebHostEnvironment webHostEnvironment)
-            : this(umbCheckoutConfiguration, globalSettings, httpClientFactory, umbracoVersion, webHostEnvironment, NullLogger<UmbCheckoutTelemetryNotificationHandler>.Instance)
+            : this(umbCheckoutConfiguration, globalSettings, httpClientFactory, umbracoVersion, webHostEnvironment, StaticServiceProvider.Instance.GetRequiredService<IPackagingService>(), NullLogger<UmbCheckoutTelemetryNotificationHandler>.Instance)
         {
         }
 
@@ -87,11 +99,15 @@ namespace UmbCheckout.Core.NotificationHandlers
         {
             try
             {
+                var installedPackages = (await _packagingService.GetAllInstalledPackagesAsync())
+                    .Where(x => !string.IsNullOrEmpty(x.PackageName) && x.PackageName.StartsWith("UmbCheckout."));
+
                 var data = new
                 {
                     umbracoId = umbracoId,
                     umbracoVersion = _umbracoVersion.SemanticVersion.ToSemanticStringWithoutBuild(),
                     umbCheckoutVersion = UmbCheckoutVersion.SemanticVersion.ToString(),
+                    installedPackages = JsonSerializer.Serialize(installedPackages),
                     isLicensed = UmbCheckoutSettings.IsLicensed.ToString(),
                     isDevelopmentLicense = UmbCheckoutSettings.LicenseDetails.IsDevelopmentLicense.ToString(),
                     environmentName = _webHostEnvironment.EnvironmentName
