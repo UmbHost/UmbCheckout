@@ -30,7 +30,7 @@ namespace UmbCheckout.Tests.Services
             var line = new LineItem { Key = Guid.NewGuid(), Name = "Jacket", Price = price, CurrencyCode = "GBP", Quantity = 1 };
             var product = Mock.Of<IPublishedContent>();
             _cache.Setup(c => c.GetById(line.Key)).Returns(published ? product : null);
-            _pricing.Setup(p => p.GetPriceAsync(product)).ReturnsAsync(current);
+            _pricing.Setup(p => p.GetPriceAsync(product, It.IsAny<CancellationToken>())).ReturnsAsync(current);
             return line;
         }
 

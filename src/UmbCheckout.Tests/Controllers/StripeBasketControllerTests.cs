@@ -47,11 +47,11 @@ namespace UmbCheckout.Tests.Controllers
             product.Setup(p => p.Name).Returns("Jacket");
             _product = product.Object;
 
-            _basketService.Setup(b => b.Get()).ReturnsAsync(() => new Basket { LineItems = _basketLines.ToList() });
-            _basketService.Setup(b => b.Add(It.IsAny<LineItem>())).Callback<LineItem>(_added.Add).ReturnsAsync(new Basket());
+            _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(() => new Basket { LineItems = _basketLines.ToList() });
+            _basketService.Setup(b => b.Add(It.IsAny<LineItem>(), It.IsAny<CancellationToken>())).Callback<LineItem, CancellationToken>((line, _) => _added.Add(line)).ReturnsAsync(new Basket());
         }
 
-        private StripeBasketController Controller()
+        private StripeBasketController Controller(CancellationToken requestAborted = default)
         {
             var contentCache = new Mock<IPublishedContentCache>();
             contentCache.Setup(c => c.GetById(_product.Key)).Returns(_product);
@@ -65,7 +65,7 @@ namespace UmbCheckout.Tests.Controllers
             page.Setup(p => p.Key).Returns(Guid.NewGuid());
             var request = new Mock<IPublishedRequest>();
             request.Setup(r => r.PublishedContent).Returns(page.Object);
-            var httpContext = new DefaultHttpContext();
+            var httpContext = new DefaultHttpContext { RequestAborted = requestAborted };
             httpContext.Features.Set(new UmbracoRouteValues(request.Object, new ControllerActionDescriptor()));
 
             return new StripeBasketController(accessor.Object, Mock.Of<IUmbracoDatabaseFactory>(), ServiceContext.CreatePartial(), AppCaches.NoCache, Mock.Of<IProfilingLogger>(), Mock.Of<IPublishedUrlProvider>(), _basketService.Object, _stripe.Object, _pricing.Object, _repricing.Object, _sessions.Object, _logger)
@@ -83,7 +83,7 @@ namespace UmbCheckout.Tests.Controllers
         public async Task Add_UsesTheServersPriceAndCurrency_NotThePostedOne()
         {
             // £399 posted as "inr" used to be charged ₹399.
-            _pricing.Setup(p => p.GetPriceAsync(_product)).ReturnsAsync(new LineItemPrice(399m, "GBP"));
+            _pricing.Setup(p => p.GetPriceAsync(_product, It.IsAny<CancellationToken>())).ReturnsAsync(new LineItemPrice(399m, "GBP"));
             var controller = Controller();
 
             await controller.Add(Posted("INR"));
@@ -102,7 +102,7 @@ namespace UmbCheckout.Tests.Controllers
         public async Task Add_ARefusedPriceIsNotAdded()
         {
             // No price, or no currency configured: the pricing service has logged why.
-            _pricing.Setup(p => p.GetPriceAsync(_product)).ReturnsAsync((LineItemPrice?)null);
+            _pricing.Setup(p => p.GetPriceAsync(_product, It.IsAny<CancellationToken>())).ReturnsAsync((LineItemPrice?)null);
             var controller = Controller();
 
             var result = await controller.Add(Posted());
@@ -118,8 +118,8 @@ namespace UmbCheckout.Tests.Controllers
         public async Task Add_ALineTheBasketRefusesIsReported()
         {
             // A quantity outside 1-999,999, or a 101st product: refused by the basket, shown to the customer, never a 500.
-            _pricing.Setup(p => p.GetPriceAsync(_product)).ReturnsAsync(new LineItemPrice(10m, "GBP"));
-            _basketService.Setup(b => b.Add(It.IsAny<LineItem>())).ThrowsAsync(new ArgumentOutOfRangeException("item"));
+            _pricing.Setup(p => p.GetPriceAsync(_product, It.IsAny<CancellationToken>())).ReturnsAsync(new LineItemPrice(10m, "GBP"));
+            _basketService.Setup(b => b.Add(It.IsAny<LineItem>(), It.IsAny<CancellationToken>())).ThrowsAsync(new ArgumentOutOfRangeException("item"));
             var controller = Controller();
 
             var result = await controller.Add(new BasketAdd { Key = _product.Key, Quantity = 0 });
@@ -136,7 +136,7 @@ namespace UmbCheckout.Tests.Controllers
         {
             // Baskets are per currency: the basket service puts the line in its own currency's basket.
             _basketLines.Add(new LineItem { Key = Guid.NewGuid(), Price = 1m, CurrencyCode = "USD", Quantity = 1 });
-            _pricing.Setup(p => p.GetPriceAsync(_product)).ReturnsAsync(new LineItemPrice(10m, "GBP"));
+            _pricing.Setup(p => p.GetPriceAsync(_product, It.IsAny<CancellationToken>())).ReturnsAsync(new LineItemPrice(10m, "GBP"));
 
             await Controller().Add(Posted());
 
@@ -147,7 +147,7 @@ namespace UmbCheckout.Tests.Controllers
         public async Task Reduce_IsAwaited()
         {
             var reduced = new TaskCompletionSource<Basket>();
-            _basketService.Setup(b => b.Reduce(_product.Key)).Returns(reduced.Task);
+            _basketService.Setup(b => b.Reduce(_product.Key, It.IsAny<CancellationToken>())).Returns(reduced.Task);
 
             var action = Controller().Reduce(_product.Key);
 
@@ -160,7 +160,7 @@ namespace UmbCheckout.Tests.Controllers
         public async Task Remove_IsAwaited()
         {
             var removed = new TaskCompletionSource<Basket>();
-            _basketService.Setup(b => b.Remove(_product.Key)).Returns(removed.Task);
+            _basketService.Setup(b => b.Remove(_product.Key, It.IsAny<CancellationToken>())).Returns(removed.Task);
 
             var action = Controller().Remove(_product.Key);
 
@@ -172,7 +172,7 @@ namespace UmbCheckout.Tests.Controllers
         [Fact]
         public async Task Reduce_AFailureIsLoggedWithTheProduct()
         {
-            _basketService.Setup(b => b.Reduce(_product.Key)).ThrowsAsync(new InvalidOperationException("boom"));
+            _basketService.Setup(b => b.Reduce(_product.Key, It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("boom"));
 
             var result = await Controller().Reduce(_product.Key);
 
@@ -184,9 +184,9 @@ namespace UmbCheckout.Tests.Controllers
         public async Task Checkout_AnUnchangedBasketGoesToStripe()
         {
             var basket = new Basket { CurrencyCode = "GBP", LineItems = new List<LineItem> { new() { Key = _product.Key, Price = 10m, CurrencyCode = "GBP", Quantity = 1 } } };
-            _basketService.Setup(b => b.Get()).ReturnsAsync(basket);
-            _repricing.Setup(r => r.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
-            _stripe.Setup(s => s.CreateSessionAsync(basket)).ReturnsAsync(new global::Stripe.Checkout.Session { Id = "cs_test_1", Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
+            _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(basket);
+            _repricing.Setup(r => r.RepriceAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
+            _stripe.Setup(s => s.CreateSessionAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new global::Stripe.Checkout.Session { Id = "cs_test_1", Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
 
             var result = await Controller().Checkout();
 
@@ -198,13 +198,13 @@ namespace UmbCheckout.Tests.Controllers
         {
             // The success page (and the webhook) clear this basket only when it returns from this checkout session.
             var basket = new Basket { CurrencyCode = "GBP", LineItems = new List<LineItem> { new() { Key = _product.Key, Price = 10m, CurrencyCode = "GBP", Quantity = 1 } } };
-            _basketService.Setup(b => b.Get()).ReturnsAsync(basket);
-            _repricing.Setup(r => r.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
-            _stripe.Setup(s => s.CreateSessionAsync(basket)).ReturnsAsync(new global::Stripe.Checkout.Session { Id = "cs_test_1", Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
+            _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(basket);
+            _repricing.Setup(r => r.RepriceAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
+            _stripe.Setup(s => s.CreateSessionAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new global::Stripe.Checkout.Session { Id = "cs_test_1", Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
 
             await Controller().Checkout();
 
-            _sessions.Verify(s => s.Update(It.Is<Basket>(b => b.CheckoutSessionId == "cs_test_1")), Times.Once);
+            _sessions.Verify(s => s.Update(It.Is<Basket>(b => b.CheckoutSessionId == "cs_test_1"), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -212,29 +212,81 @@ namespace UmbCheckout.Tests.Controllers
         {
             // The customer sees the current prices before paying; no Stripe session is created on this click.
             var basket = new Basket { CurrencyCode = "GBP", LineItems = new List<LineItem> { new() { Key = _product.Key, Name = "Jacket", Price = 10m, CurrencyCode = "GBP", Quantity = 1 } } };
-            _basketService.Setup(b => b.Get()).ReturnsAsync(basket);
-            _repricing.Setup(r => r.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, new[] { new RepricedLine(_product.Key, "Jacket", 10m, 12m), new RepricedLine(Guid.NewGuid(), "Hat", 5m, null) }));
+            _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(basket);
+            _repricing.Setup(r => r.RepriceAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new BasketRepricing(basket, new[] { new RepricedLine(_product.Key, "Jacket", 10m, 12m), new RepricedLine(Guid.NewGuid(), "Hat", 5m, null) }));
             var controller = Controller();
 
             var result = await controller.Checkout();
 
             Assert.IsType<RedirectToUmbracoPageResult>(result);
             Assert.Equal("Jacket, Hat", controller.TempData[Consts.TempData.UmbCheckoutBasketRepriced]);
-            _sessions.Verify(s => s.Update(basket), Times.Once);
-            _stripe.Verify(s => s.CreateSessionAsync(It.IsAny<Basket>()), Times.Never);
+            _sessions.Verify(s => s.Update(basket, It.IsAny<CancellationToken>()), Times.Once);
+            _stripe.Verify(s => s.CreateSessionAsync(It.IsAny<Basket>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
         public async Task Checkout_AnEmptyBasketIsNotSentToStripe()
         {
-            _basketService.Setup(b => b.Get()).ReturnsAsync(new Basket());
+            _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(new Basket());
             var controller = Controller();
 
             await controller.Checkout();
 
             Assert.Equal(true, controller.TempData[Consts.TempData.UmbCheckoutEmptyBasket]);
-            _repricing.Verify(r => r.RepriceAsync(It.IsAny<Basket>()), Times.Never);
-            _stripe.Verify(s => s.CreateSessionAsync(It.IsAny<Basket>()), Times.Never);
+            _repricing.Verify(r => r.RepriceAsync(It.IsAny<Basket>(), It.IsAny<CancellationToken>()), Times.Never);
+            _stripe.Verify(s => s.CreateSessionAsync(It.IsAny<Basket>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Checkout_passes_the_requests_token_to_pricing_and_Stripe_and_records_the_session_regardless()
+        {
+            using var request = new CancellationTokenSource();
+            var basket = new Basket { CurrencyCode = "GBP", LineItems = new List<LineItem> { new() { Key = _product.Key, Price = 10m, CurrencyCode = "GBP", Quantity = 1 } } };
+            _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(basket);
+            _repricing.Setup(r => r.RepriceAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
+            _stripe.Setup(s => s.CreateSessionAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new global::Stripe.Checkout.Session { Id = "cs_test_1", Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
+
+            await Controller(request.Token).Checkout();
+
+            _basketService.Verify(b => b.Get(request.Token), Times.Once);
+            _repricing.Verify(r => r.RepriceAsync(basket, request.Token), Times.Once);
+            _stripe.Verify(s => s.CreateSessionAsync(basket, request.Token), Times.Once);
+            // Once Stripe has the session, the basket records it even if the customer has left.
+            _sessions.Verify(s => s.Update(It.Is<Basket>(b => b.CheckoutSessionId == "cs_test_1"), CancellationToken.None), Times.Once);
+        }
+
+        [Fact]
+        public async Task Checkout_a_cancelled_request_returns_nothing_and_logs_no_error()
+        {
+            using var request = new CancellationTokenSource();
+            var basket = new Basket { CurrencyCode = "GBP", LineItems = new List<LineItem> { new() { Key = _product.Key, Price = 10m, CurrencyCode = "GBP", Quantity = 1 } } };
+            _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(basket);
+            _repricing.Setup(r => r.RepriceAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
+            _stripe.Setup(s => s.CreateSessionAsync(basket, It.IsAny<CancellationToken>())).Callback(request.Cancel).ThrowsAsync(new OperationCanceledException(request.Token));
+
+            var result = await Controller(request.Token).Checkout();
+
+            Assert.IsType<EmptyResult>(result);
+            Assert.Equal(0, _logger.Count(LogLevel.Error));
+            _sessions.Verify(s => s.Update(It.IsAny<Basket>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Add_Reduce_Remove_and_EmptyBasket_pass_the_requests_token()
+        {
+            using var request = new CancellationTokenSource();
+            _pricing.Setup(p => p.GetPriceAsync(_product, It.IsAny<CancellationToken>())).ReturnsAsync(new LineItemPrice(10m, "GBP"));
+
+            await Controller(request.Token).Add(Posted());
+            await Controller(request.Token).Reduce(_product.Key);
+            await Controller(request.Token).Remove(_product.Key);
+            await Controller(request.Token).EmptyBasket();
+
+            _pricing.Verify(p => p.GetPriceAsync(_product, request.Token), Times.Once);
+            _basketService.Verify(b => b.Add(It.IsAny<LineItem>(), request.Token), Times.Once);
+            _basketService.Verify(b => b.Reduce(_product.Key, request.Token), Times.Once);
+            _basketService.Verify(b => b.Remove(_product.Key, request.Token), Times.Once);
+            _basketService.Verify(b => b.Clear(request.Token), Times.Once);
         }
 
         [Fact]

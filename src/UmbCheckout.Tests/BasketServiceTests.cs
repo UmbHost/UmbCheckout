@@ -24,9 +24,9 @@ public class BasketServiceTests
 
         var sessionService = _sessionService;
         var checkoutSession = new UmbCheckoutSession();
-        sessionService.Setup(x => x.Get()).ReturnsAsync(checkoutSession);
-        sessionService.Setup(x => x.Get(It.IsAny<string?>())).ReturnsAsync(checkoutSession);
-        sessionService.Setup(x => x.Update(It.IsAny<Basket>())).ReturnsAsync(checkoutSession);
+        sessionService.Setup(x => x.Get(It.IsAny<CancellationToken>())).ReturnsAsync(checkoutSession);
+        sessionService.Setup(x => x.Get(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync(checkoutSession);
+        sessionService.Setup(x => x.Update(It.IsAny<Basket>(), It.IsAny<CancellationToken>())).ReturnsAsync(checkoutSession);
 
         var mockScope = new Mock<IScope>();
         mockScope.Setup(x => x.Notifications).Returns(new Mock<IScopedNotificationPublisher>().Object);
@@ -308,7 +308,7 @@ public class BasketServiceTests
     {
         await _basketService.Add(new LineItem { Key = Guid.NewGuid(), Quantity = 1, Price = 1m, CurrencyCode = "USD" });
 
-        _sessionService.Verify(s => s.Get("USD"), Times.Once);
+        _sessionService.Verify(s => s.Get("USD", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -351,7 +351,7 @@ public class BasketServiceTests
     {
         await _basketService.Add(new[] { new LineItem { Key = Guid.NewGuid(), Quantity = 1, Price = 1m, CurrencyCode = "EUR" } });
 
-        _sessionService.Verify(s => s.Get("EUR"), Times.Once);
+        _sessionService.Verify(s => s.Get("EUR", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -364,5 +364,18 @@ public class BasketServiceTests
         var basket = await _basketService.Reduce(key);
 
         Assert.DoesNotContain(basket.LineItems, l => l.Key == key);
+    }
+
+    [Fact]
+    public async Task The_token_reaches_the_session_service()
+    {
+        using var request = new CancellationTokenSource();
+
+        await _basketService.Add(new LineItem { Key = Guid.NewGuid(), Price = 1m, Quantity = 1, CurrencyCode = "USD" }, request.Token);
+        await _basketService.Reduce(Guid.NewGuid(), request.Token);
+
+        _sessionService.Verify(s => s.Get("USD", request.Token), Times.Once);
+        _sessionService.Verify(s => s.Get(request.Token), Times.Once);
+        _sessionService.Verify(s => s.Update(It.IsAny<Basket>(), request.Token), Times.Exactly(2));
     }
 }

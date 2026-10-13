@@ -15,6 +15,10 @@ namespace UmbCheckout.Core.Interfaces
         /// <exception cref="InvalidOperationException"></exception>
         Task<string> GetCurrencyAsync(Guid? currencyNodeKey = null);
 
+        /// <summary>As <see cref="GetCurrencyAsync(Guid?)"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<string> GetCurrencyAsync(Guid? currencyNodeKey, CancellationToken cancellationToken) => GetCurrencyAsync(currencyNodeKey);
+
         /// <summary>
         /// The currency <paramref name="content"/> is sold in: the umbCheckoutCurrencyCode property on its site root, else the
         /// UmbCheckout Configuration currency, else (as before this member existed, with a warning logged once) the current UI culture's currency.
@@ -32,5 +36,9 @@ namespace UmbCheckout.Core.Interfaces
                 ? code.ToUpperInvariant()
                 : null;
         }
+
+        /// <summary>As <see cref="GetCurrencyForContentAsync(IPublishedContent)"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<string?> GetCurrencyForContentAsync(IPublishedContent content, CancellationToken cancellationToken) => GetCurrencyForContentAsync(content);
     }
 }

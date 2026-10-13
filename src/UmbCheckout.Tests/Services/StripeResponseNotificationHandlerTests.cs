@@ -29,7 +29,7 @@ namespace UmbCheckout.Tests.Services
         private readonly IPublishedContent _page = Mock.Of<IPublishedContent>();
 
         private void Basket(string? culture, string currency, string? checkoutSessionId)
-            => _sessions.Setup(s => s.Get(culture, currency)).ReturnsAsync(new UmbCheckoutSession
+            => _sessions.Setup(s => s.Get(culture, currency, It.IsAny<CancellationToken>())).ReturnsAsync(new UmbCheckoutSession
             {
                 Basket = new Basket { SiteRootCulture = culture, CurrencyCode = currency, CheckoutSessionId = checkoutSessionId, LineItems = new[] { new LineItem() } }
             });
@@ -47,7 +47,7 @@ namespace UmbCheckout.Tests.Services
         private Task Succeed(Session session, string? routedCulture = "en-GB")
         {
             session.Id ??= "cs_test_1";
-            _stripe.Setup(s => s.GetSessionAsync("cs_test_1")).ReturnsAsync(session);
+            _stripe.Setup(s => s.GetSessionAsync("cs_test_1", It.IsAny<CancellationToken>())).ReturnsAsync(session);
             return Request("https://shop.test/success/?session_id=cs_test_1&success=true", routedCulture: routedCulture);
         }
 
@@ -61,8 +61,8 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = Metadata("en-GB", "GBP") });
 
-            _sessions.Verify(s => s.Clear("en-GB", "GBP"), Times.Once);
-            _sessions.Verify(s => s.Clear(), Times.Never);
+            _sessions.Verify(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>()), Times.Once);
+            _sessions.Verify(s => s.Clear(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "usd", Metadata = Metadata("", "USD") });
 
-            _sessions.Verify(s => s.Clear(null, "USD"), Times.Once);
+            _sessions.Verify(s => s.Clear(null, "USD", It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Theory]
@@ -86,7 +86,7 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = Metadata("en-GB", "GBP") });
 
-            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>()), Times.Never);
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Created = DateTime.UtcNow.AddMinutes(-10), Metadata = new Dictionary<string, string>() });
 
-            _sessions.Verify(s => s.Clear("en-GB", "GBP"), Times.Once);
+            _sessions.Verify(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddMinutes(-10), Metadata = new Dictionary<string, string>() });
 
-            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>()), Times.Never);
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddDays(-3), Metadata = new Dictionary<string, string>() });
 
-            _sessions.Verify(s => s.Clear("en-GB", "GBP"), Times.Once);
+            _sessions.Verify(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddMinutes(-10), Metadata = new Dictionary<string, string>() });
 
-            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>()), Times.Never);
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -140,7 +140,7 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddDays(-3), Metadata = new Dictionary<string, string>() });
 
-            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>()), Times.Never);
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -161,7 +161,7 @@ namespace UmbCheckout.Tests.Services
 
             await Succeed(new Session { Status = "complete", PaymentStatus = paymentStatus, Currency = "gbp", Metadata = Metadata("en-GB", "GBP") });
 
-            _sessions.Verify(s => s.Clear("en-GB", "GBP"), Times.Once);
+            _sessions.Verify(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -189,7 +189,7 @@ namespace UmbCheckout.Tests.Services
         [Fact]
         public async Task A_Stripe_error_is_logged_and_the_page_still_renders()
         {
-            _stripe.Setup(s => s.GetSessionAsync("cs_test_1")).ThrowsAsync(new StripeException("No such checkout.session"));
+            _stripe.Setup(s => s.GetSessionAsync("cs_test_1", It.IsAny<CancellationToken>())).ThrowsAsync(new StripeException("No such checkout.session"));
 
             await Request("https://shop.test/success/?session_id=cs_test_1&success=true"); // no exception escapes
 
@@ -200,7 +200,7 @@ namespace UmbCheckout.Tests.Services
         [Fact]
         public async Task A_timeout_reaching_Stripe_is_logged_and_the_page_still_renders()
         {
-            _stripe.Setup(s => s.GetSessionAsync("cs_test_1")).ThrowsAsync(new TaskCanceledException("HttpClient timeout"));
+            _stripe.Setup(s => s.GetSessionAsync("cs_test_1", It.IsAny<CancellationToken>())).ThrowsAsync(new TaskCanceledException("HttpClient timeout"));
 
             await Request("https://shop.test/success/?session_id=cs_test_1&success=true");
 
@@ -225,7 +225,7 @@ namespace UmbCheckout.Tests.Services
         public async Task A_failure_clearing_the_basket_is_logged_and_the_page_still_renders()
         {
             Basket("en-GB", "GBP", "cs_test_1");
-            _sessions.Setup(s => s.Clear("en-GB", "GBP")).ThrowsAsync(new InvalidOperationException("Session has not been configured"));
+            _sessions.Setup(s => s.Clear("en-GB", "GBP", It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Session has not been configured"));
 
             await Succeed(new Session { Status = "complete", PaymentStatus = "paid", Currency = "gbp", Metadata = Metadata("en-GB", "GBP") });
 

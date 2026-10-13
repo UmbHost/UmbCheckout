@@ -40,8 +40,12 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<string?> GetCurrencyForContentAsync(IPublishedContent content)
+        public Task<string?> GetCurrencyForContentAsync(IPublishedContent content) => GetCurrencyForContentAsync(content, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<string?> GetCurrencyForContentAsync(IPublishedContent content, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (content is null)
             {
                 return null;
@@ -110,8 +114,12 @@ namespace UmbCheckout.Core.Services
         /// <param name="currencyNodeKey">The content item which contains the currency code for the current culture</param>
         /// <returns>The currency code for the current culture or global currency</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<string> GetCurrencyAsync(Guid? currencyNodeKey)
+        public Task<string> GetCurrencyAsync(Guid? currencyNodeKey) => GetCurrencyAsync(currencyNodeKey, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<string> GetCurrencyAsync(Guid? currencyNodeKey, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 var configuration = await _configurationService.GetConfiguration();

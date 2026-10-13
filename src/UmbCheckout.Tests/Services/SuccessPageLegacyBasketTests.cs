@@ -48,7 +48,7 @@ namespace UmbCheckout.Tests.Services
             _basketContext.Setup(b => b.SiteRootCulture).Returns((string?)null); // while routing
 
             var stripe = new Mock<IStripeSessionService>();
-            stripe.Setup(s => s.GetSessionAsync("cs_test_1")).ReturnsAsync(new Session { Id = "cs_test_1", Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddMinutes(-5), Metadata = new Dictionary<string, string>() });
+            stripe.Setup(s => s.GetSessionAsync("cs_test_1", It.IsAny<CancellationToken>())).ReturnsAsync(new Session { Id = "cs_test_1", Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddMinutes(-5), Metadata = new Dictionary<string, string>() });
             var page = Mock.Of<IPublishedContent>(p => p.Key == Guid.NewGuid());
             var request = new Mock<IPublishedRequestBuilder>();
             request.Setup(r => r.Uri).Returns(new Uri("https://shop.test/success/?session_id=cs_test_1&success=true"));

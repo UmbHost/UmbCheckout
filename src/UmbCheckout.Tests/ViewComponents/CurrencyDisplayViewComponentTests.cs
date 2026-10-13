@@ -34,11 +34,11 @@ namespace UmbCheckout.Tests.ViewComponents
             StripeAddToBasketButtonViewComponent.ResetCurrencyNodeKeyWarning();
 
             // The old chain (currency node, current page's root, Configuration) answers USD.
-            _currencyService.Setup(c => c.GetCurrencyAsync(It.IsAny<Guid?>())).ReturnsAsync("USD");
+            _currencyService.Setup(c => c.GetCurrencyAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>())).ReturnsAsync("USD");
         }
 
         private void Basket(params string?[] currencies)
-            => _basketService.Setup(b => b.Get()).ReturnsAsync(new Basket { LineItems = currencies.Select(c => new LineItem { Key = Guid.NewGuid(), Price = 1m, Quantity = 1, CurrencyCode = c }).ToList() });
+            => _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(new Basket { LineItems = currencies.Select(c => new LineItem { Key = Guid.NewGuid(), Price = 1m, Quantity = 1, CurrencyCode = c }).ToList() });
 
         private static TModel Model<TModel>(IViewComponentResult result)
             => Assert.IsType<TModel>(Assert.IsType<ViewViewComponentResult>(result).ViewData!.Model);
@@ -56,7 +56,7 @@ namespace UmbCheckout.Tests.ViewComponents
         [Fact]
         public async Task StripeBasket_TheBasketsOwnCurrencyComesFirst()
         {
-            _basketService.Setup(b => b.Get()).ReturnsAsync(new Basket { CurrencyCode = "EUR" });
+            _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(new Basket { CurrencyCode = "EUR" });
 
             var result = await new StripeBasketViewComponent(_basketService.Object, _currencyService.Object).InvokeAsync();
 
@@ -88,7 +88,7 @@ namespace UmbCheckout.Tests.ViewComponents
         [Fact]
         public async Task BasketLink_TheBasketsOwnCurrencyComesFirst()
         {
-            _basketService.Setup(b => b.Get()).ReturnsAsync(new Basket { CurrencyCode = "EUR" });
+            _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(new Basket { CurrencyCode = "EUR" });
 
             var result = await new BasketLinkViewComponent(_basketService.Object, Mock.Of<IUmbracoContextAccessor>(), _currencyService.Object).InvokeAsync();
 
@@ -136,7 +136,7 @@ namespace UmbCheckout.Tests.ViewComponents
         public async Task AddToBasketButton_ShowsTheChargedCurrency()
         {
             var product = Mock.Of<IPublishedContent>();
-            _currencyService.Setup(c => c.GetCurrencyForContentAsync(product)).ReturnsAsync("JPY");
+            _currencyService.Setup(c => c.GetCurrencyForContentAsync(product, It.IsAny<CancellationToken>())).ReturnsAsync("JPY");
 
             // currencyNodeKey no longer decides the displayed currency: checkout charges the product's own.
             var result = await Button().InvokeAsync(product, currencyNodeKey: Guid.NewGuid());
@@ -155,7 +155,7 @@ namespace UmbCheckout.Tests.ViewComponents
             var model = Model<StripeAddToBasketButtonViewModel>(result!);
             Assert.Null(model.Product);
             Assert.Null(model.CurrencyCode);
-            _currencyService.Verify(c => c.GetCurrencyForContentAsync(It.IsAny<IPublishedContent>()), Times.Never);
+            _currencyService.Verify(c => c.GetCurrencyForContentAsync(It.IsAny<IPublishedContent>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -163,8 +163,8 @@ namespace UmbCheckout.Tests.ViewComponents
         {
             var product = Mock.Of<IPublishedContent>();
             var nodeKey = Guid.NewGuid();
-            _currencyService.Setup(c => c.GetCurrencyForContentAsync(product)).ReturnsAsync("GBP");
-            _currencyService.Setup(c => c.GetCurrencyAsync(nodeKey)).ReturnsAsync("EUR");
+            _currencyService.Setup(c => c.GetCurrencyForContentAsync(product, It.IsAny<CancellationToken>())).ReturnsAsync("GBP");
+            _currencyService.Setup(c => c.GetCurrencyAsync(nodeKey, It.IsAny<CancellationToken>())).ReturnsAsync("EUR");
 
             // An upgraded site that used currencyNodeKey to show EUR is now charged GBP (the site root, then Configuration).
             await Button().InvokeAsync(product, currencyNodeKey: nodeKey);
@@ -184,8 +184,8 @@ namespace UmbCheckout.Tests.ViewComponents
         {
             var product = Mock.Of<IPublishedContent>();
             var nodeKey = Guid.NewGuid();
-            _currencyService.Setup(c => c.GetCurrencyForContentAsync(product)).ReturnsAsync("GBP");
-            _currencyService.Setup(c => c.GetCurrencyAsync(nodeKey)).ReturnsAsync(nodeCurrency);
+            _currencyService.Setup(c => c.GetCurrencyForContentAsync(product, It.IsAny<CancellationToken>())).ReturnsAsync("GBP");
+            _currencyService.Setup(c => c.GetCurrencyAsync(nodeKey, It.IsAny<CancellationToken>())).ReturnsAsync(nodeCurrency);
 
             await Button().InvokeAsync(product, currencyNodeKey: nodeKey);
 
@@ -196,11 +196,11 @@ namespace UmbCheckout.Tests.ViewComponents
         public async Task AddToBasketButton_WithoutACurrencyNodeKeyTheOldChainIsNotAsked()
         {
             var product = Mock.Of<IPublishedContent>();
-            _currencyService.Setup(c => c.GetCurrencyForContentAsync(product)).ReturnsAsync("GBP");
+            _currencyService.Setup(c => c.GetCurrencyForContentAsync(product, It.IsAny<CancellationToken>())).ReturnsAsync("GBP");
 
             await Button().InvokeAsync(product);
 
-            _currencyService.Verify(c => c.GetCurrencyAsync(It.IsAny<Guid?>()), Times.Never);
+            _currencyService.Verify(c => c.GetCurrencyAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()), Times.Never);
             Assert.Empty(_buttonLogger.Entries);
         }
 

@@ -34,6 +34,7 @@ public sealed class FakeStripeHandler : HttpMessageHandler
     {
         var factory = new Mock<IUmbCheckoutStripeClientFactory>();
         factory.Setup(f => f.CreateAsync()).ReturnsAsync(() => Client(apiKey));
+        factory.Setup(f => f.CreateAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => Client(apiKey));
         return factory.Object;
     }
 
@@ -41,6 +42,7 @@ public sealed class FakeStripeHandler : HttpMessageHandler
     {
         var factory = new Mock<IUmbCheckoutStripeClientFactory>();
         factory.Setup(f => f.CreateAsync()).ThrowsAsync(new StripeNotConfiguredException(live));
+        factory.Setup(f => f.CreateAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new StripeNotConfiguredException(live));
         return factory.Object;
     }
 }

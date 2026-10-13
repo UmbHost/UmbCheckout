@@ -11,5 +11,9 @@ namespace UmbCheckout.Core.Interfaces
 
         /// <summary>The currency the current page sells in (<see cref="ICurrencyService.GetCurrencyForContentAsync"/>), else the Configuration currency, else null.</summary>
         Task<string?> GetCurrencyAsync();
+
+        /// <summary>As <see cref="GetCurrencyAsync()"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<string?> GetCurrencyAsync(CancellationToken cancellationToken) => GetCurrencyAsync();
     }
 }

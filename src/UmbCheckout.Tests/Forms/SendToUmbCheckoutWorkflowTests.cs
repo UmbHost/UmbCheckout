@@ -21,14 +21,14 @@ namespace UmbCheckout.Tests.Forms
             // As StripeBasketController.Checkout: without the session id the success page can't tell this basket was paid.
             var basket = new Basket { SiteRootCulture = "en-GB", CurrencyCode = "GBP", LineItems = new[] { new LineItem { Key = Guid.NewGuid(), Name = "Ball", Price = 2.5m, Quantity = 1, CurrencyCode = "GBP" } } };
             var basketService = new Mock<IBasketService>();
-            basketService.Setup(b => b.Get()).ReturnsAsync(basket);
+            basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(basket);
             var pricing = new Mock<IStripeBasketPricingService>();
-            pricing.Setup(p => p.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
+            pricing.Setup(p => p.RepriceAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
             var stripe = new Mock<IStripeSessionService>();
-            stripe.Setup(s => s.CreateSessionAsync(basket)).ReturnsAsync(new Session { Id = "cs_test_forms", Url = "https://checkout.stripe.com/c/pay/cs_test_forms" });
+            stripe.Setup(s => s.CreateSessionAsync(basket, It.IsAny<CancellationToken>())).ReturnsAsync(new Session { Id = "cs_test_forms", Url = "https://checkout.stripe.com/c/pay/cs_test_forms" });
             var sessions = new Mock<ISessionService>();
             Basket? saved = null;
-            sessions.Setup(s => s.Update(It.IsAny<Basket>())).Callback<Basket>(b => saved = b).ReturnsAsync(new UmbCheckoutSession());
+            sessions.Setup(s => s.Update(It.IsAny<Basket>(), It.IsAny<CancellationToken>())).Callback<Basket, CancellationToken>((b, _) => saved = b).ReturnsAsync(new UmbCheckoutSession());
             var httpContext = new DefaultHttpContext();
 
             var workflow = new SendToUmbCheckoutWorkflow(NullLogger<SendToUmbCheckoutWorkflow>.Instance, new HttpContextAccessor { HttpContext = httpContext },

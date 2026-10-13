@@ -26,12 +26,16 @@ namespace UmbCheckout.Core.Services
         public string? SiteRootCulture => CurrentPage?.Root()?.GetCultureFromDomains();
 
         /// <inheritdoc />
-        public async Task<string?> GetCurrencyAsync()
+        public Task<string?> GetCurrencyAsync() => GetCurrencyAsync(CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<string?> GetCurrencyAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var page = CurrentPage;
             if (page != null)
             {
-                return await _currencyService.GetCurrencyForContentAsync(page);
+                return await _currencyService.GetCurrencyForContentAsync(page, cancellationToken);
             }
 
             var configuration = await _configurationService.GetConfiguration();

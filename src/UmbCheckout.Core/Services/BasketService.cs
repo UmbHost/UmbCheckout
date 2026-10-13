@@ -27,14 +27,17 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Get()
+        public Task<Basket> Get() => Get(CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Get(CancellationToken cancellationToken)
         {
             try
             {
-                var currentSession = await _sessionService.Get();
+                var currentSession = await _sessionService.Get(cancellationToken);
                 return currentSession.Basket;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, ex.Message);
                 throw;
@@ -42,20 +45,23 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Add(LineItem item)
+        public Task<Basket> Add(LineItem item) => Add(item, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Add(LineItem item, CancellationToken cancellationToken)
         {
             ValidateNewLine(item);
 
             // A basket holds one currency: the line goes to its own currency's basket.
             var currencyCode = item.CurrencyCode!.Trim().ToUpperInvariant();
-            var basket = (await _sessionService.Get(currencyCode)).Basket;
+            var basket = (await _sessionService.Get(currencyCode, cancellationToken)).Basket;
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnBasketAddStartedNotification(item, basket));
+            await _eventAggregator.PublishAsync(new OnBasketAddStartedNotification(item, basket), cancellationToken);
 
             basket.LineItems = Merge(basket.LineItems, new[] { item });
             basket.CurrencyCode ??= currencyCode;
-            var updateResponse = await _sessionService.Update(basket);
+            var updateResponse = await _sessionService.Update(basket, cancellationToken);
             basket = updateResponse.Basket;
 
             scope.Notifications.Publish(new OnBasketAddedNotification(item, basket));
@@ -63,7 +69,10 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Add(IEnumerable<LineItem> items)
+        public Task<Basket> Add(IEnumerable<LineItem> items) => Add(items, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Add(IEnumerable<LineItem> items, CancellationToken cancellationToken)
         {
             var newLines = items.ToList();
             newLines.ForEach(ValidateNewLine);
@@ -74,12 +83,12 @@ namespace UmbCheckout.Core.Services
             }
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-            await _eventAggregator.PublishAsync(new OnBasketAddManyStartedNotification(newLines));
+            await _eventAggregator.PublishAsync(new OnBasketAddManyStartedNotification(newLines), cancellationToken);
 
-            var basket = (await _sessionService.Get(currencies[0])).Basket;
+            var basket = (await _sessionService.Get(currencies[0], cancellationToken)).Basket;
             basket.LineItems = Merge(basket.LineItems, newLines);
             basket.CurrencyCode ??= currencies[0];
-            var updateResponse = await _sessionService.Update(basket);
+            var updateResponse = await _sessionService.Update(basket, cancellationToken);
             basket = updateResponse.Basket;
 
             scope.Notifications.Publish(new OnBasketAddedManyNotification(newLines, basket));
@@ -146,14 +155,17 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Reduce(Guid key)
+        public Task<Basket> Reduce(Guid key) => Reduce(key, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Reduce(Guid key, CancellationToken cancellationToken)
         {
             try
             {
-                var basket = await Get();
+                var basket = await Get(cancellationToken);
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket));
+                await _eventAggregator.PublishAsync(new OnBasketReduceStartedNotification(key, basket), cancellationToken);
 
                 var lineItems = basket.LineItems.ToList();
                 if (lineItems.Any(x => x.Key.Equals(key)))
@@ -167,13 +179,13 @@ namespace UmbCheckout.Core.Services
                 }
 
                 basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
+                var updateResponse = await _sessionService.Update(basket, cancellationToken);
                 basket = updateResponse.Basket;
 
                 scope.Notifications.Publish(new OnBasketReducedNotification(key, basket));
                 return basket;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, ex.Message);
                 throw;
@@ -181,14 +193,17 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Remove(Guid key)
+        public Task<Basket> Remove(Guid key) => Remove(key, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Remove(Guid key, CancellationToken cancellationToken)
         {
             try
             {
-                var basket = await Get();
+                var basket = await Get(cancellationToken);
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket));
+                await _eventAggregator.PublishAsync(new OnBasketRemoveStartedNotification(key, basket), cancellationToken);
 
                 var lineItems = basket.LineItems.ToList();
                 if (lineItems.Any(x => x.Key.Equals(key)))
@@ -198,13 +213,13 @@ namespace UmbCheckout.Core.Services
                 }
 
                 basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
+                var updateResponse = await _sessionService.Update(basket, cancellationToken);
                 basket = updateResponse.Basket;
 
                 scope.Notifications.Publish(new OnBasketRemovedNotification(key, basket));
                 return basket;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, ex.Message);
                 throw;
@@ -212,14 +227,17 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Remove(IEnumerable<Guid> keys)
+        public Task<Basket> Remove(IEnumerable<Guid> keys) => Remove(keys, CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Remove(IEnumerable<Guid> keys, CancellationToken cancellationToken)
         {
             try
             {
-                var basket = await Get();
+                var basket = await Get(cancellationToken);
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket));
+                await _eventAggregator.PublishAsync(new OnBasketRemoveManyStartedNotification(keys, basket), cancellationToken);
 
                 var lineItems = basket.LineItems.ToList();
 
@@ -233,13 +251,13 @@ namespace UmbCheckout.Core.Services
                 }
 
                 basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
+                var updateResponse = await _sessionService.Update(basket, cancellationToken);
                 basket = updateResponse.Basket;
 
                 scope.Notifications.Publish(new OnBasketRemovedManyNotification(keys, basket));
                 return basket;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, ex.Message);
                 throw;
@@ -247,24 +265,27 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Basket> Clear()
+        public Task<Basket> Clear() => Clear(CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<Basket> Clear(CancellationToken cancellationToken)
         {
             try
             {
-                var basket = await Get();
+                var basket = await Get(cancellationToken);
 
                 using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
-                await _eventAggregator.PublishAsync(new OnBasketClearStartedNotification(basket));
+                await _eventAggregator.PublishAsync(new OnBasketClearStartedNotification(basket), cancellationToken);
 
                 var lineItems = Enumerable.Empty<LineItem>();
                 basket.LineItems = lineItems;
-                var updateResponse = await _sessionService.Update(basket);
+                var updateResponse = await _sessionService.Update(basket, cancellationToken);
                 basket = updateResponse.Basket;
 
                 scope.Notifications.Publish(new OnBasketClearedNotification(basket));
                 return basket;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, ex.Message);
                 throw;
@@ -272,14 +293,17 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<long> TotalItems()
+        public Task<long> TotalItems() => TotalItems(CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<long> TotalItems(CancellationToken cancellationToken)
         {
             try
             {
-                var basket = await Get();
+                var basket = await Get(cancellationToken);
                 return basket.LineItems.Select(x => x.Quantity).Sum();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, ex.Message);
                 throw;
@@ -287,15 +311,18 @@ namespace UmbCheckout.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<decimal> SubTotal()
+        public Task<decimal> SubTotal() => SubTotal(CancellationToken.None);
+
+        /// <inheritdoc />
+        public async Task<decimal> SubTotal(CancellationToken cancellationToken)
         {
             try
             {
-                var basket = await Get();
+                var basket = await Get(cancellationToken);
 
                 return basket.LineItems.Sum(lineItem => lineItem.Price * lineItem.Quantity);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, ex.Message);
                 throw;

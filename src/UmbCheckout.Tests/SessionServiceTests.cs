@@ -202,9 +202,38 @@ namespace UmbCheckout.Tests
         [Fact]
         public async Task Get_UsesTheRequestsCurrencyByDefault()
         {
-            _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("EUR");
+            _basketContext.Setup(b => b.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("EUR");
 
             Assert.Equal("EUR", (await Service().Get()).Basket.CurrencyCode);
+        }
+
+        [Fact]
+        public async Task A_cancelled_update_stores_nothing()
+        {
+            // A client disconnect stops the update before the basket is written, never part-way (session, cookie and database copies).
+            var service = Service();
+            using var cancelled = new CancellationTokenSource();
+            cancelled.Cancel();
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { Line("GBP") } }, cancelled.Token));
+
+            Assert.Empty(_session.Keys);
+            Assert.DoesNotContain(_published, n => n is OnSessionUpdatedNotification);
+        }
+
+        [Fact]
+        public async Task The_overloads_without_a_token_use_the_requests()
+        {
+            using var request = new CancellationTokenSource();
+            _httpContext.RequestAborted = request.Token;
+            _basketContext.Setup(b => b.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("EUR");
+
+            await Service().Get();
+            await Service().Update(new Basket { LineItems = new[] { Line("EUR") } });
+
+            _basketContext.Verify(b => b.GetCurrencyAsync(request.Token), Times.Exactly(2));
+            _events.Verify(e => e.PublishAsync(It.IsAny<OnSessionGetStartedNotification>(), request.Token), Times.Once);
+            _events.Verify(e => e.PublishAsync(It.IsAny<OnSessionUpdateStartedNotification>(), request.Token), Times.Once);
         }
 
         [Fact]
@@ -267,7 +296,7 @@ namespace UmbCheckout.Tests
         [Fact]
         public async Task Update_ABasketWithoutACurrencyTakesTheRequestsCurrency()
         {
-            _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("GBP");
+            _basketContext.Setup(b => b.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("GBP");
 
             var session = await Service().Update(new Basket { LineItems = new[] { Line("GBP") } });
 
@@ -311,7 +340,7 @@ namespace UmbCheckout.Tests
         [Fact]
         public async Task Clear_UsesTheRequestsCurrencyByDefault()
         {
-            _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("GBP");
+            _basketContext.Setup(b => b.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("GBP");
             var service = Service();
             await service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { Line("GBP") } });
 

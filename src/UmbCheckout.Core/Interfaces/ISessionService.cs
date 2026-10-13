@@ -13,6 +13,10 @@ namespace UmbCheckout.Core.Interfaces
         /// <returns>The current UmbCheckout Session</returns>
         Task<UmbCheckoutSession> Get();
 
+        /// <summary>As <see cref="Get()"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<UmbCheckoutSession> Get(CancellationToken cancellationToken) => Get();
+
         /// <summary>
         /// Gets the UmbCheckout Session holding the basket in <paramref name="currencyCode"/> (a basket belongs to one currency)
         /// </summary>
@@ -20,6 +24,10 @@ namespace UmbCheckout.Core.Interfaces
         /// <param name="currencyCode">The basket's currency</param>
         /// <returns>The UmbCheckout Session for that currency</returns>
         Task<UmbCheckoutSession> Get(string? currencyCode) => Get();
+
+        /// <summary>As <see cref="Get(string?)"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<UmbCheckoutSession> Get(string? currencyCode, CancellationToken cancellationToken) => Get(currencyCode);
 
         /// <summary>
         /// Gets the UmbCheckout Session holding the basket of <paramref name="siteRootCulture"/> in <paramref name="currencyCode"/>,
@@ -31,6 +39,10 @@ namespace UmbCheckout.Core.Interfaces
         /// <returns>The UmbCheckout Session for that culture and currency</returns>
         Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode) => Get(currencyCode);
 
+        /// <summary>As <see cref="Get(string?, string?)"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken) => Get(siteRootCulture, currencyCode);
+
         /// <summary>
         /// Stores <paramref name="basket"/> under its site root culture and currency
         /// </summary>
@@ -38,11 +50,19 @@ namespace UmbCheckout.Core.Interfaces
         /// <returns>The current UmbCheckout Session</returns>
         Task<UmbCheckoutSession> Update(Basket basket);
 
+        /// <summary>As <see cref="Update(Basket)"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the update before the basket is stored, never part-way through.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<UmbCheckoutSession> Update(Basket basket, CancellationToken cancellationToken) => Update(basket);
+
         /// <summary>
         /// Clears the current request's basket (its site root culture and currency); other baskets are kept
         /// </summary>
         /// <returns>True when the basket is still present afterwards</returns>
         Task<bool> Clear();
+
+        /// <summary>As <see cref="Clear()"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the clear before it starts, never part-way through.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<bool> Clear(CancellationToken cancellationToken) => Clear();
 
         /// <summary>
         /// Clears the basket in <paramref name="currencyCode"/> for the current request's site root culture; other baskets are kept
@@ -51,6 +71,10 @@ namespace UmbCheckout.Core.Interfaces
         /// <param name="currencyCode">The currency of the basket to clear</param>
         /// <returns>True when the basket is still present afterwards</returns>
         Task<bool> Clear(string? currencyCode) => Clear();
+
+        /// <summary>As <see cref="Clear(string?)"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the clear before it starts, never part-way through.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<bool> Clear(string? currencyCode, CancellationToken cancellationToken) => Clear(currencyCode);
 
         /// <summary>
         /// Clears the basket of <paramref name="siteRootCulture"/> in <paramref name="currencyCode"/>, for callers that run
@@ -61,5 +85,9 @@ namespace UmbCheckout.Core.Interfaces
         /// <param name="currencyCode">The basket's currency</param>
         /// <returns>True when the basket is still present afterwards</returns>
         Task<bool> Clear(string? siteRootCulture, string? currencyCode) => Clear(currencyCode);
+
+        /// <summary>As <see cref="Clear(string?, string?)"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the clear before it starts, never part-way through.</summary>
+        /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
+        Task<bool> Clear(string? siteRootCulture, string? currencyCode, CancellationToken cancellationToken) => Clear(siteRootCulture, currencyCode);
     }
 }

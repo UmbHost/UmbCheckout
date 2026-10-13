@@ -172,8 +172,8 @@ public sealed class StripeClientFactoryTests
     public async Task The_shipping_rate_api_answers_Stripe_failures_with_a_problem_not_a_500()
     {
         var api = new Mock<IStripeShippingRateApiService>();
-        api.Setup(a => a.GetShippingRates()).ThrowsAsync(new StripeNotConfiguredException(live: false));
-        api.Setup(a => a.GetShippingRate("shr_1")).ThrowsAsync(new HttpRequestException("unreachable"));
+        api.Setup(a => a.GetShippingRates(It.IsAny<CancellationToken>())).ThrowsAsync(new StripeNotConfiguredException(live: false));
+        api.Setup(a => a.GetShippingRate("shr_1", It.IsAny<CancellationToken>())).ThrowsAsync(new HttpRequestException("unreachable"));
         var controller = new StripeShippingRatesApiController(NullLogger<StripeShippingRatesApiController>.Instance,
             Mock.Of<IStripeShippingRateDatabaseService>(), api.Object, Mock.Of<ILocalizedTextService>());
 

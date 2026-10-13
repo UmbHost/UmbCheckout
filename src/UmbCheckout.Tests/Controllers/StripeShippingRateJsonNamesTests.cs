@@ -47,8 +47,8 @@ public sealed class StripeShippingRateJsonNamesTests
     public async Task The_shipping_rate_screens_read_these_names()
     {
         var api = new Mock<IStripeShippingRateApiService>();
-        api.Setup(a => a.GetShippingRates()).ReturnsAsync(new StripeList<ShippingRate> { Data = new List<ShippingRate> { Rate() } });
-        api.Setup(a => a.GetShippingRate("shr_1")).ReturnsAsync(Rate());
+        api.Setup(a => a.GetShippingRates(It.IsAny<CancellationToken>())).ReturnsAsync(new StripeList<ShippingRate> { Data = new List<ShippingRate> { Rate() } });
+        api.Setup(a => a.GetShippingRate("shr_1", It.IsAny<CancellationToken>())).ReturnsAsync(Rate());
         var controller = new StripeShippingRatesApiController(NullLogger<StripeShippingRatesApiController>.Instance,
             Mock.Of<IStripeShippingRateDatabaseService>(), api.Object, Mock.Of<ILocalizedTextService>());
 

@@ -43,7 +43,7 @@ namespace UmbCheckout.Tests.Controllers
         public async Task GetStripeShippingRate_AddsTheFixedAmountInMajorUnits(long minorUnits, string currency, double major)
         {
             var rate = Rate("shr_1", minorUnits, currency);
-            _api.Setup(a => a.GetShippingRate("shr_1")).ReturnsAsync(rate);
+            _api.Setup(a => a.GetShippingRate("shr_1", It.IsAny<CancellationToken>())).ReturnsAsync(rate);
 
             var body = JsonResultAssert.Body(await Controller().GetStripeShippingRate("shr_1"));
 
@@ -58,7 +58,7 @@ namespace UmbCheckout.Tests.Controllers
         public async Task GetStripeShippingRate_KeepsEveryExistingField()
         {
             var rate = Rate("shr_1", 495, "gbp");
-            _api.Setup(a => a.GetShippingRate("shr_1")).ReturnsAsync(rate);
+            _api.Setup(a => a.GetShippingRate("shr_1", It.IsAny<CancellationToken>())).ReturnsAsync(rate);
             var before = JsonNode.Parse(JsonSerializer.Serialize(rate, rate.GetType(), OldOptions));
 
             var after = JsonResultAssert.Body(await Controller().GetStripeShippingRate("shr_1"));
@@ -73,7 +73,7 @@ namespace UmbCheckout.Tests.Controllers
         public async Task GetStripeShippingRates_AddsMoneyToEachRate_AndKeepsEveryExistingField()
         {
             var list = new StripeList<ShippingRate> { Data = new List<ShippingRate> { Rate("shr_jpy", 500, "jpy"), Rate("shr_gbp", 495, "gbp") } };
-            _api.Setup(a => a.GetShippingRates()).ReturnsAsync(list);
+            _api.Setup(a => a.GetShippingRates(It.IsAny<CancellationToken>())).ReturnsAsync(list);
             var before = JsonNode.Parse(JsonSerializer.Serialize(list, list.GetType(), OldOptions));
 
             var after = JsonResultAssert.Body(await Controller().GetStripeShippingRates());
@@ -88,7 +88,7 @@ namespace UmbCheckout.Tests.Controllers
         public async Task GetStripeShippingRate_WithoutAFixedAmount_AddsNothing()
         {
             var rate = new ShippingRate { Id = "shr_free", DisplayName = "Free" };
-            _api.Setup(a => a.GetShippingRate("shr_free")).ReturnsAsync(rate);
+            _api.Setup(a => a.GetShippingRate("shr_free", It.IsAny<CancellationToken>())).ReturnsAsync(rate);
             var before = JsonNode.Parse(JsonSerializer.Serialize(rate, rate.GetType(), OldOptions));
 
             var after = JsonResultAssert.Body(await Controller().GetStripeShippingRate("shr_free"));

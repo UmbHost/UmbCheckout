@@ -30,15 +30,16 @@ namespace UmbCheckout.Core.ViewComponents
         {
             // The subtotal is shown in the basket's own currency (what it is charged in); the configured chain only applies to an
             // empty basket saved before baskets were per currency.
-            var basket = await _basketService.Get();
-            var currencyCode = basket.CurrencyCode ?? basket.LineItems.SingleCurrency() ?? await _currencyService.GetCurrencyAsync(currencyNodeKey);
+            var cancellationToken = HttpContext?.RequestAborted ?? CancellationToken.None;
+            var basket = await _basketService.Get(cancellationToken);
+            var currencyCode = basket.CurrencyCode ?? basket.LineItems.SingleCurrency() ?? await _currencyService.GetCurrencyAsync(currencyNodeKey, cancellationToken);
 
             var model = new BasketLinkViewModel
             {
                 LinkCssClass = linkCssClass,
                 LinkName = linkName,
-                TotalItems = await _basketService.TotalItems(),
-                SubTotal = await _basketService.SubTotal(),
+                TotalItems = await _basketService.TotalItems(cancellationToken),
+                SubTotal = await _basketService.SubTotal(cancellationToken),
                 LinkType = linkType,
                 CurrencyCode = currencyCode
             };

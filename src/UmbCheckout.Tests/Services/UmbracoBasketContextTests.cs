@@ -33,7 +33,7 @@ namespace UmbCheckout.Tests.Services
         {
             var page = Mock.Of<IPublishedContent>();
             OnPage(page);
-            _currency.Setup(c => c.GetCurrencyForContentAsync(page)).ReturnsAsync("EUR");
+            _currency.Setup(c => c.GetCurrencyForContentAsync(page, It.IsAny<CancellationToken>())).ReturnsAsync("EUR");
 
             Assert.Equal("EUR", await Context().GetCurrencyAsync());
         }
