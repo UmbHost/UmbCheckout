@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Stripe;
 using UmbCheckout.Stripe.Controllers.BackOffice.Api;
@@ -93,6 +94,18 @@ namespace UmbCheckout.Tests.Controllers
             var after = JsonResultAssert.Body(await Controller().GetStripeShippingRate("shr_free"));
 
             JsonResultAssert.Additive(before, after);
+        }
+    
+
+        [Fact]
+        public async Task UpdateShippingRate_ARefusedUpdateIsABadRequest()
+        {
+            // e.g. the new Stripe ID belongs to another rate: the service refuses with null, and the editor must not see "saved".
+            var database = new Mock<IStripeShippingRateDatabaseService>();
+            database.Setup(d => d.UpdateShippingRate(It.IsAny<UmbCheckout.Stripe.Models.ShippingRate>())).ReturnsAsync((UmbCheckout.Stripe.Models.ShippingRate?)null);
+            var controller = new StripeShippingRatesApiController(NullLogger<StripeShippingRatesApiController>.Instance, database.Object, _api.Object, Mock.Of<ILocalizedTextService>());
+
+            Assert.IsType<BadRequestResult>(await controller.UpdateShippingRate(new UmbCheckout.Stripe.Models.ShippingRate { Name = "One", Value = "shr_2" }));
         }
     }
 }
