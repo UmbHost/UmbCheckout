@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <ReferenceUmbHostLicensing>true</ReferenceUmbHostLicensing>
     <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
 	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -38,7 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="Schema.NET" Version="12.0.0" />
-    <PackageReference Include="UmbHost.Licensing" Version="1.4.0" />
+    <!-- UmbHost.Licensing: see Directory.Build.targets -->
   </ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">

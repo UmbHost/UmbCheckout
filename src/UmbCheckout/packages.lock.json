@@ -2185,14 +2185,6 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
-      "UmbHost.Licensing": {
-        "type": "Transitive",
-        "resolved": "1.4.0",
-        "contentHash": "n6y+8QPhP+bE/RVi01RYEL9/c+PlkwDnvzjvJmdrYNo7NZP7dXkq8Is0EAaf3JnRKjL0ZKpP8IgctCz8GkWAuA==",
-        "dependencies": {
-          "Umbraco.Cms.Web.BackOffice": "[10.8.1, 11.0.0)"
-        }
-      },
       "Umbraco.Cms.Core": {
         "type": "Transitive",
         "resolved": "10.8.8",
@@ -2319,7 +2311,7 @@
           "Microsoft.AspNetCore.Components.Web": "[6.0.21, 7.0.0)",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
-          "UmbHost.Licensing": "[1.4.0, )",
+          "UmbHost.Licensing": "[1.5.0, )",
           "Umbraco.Cms.Core": "[10.8.8, 11.0.0)",
           "Umbraco.Cms.Web.BackOffice": "[10.8.8, 11.0.0)"
         }
@@ -2329,7 +2321,7 @@
         "dependencies": {
           "Schema.NET": "[12.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
-          "UmbHost.Licensing": "[1.4.0, )",
+          "UmbHost.Licensing": "[1.5.0, )",
           "Umbraco.Cms.Web.BackOffice": "[10.8.8, 11.0.0)",
           "Umbraco.Cms.Web.Common": "[10.8.8, 11.0.0)"
         }
@@ -2340,6 +2332,12 @@
           "Umbraco.Cms.Core": "[10.8.8, 11.0.0)",
           "Umbraco.Cms.Infrastructure": "[10.8.8, 11.0.0)",
           "Umbraco.Cms.Web.Common": "[10.8.8, 11.0.0)"
+        }
+      },
+      "umbhost.licensing": {
+        "type": "Project",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "[10.8.1, 11.0.0)"
         }
       }
     },
@@ -4421,14 +4419,6 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
-      "UmbHost.Licensing": {
-        "type": "Transitive",
-        "resolved": "1.4.0",
-        "contentHash": "n6y+8QPhP+bE/RVi01RYEL9/c+PlkwDnvzjvJmdrYNo7NZP7dXkq8Is0EAaf3JnRKjL0ZKpP8IgctCz8GkWAuA==",
-        "dependencies": {
-          "Umbraco.Cms.Web.BackOffice": "[13.0.0, 14.0.0)"
-        }
-      },
       "Umbraco.Cms.Core": {
         "type": "Transitive",
         "resolved": "13.5.3",
@@ -4545,7 +4535,7 @@
           "Microsoft.AspNetCore.Components.Web": "[8.0.0, 9.0.0)",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
-          "UmbHost.Licensing": "[1.4.0, )",
+          "UmbHost.Licensing": "[1.5.0, )",
           "Umbraco.Cms.Core": "[13.5.3, 14.0.0)",
           "Umbraco.Cms.Web.BackOffice": "[13.5.3, 14.0.0)"
         }
@@ -4555,7 +4545,7 @@
         "dependencies": {
           "Schema.NET": "[12.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
-          "UmbHost.Licensing": "[1.4.0, )",
+          "UmbHost.Licensing": "[1.5.0, )",
           "Umbraco.Cms.Web.BackOffice": "[13.5.3, 14.0.0)",
           "Umbraco.Cms.Web.Common": "[13.5.3, 14.0.0)"
         }
@@ -4566,6 +4556,12 @@
           "Umbraco.Cms.Core": "[13.5.3, 14.0.0)",
           "Umbraco.Cms.Infrastructure": "[13.5.3, 14.0.0)",
           "Umbraco.Cms.Web.Common": "[13.5.3, 14.0.0)"
+        }
+      },
+      "umbhost.licensing": {
+        "type": "Project",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "[13.0.0, 14.0.0)"
         }
       }
     }

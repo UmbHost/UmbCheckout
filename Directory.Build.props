@@ -1,0 +1,18 @@
+<Project>
+	<!-- When this repo is built inside a parent checkout, keep the parent's shared settings too. -->
+	<Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
+	        Condition="'$([MSBuild]::GetPathOfFileAbove(`Directory.Build.props`, `$(MSBuildThisFileDirectory)../`))' != ''" />
+
+	<!--
+		UmbHost.Licensing (closed source) lives next to this repo in the full checkout. Projects that set
+		ReferenceUmbHostLicensing=true get the project there, or the published NuGet package when this repo is cloned on its own.
+		Force package mode with -p:UseUmbLicensingProject=false.
+	-->
+	<PropertyGroup>
+		<UmbLicensingProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../UmbLicensing/UmbHost.Licensing.csproj'))</UmbLicensingProject>
+		<UseUmbLicensingProject Condition="'$(UseUmbLicensingProject)' == '' And Exists('$(UmbLicensingProject)')">true</UseUmbLicensingProject>
+		<!-- Set only when the build is given a version (CI passes the one built from the UmbLicensing submodule). -->
+		<UmbHostLicensingPinnedVersion>$(UmbHostLicensingVersion)</UmbHostLicensingPinnedVersion>
+		<UmbHostLicensingVersion Condition="'$(UmbHostLicensingVersion)' == ''">1.5.0</UmbHostLicensingVersion>
+	</PropertyGroup>
+</Project>
