@@ -105,6 +105,52 @@ public sealed class StripeClientFactoryTests
         Assert.False(string.IsNullOrWhiteSpace(problem.Title));
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public void A_rejected_key_gives_a_constant_detail_and_log_without_the_key(HttpStatusCode status)
+    {
+        // Stripe's message for a rejected key echoes the key's last 4 characters
+        const string stripeMessage = "Invalid API Key provided: sk_test_********************WXYZ";
+        var failure = new StripeException(status, new StripeError { Message = stripeMessage }, stripeMessage);
+        var logger = new CapturingLogger();
+
+        var json = Assert.IsType<JsonResult>(StripeApiErrorResult.For(failure, logger));
+
+        Assert.Equal(400, json.StatusCode);
+        Assert.Equal(StripeApiErrorResult.KeyRejectedDetail, Assert.IsType<ProblemDetails>(json.Value).Detail);
+        Assert.Equal("Stripe rejected the API key for the active mode (test or live). Check the Stripe settings.", StripeApiErrorResult.KeyRejectedDetail);
+        var entry = Assert.Single(logger.Entries);
+        Assert.Null(entry.Exception);
+        Assert.DoesNotContain("WXYZ", entry.Message);
+    }
+
+    /// <summary>Records each entry's message and exception (a logged exception carries Stripe's message).</summary>
+    private sealed class CapturingLogger : Microsoft.Extensions.Logging.ILogger
+    {
+        public List<(string Message, Exception? Exception)> Entries { get; } = new();
+
+#if NET8_0_OR_GREATER
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullDisposable.Instance;
+#else
+        public IDisposable BeginScope<TState>(TState state) => NullDisposable.Instance;
+#endif
+
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Entries.Add((formatter(state, exception), exception));
+
+        private sealed class NullDisposable : IDisposable
+        {
+            public static readonly NullDisposable Instance = new();
+
+            public void Dispose()
+            {
+            }
+        }
+    }
+
     [Fact]
     public void Other_failures_and_aborted_requests_are_not_mapped()
     {
