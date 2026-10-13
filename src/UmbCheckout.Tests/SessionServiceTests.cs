@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -79,6 +79,28 @@ namespace UmbCheckout.Tests
             _basketContext.Setup(b => b.GetCurrencyAsync()).ReturnsAsync("EUR");
 
             Assert.Equal("EUR", (await Service().Get()).Basket.CurrencyCode);
+        }
+
+        [Fact]
+        public async Task Get_WithAnExplicitCultureWorksWhileThePageIsUnknown()
+        {
+            // While routing the basket context has no page (culture null); the success page names the basket's culture.
+            _session.SetObjectAsJson(BasketKeys.LegacySession("en-GB"), new UmbCheckoutSession { SiteRootCulture = "en-GB", Basket = new Basket { LineItems = new[] { Line("GBP") } } });
+            _basketContext.Setup(b => b.SiteRootCulture).Returns((string?)null);
+
+            var session = await Service().Get("en-GB", "GBP");
+
+            Assert.Single(session.Basket.LineItems);
+            Assert.Equal("en-GB", session.SiteRootCulture);
+        }
+
+        [Fact]
+        public async Task The_checkout_session_is_kept_with_the_basket()
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", CheckoutSessionId = "cs_test_1", LineItems = new[] { Line("GBP") } });
+
+            Assert.Equal("cs_test_1", (await service.Get("GBP")).Basket.CheckoutSessionId);
         }
 
         [Fact]

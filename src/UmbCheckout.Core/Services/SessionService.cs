@@ -78,7 +78,10 @@ namespace UmbCheckout.Core.Services
         public async Task<UmbCheckoutSession> Get() => await Get(await _basketContext.GetCurrencyAsync());
 
         /// <inheritdoc />
-        public async Task<UmbCheckoutSession> Get(string? currencyCode)
+        public async Task<UmbCheckoutSession> Get(string? currencyCode) => await Get(_basketContext.SiteRootCulture, currencyCode);
+
+        /// <inheritdoc />
+        public async Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode)
         {
             currencyCode = Normalise(currencyCode);
             var configuration = await _configurationService.GetConfiguration();
@@ -86,7 +89,6 @@ namespace UmbCheckout.Core.Services
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
             await _eventAggregator.PublishAsync(new OnSessionGetStartedNotification());
 
-            var siteRootCulture = _basketContext.SiteRootCulture;
             MigrateLegacyBasket(siteRootCulture, currencyCode);
 
             var key = BasketKeys.Session(siteRootCulture, currencyCode);

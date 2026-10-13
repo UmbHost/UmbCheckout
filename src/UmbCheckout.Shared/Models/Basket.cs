@@ -18,6 +18,12 @@ namespace UmbCheckout.Shared.Models
 
         public string? CustomerReferenceId { get; set; } = null;
 
+        /// <summary>
+        /// The payment provider's checkout session this basket was last sent to; the success page clears the basket only when
+        /// it returns from that session (not a basket started later, or a stale or shared link).
+        /// </summary>
+        public string? CheckoutSessionId { get; set; } = null;
+
         public Customer? Customer { get; set; } = null;
 
         public IEnumerable<LineItem> LineItems { get; set; } = Enumerable.Empty<LineItem>();

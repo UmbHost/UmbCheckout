@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -186,12 +186,25 @@ namespace UmbCheckout.Tests.Controllers
             var basket = new Basket { CurrencyCode = "GBP", LineItems = new List<LineItem> { new() { Key = _product.Key, Price = 10m, CurrencyCode = "GBP", Quantity = 1 } } };
             _basketService.Setup(b => b.Get()).ReturnsAsync(basket);
             _repricing.Setup(r => r.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
-            _stripe.Setup(s => s.CreateSessionAsync(basket)).ReturnsAsync(new global::Stripe.Checkout.Session { Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
+            _stripe.Setup(s => s.CreateSessionAsync(basket)).ReturnsAsync(new global::Stripe.Checkout.Session { Id = "cs_test_1", Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
 
             var result = await Controller().Checkout();
 
             Assert.Equal("https://checkout.stripe.com/c/pay/cs_test_1", Assert.IsType<RedirectResult>(result).Url);
-            _sessions.Verify(s => s.Update(It.IsAny<Basket>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Checkout_records_the_Stripe_session_on_the_basket_it_pays_for()
+        {
+            // The success page (and the webhook) clear this basket only when it returns from this checkout session.
+            var basket = new Basket { CurrencyCode = "GBP", LineItems = new List<LineItem> { new() { Key = _product.Key, Price = 10m, CurrencyCode = "GBP", Quantity = 1 } } };
+            _basketService.Setup(b => b.Get()).ReturnsAsync(basket);
+            _repricing.Setup(r => r.RepriceAsync(basket)).ReturnsAsync(new BasketRepricing(basket, Array.Empty<RepricedLine>()));
+            _stripe.Setup(s => s.CreateSessionAsync(basket)).ReturnsAsync(new global::Stripe.Checkout.Session { Id = "cs_test_1", Url = "https://checkout.stripe.com/c/pay/cs_test_1" });
+
+            await Controller().Checkout();
+
+            _sessions.Verify(s => s.Update(It.Is<Basket>(b => b.CheckoutSessionId == "cs_test_1")), Times.Once);
         }
 
         [Fact]

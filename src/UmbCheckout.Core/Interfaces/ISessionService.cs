@@ -22,6 +22,16 @@ namespace UmbCheckout.Core.Interfaces
         Task<UmbCheckoutSession> Get(string? currencyCode) => Get();
 
         /// <summary>
+        /// Gets the UmbCheckout Session holding the basket of <paramref name="siteRootCulture"/> in <paramref name="currencyCode"/>,
+        /// for callers that run before the request's page is known (e.g. while routing)
+        /// </summary>
+        /// <remarks>The default implementation (for implementations written before baskets were per culture and currency) returns <see cref="Get(string?)"/>.</remarks>
+        /// <param name="siteRootCulture">The basket's site root culture</param>
+        /// <param name="currencyCode">The basket's currency</param>
+        /// <returns>The UmbCheckout Session for that culture and currency</returns>
+        Task<UmbCheckoutSession> Get(string? siteRootCulture, string? currencyCode) => Get(currencyCode);
+
+        /// <summary>
         /// Stores <paramref name="basket"/> under its site root culture and currency
         /// </summary>
         /// <param name="basket">The Basket</param>
