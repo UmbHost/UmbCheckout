@@ -13,6 +13,7 @@ using ConfigurationModel = UmbCheckout.Shared.Models.UmbCheckoutConfiguration;
 
 namespace UmbCheckout.Tests.Persistence;
 
+[Trait("Category", "Integration")] // SQL Server cases need Docker
 [Collection(DatabaseCollection.Name)]
 public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServer)
 {

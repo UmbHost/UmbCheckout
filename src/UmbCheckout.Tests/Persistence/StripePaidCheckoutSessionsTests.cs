@@ -10,6 +10,7 @@ namespace UmbCheckout.Tests.Persistence;
 /// Sub-project B: the Stripe webhook records paid checkout sessions, so the customer's next basket read clears a basket they paid
 /// for without returning to the success page. Kept 30 days, like handled webhook events.
 /// </summary>
+[Trait("Category", "Integration")] // SQL Server cases need Docker
 [Collection(DatabaseCollection.Name)]
 public sealed class StripePaidCheckoutSessionsTests(SqlServerContainerFixture sqlServer)
 {

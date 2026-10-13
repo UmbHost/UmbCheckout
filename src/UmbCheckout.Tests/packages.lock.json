@@ -2429,7 +2429,7 @@
           "Microsoft.AspNetCore.Components.Web": "[10.0.0, 11.0.0)",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
-          "UmbHost.Licensing": "[1.3.0, )",
+          "UmbHost.Licensing": "[2.0.0, )",
           "Umbraco.Cms.Api.Management": "[17.6.0, 18.0.0)",
           "Umbraco.Cms.Core": "[17.6.0, 18.0.0)"
         }
@@ -2439,7 +2439,7 @@
         "dependencies": {
           "Schema.NET": "[12.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
-          "UmbHost.Licensing": "[1.3.0, )",
+          "UmbHost.Licensing": "[2.0.0, )",
           "Umbraco.Cms.Api.Management": "[17.6.0, 18.0.0)",
           "Umbraco.Cms.Web.Common": "[17.6.0, 18.0.0)"
         }
@@ -2460,7 +2460,7 @@
           "Stripe.net": "[50.3.0, 51.0.0)",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
-          "UmbHost.Licensing": "[1.3.0, )",
+          "UmbHost.Licensing": "[2.0.0, )",
           "Umbraco.Cms.Api.Management": "[17.6.0, 18.0.0)",
           "Umbraco.Cms.Web.Common": "[17.6.0, 18.0.0)",
           "Umbraco.Cms.Web.Website": "[17.6.0, 18.0.0)"
@@ -2490,9 +2490,10 @@
         "type": "Project",
         "dependencies": {
           "Moq": "[4.18.4, )",
+          "Stripe.net": "[50.3.0, 51.0.0)",
           "Testcontainers.MsSql": "[4.15.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
-          "UmbHost.Licensing": "[1.3.0, )",
+          "UmbHost.Licensing": "[2.0.0, )",
           "xunit.extensibility.core": "[2.4.2, )"
         }
       },

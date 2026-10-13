@@ -12,6 +12,7 @@ using Xunit;
 
 namespace UmbCheckout.Tests.Persistence;
 
+[Trait("Category", "Integration")] // SQL Server cases need Docker
 [Collection(DatabaseCollection.Name)]
 public sealed class CoreMigrationTests(SqlServerContainerFixture sqlServer)
 {

@@ -134,6 +134,23 @@ The install writes an `Imaging:HMACSecretKey` into `appsettings.json`; discard t
 
 UmbHost.Licensing is closed source. Inside the full UmbCheckout checkout the build uses the project next to this repository; cloned on its own it uses the `UmbHost.Licensing` NuGet package at the version in `Directory.Build.props` (`-p:UseUmbLicensingProject=false` forces the package). The lock files are written in project mode.
 
+## Running the tests
+
+```bash
+dotnet test src/UmbCheckout.Tests
+```
+
+Tests marked `[Trait("Category", "Integration")]` need Docker: they start containers with Testcontainers.
+
+- The Stripe tests run against [stripe-mock](https://github.com/stripe/stripe-mock) (`StripeMockFixture` in `src/UmbCheckout.Testing`). The image is pinned by digest (stripe-mock 0.201.0), so Stripe's fixtures don't change underneath the tests.
+- The persistence test classes that use SQL Server (`SqlServerContainerFixture`, image `mcr.microsoft.com/mssql/server:2022-latest`, one container per test assembly, started on first use). Most of them run the same cases on SQLite too, which needs no Docker; the class is marked as a whole.
+
+On a machine without Docker, leave them out:
+
+```bash
+dotnet test src/UmbCheckout.Tests --filter "Category!=Integration"
+```
+
 ### Contribution guidelines
 
 You will need to sign the Contribution License Agreement which can be found at the link below:

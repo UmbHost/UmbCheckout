@@ -12,6 +12,7 @@ namespace UmbCheckout.Tests.Persistence;
 /// handlers run and marked done after they succeed: a redelivery of a done event is acknowledged, one that arrives while the
 /// first is still running is told to retry later, and one whose first attempt died (lease expired) takes the event over.
 /// </summary>
+[Trait("Category", "Integration")] // SQL Server cases need Docker
 [Collection(DatabaseCollection.Name)]
 public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlServer)
 {

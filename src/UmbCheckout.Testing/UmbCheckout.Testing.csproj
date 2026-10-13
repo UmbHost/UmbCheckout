@@ -19,6 +19,8 @@
     <PackageReference Include="Testcontainers.MsSql" Version="4.15.0" />
     <PackageReference Include="xunit.extensibility.core" Version="2.4.2" />
     <PackageReference Include="Moq" Version="4.18.4" />
+    <!-- StripeMockFixture; same range as UmbCheckout.Stripe -->
+    <PackageReference Include="Stripe.net" Version="[50.3.0, 51)" />
   </ItemGroup>
 
   <ItemGroup>
