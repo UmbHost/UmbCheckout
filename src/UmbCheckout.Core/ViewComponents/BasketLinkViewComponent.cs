@@ -2,6 +2,7 @@
 using UmbCheckout.Core.Interfaces;
 using UmbCheckout.Core.ViewModels;
 using UmbCheckout.Shared.Enums;
+using UmbCheckout.Shared.Extensions;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
@@ -27,7 +28,9 @@ namespace UmbCheckout.Core.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync(string basketAlias = "basket", string linkName = "Basket", string? linkCssClass = null, BasketLinkType linkType = BasketLinkType.TotalCount, Guid? currencyNodeKey = null)
         {
-            var currencyCode = await _currencyService.GetCurrencyAsync(currencyNodeKey);
+            // The subtotal is shown in the currency the lines are charged in; the configured chain only applies to an empty basket.
+            var basket = await _basketService.Get();
+            var currencyCode = basket.LineItems.SingleCurrency() ?? await _currencyService.GetCurrencyAsync(currencyNodeKey);
 
             var model = new BasketLinkViewModel
             {
