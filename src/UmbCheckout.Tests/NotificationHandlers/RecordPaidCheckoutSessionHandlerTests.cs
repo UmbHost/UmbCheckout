@@ -16,7 +16,7 @@ public sealed class RecordPaidCheckoutSessionHandlerTests
 {
     private readonly Mock<IStripePaidCheckoutSessions> _paid = new();
 
-    private RecordPaidCheckoutSessionHandler Handler() => new(_paid.Object);
+    private RecordPaidCheckoutSessionHandler Handler() => new(_paid.Object, Microsoft.Extensions.Logging.Abstractions.NullLogger<RecordPaidCheckoutSessionHandler>.Instance);
 
     private static Event SessionEvent(string type, string paymentStatus, string id = "cs_test_1")
         => new() { Id = "evt_1", Type = type, Data = new EventData { Object = new Session { Id = id, PaymentStatus = paymentStatus } } };
@@ -56,11 +56,30 @@ public sealed class RecordPaidCheckoutSessionHandlerTests
     }
 
     [Fact]
-    public async Task A_store_failure_propagates_so_Stripe_retries()
+    public async Task A_store_failure_is_logged_and_does_not_fail_the_webhook()
     {
+        // Review: a failure here made Stripe redeliver the event, re-running the site's other handlers (fulfilment, emails) for
+        // a backstop the success page usually covers.
         _paid.Setup(p => p.MarkPaidAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("database down"));
+        var logger = new RecordingLogger();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            Handler().HandleAsync(new OnCheckoutSessionCompletedNotification(SessionEvent("checkout.session.completed", "paid")), CancellationToken.None));
+        await new RecordPaidCheckoutSessionHandler(_paid.Object, logger)
+            .HandleAsync(new OnCheckoutSessionCompletedNotification(SessionEvent("checkout.session.completed", "paid")), CancellationToken.None);
+
+        var (level, exception) = Assert.Single(logger.Entries);
+        Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Error, level);
+        Assert.IsType<InvalidOperationException>(exception);
+    }
+
+    private sealed class RecordingLogger : Microsoft.Extensions.Logging.ILogger<RecordPaidCheckoutSessionHandler>
+    {
+        public List<(Microsoft.Extensions.Logging.LogLevel Level, Exception? Exception)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Entries.Add((logLevel, exception));
     }
 }

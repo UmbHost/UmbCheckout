@@ -10,8 +10,11 @@ namespace UmbCheckout.Core.Interfaces
         Task<bool> IsPaidAsync(string checkoutSessionId, CancellationToken cancellationToken = default);
     }
 
-    /// <summary>No payment provider records paid sessions: nothing is cleared on read.</summary>
-    internal sealed class NoPaidCheckoutSessions : IPaidCheckoutSessions
+    /// <summary>
+    /// The default: no payment provider records paid sessions, so nothing is cleared on read. A payment provider replaces only
+    /// this default, never a store the site registered itself.
+    /// </summary>
+    public sealed class NoPaidCheckoutSessions : IPaidCheckoutSessions
     {
         public Task<bool> IsPaidAsync(string checkoutSessionId, CancellationToken cancellationToken = default) => Task.FromResult(false);
     }

@@ -20,7 +20,7 @@ public sealed class PaidCheckoutSessionsComposerTests
         var services = new ServiceCollection();
         var builder = new Mock<IUmbracoBuilder>();
         builder.SetupGet(b => b.Services).Returns(services);
-        void Core() => services.TryAddSingleton<IPaidCheckoutSessions>(new NoPaid());
+        void Core() => services.TryAddSingleton<IPaidCheckoutSessions, NoPaidCheckoutSessions>(); // as Core's RegisterServicesComposer
 
         if (coreFirst)
         {
@@ -37,11 +37,6 @@ public sealed class PaidCheckoutSessionsComposerTests
         return services;
     }
 
-    private sealed class NoPaid : IPaidCheckoutSessions
-    {
-        public Task<bool> IsPaidAsync(string checkoutSessionId, CancellationToken cancellationToken = default) => Task.FromResult(false);
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -50,7 +45,27 @@ public sealed class PaidCheckoutSessionsComposerTests
         var services = Compose(coreFirst);
 
         Assert.Single(services, d => d.ServiceType == typeof(IPaidCheckoutSessions));
-        Assert.IsNotType<NoPaid>(services.BuildServiceProvider().GetRequiredService<IPaidCheckoutSessions>());
+        Assert.IsNotType<NoPaidCheckoutSessions>(services.BuildServiceProvider().GetRequiredService<IPaidCheckoutSessions>());
+    }
+
+    private sealed class SitesOwn : IPaidCheckoutSessions
+    {
+        public Task<bool> IsPaidAsync(string checkoutSessionId, CancellationToken cancellationToken = default) => Task.FromResult(true);
+    }
+
+    [Fact]
+    public void A_store_the_site_registered_itself_is_kept()
+    {
+        // Review: the package must stay extendable; Stripe replaces only Core's "none paid" default.
+        var services = new ServiceCollection();
+        var builder = new Mock<IUmbracoBuilder>();
+        builder.SetupGet(b => b.Services).Returns(services);
+        services.AddSingleton<IPaidCheckoutSessions>(new SitesOwn());
+
+        new PaidCheckoutSessionsComposer().Compose(builder.Object);
+        services.AddSingleton(Mock.Of<IStripePaidCheckoutSessions>());
+
+        Assert.IsType<SitesOwn>(services.BuildServiceProvider().GetRequiredService<IPaidCheckoutSessions>());
     }
 
     [Fact]
