@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using UmbCheckout.Core.Interfaces;
@@ -109,6 +109,15 @@ namespace UmbCheckout.Tests.Services
             // A variant without its own price used to be added at 0.00.
             Assert.Null(await Service().GetPriceAsync(Product(null, "GBP")));
             Assert.Equal(1, _logger.Count(LogLevel.Error));
+        }
+
+        [Fact]
+        public async Task GetPriceAsync_LogsWithoutAssumingABasketAdd()
+        {
+            // Checkout re-prices through this too: "it was not added to the basket" misled when nothing was being added.
+            await Service().GetPriceAsync(Product(null, "GBP"));
+
+            Assert.DoesNotContain("added to the basket", Assert.Single(_logger.Entries).Message);
         }
 
         [Fact]

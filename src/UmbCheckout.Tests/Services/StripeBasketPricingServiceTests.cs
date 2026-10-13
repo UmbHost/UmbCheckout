@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using UmbCheckout.Shared.Models;
 using UmbCheckout.Stripe.Interfaces;
@@ -35,6 +35,35 @@ namespace UmbCheckout.Tests.Services
         }
 
         private static Basket Basket(params LineItem[] lines) => new() { CurrencyCode = "GBP", LineItems = lines };
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        [InlineData(1_000_000)]
+        public async Task RepriceAsync_RemovesALegacyLineWithAQuantityStripeRefuses(long quantity)
+        {
+            // Saved before quantities were limited: Stripe would refuse the whole checkout (a 400, then a 500 here).
+            var line = Line(10m, new LineItemPrice(10m, "GBP"));
+            line.Quantity = quantity;
+            var kept = Line(5m, new LineItemPrice(5m, "GBP"));
+
+            var result = await Service().RepriceAsync(Basket(line, kept));
+
+            Assert.True(Assert.Single(result.Changes).Removed);
+            Assert.Equal(kept.Key, Assert.Single(result.Basket.LineItems).Key);
+        }
+
+        [Fact]
+        public async Task RepriceAsync_RemovesLinesBeyondStripesLimit()
+        {
+            // Stripe Checkout takes at most 100 line items; a legacy basket may hold more.
+            var lines = Enumerable.Range(0, Shared.Consts.MaxLineItems + 2).Select(_ => Line(1m, new LineItemPrice(1m, "GBP"))).ToArray();
+
+            var result = await Service().RepriceAsync(Basket(lines));
+
+            Assert.Equal(Shared.Consts.MaxLineItems, result.Basket.LineItems.Count());
+            Assert.Equal(2, result.Changes.Count(change => change.Removed));
+        }
 
         [Fact]
         public async Task RepriceAsync_LeavesAnUnchangedBasketAlone()
