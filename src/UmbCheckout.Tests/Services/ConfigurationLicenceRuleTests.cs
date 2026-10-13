@@ -23,7 +23,7 @@ using ConfigurationPoco = UmbCheckout.Core.Pocos.UmbCheckoutConfiguration;
 namespace UmbCheckout.Tests.Services;
 
 /// <summary>
-/// The basket storage licence rule belongs to the licensed add-on (its LicensedConfigurationService), not the open package: with
+/// The basket storage licence rule belongs to the licensed add-on, not the open package: with
 /// only the open package, the configuration is stored and read as given. The open tests run unlicensed (they can't switch the licence).
 /// </summary>
 public sealed class ConfigurationLicenceRuleTests
