@@ -111,6 +111,28 @@ namespace UmbCheckout.Tests.Services
         }
 
         [Fact]
+        public async Task A_session_without_basket_metadata_clears_the_basket_that_records_it_whatever_its_age()
+        {
+            // Group 4 review M1: the basket names this checkout session, so it is the paid one; the 24-hour rule is only for a
+            // basket that records no checkout session.
+            Basket("en-GB", "GBP", "cs_test_1");
+
+            await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddDays(-3), Metadata = new Dictionary<string, string>() });
+
+            _sessions.Verify(s => s.Clear("en-GB", "GBP"), Times.Once);
+        }
+
+        [Fact]
+        public async Task A_session_without_basket_metadata_compares_the_recorded_id_ordinally()
+        {
+            Basket("en-GB", "GBP", "CS_TEST_1");
+
+            await Succeed(new Session { Status = "complete", Currency = "gbp", Created = DateTime.UtcNow.AddMinutes(-10), Metadata = new Dictionary<string, string>() });
+
+            _sessions.Verify(s => s.Clear(It.IsAny<string?>(), It.IsAny<string?>()), Times.Never);
+        }
+
+        [Fact]
         public async Task AnOldSessionWithoutBasketMetadataKeepsTheBasket()
         {
             // A stale link to a session from before the upgrade, revisited days later.
