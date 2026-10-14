@@ -7,8 +7,8 @@ namespace UmbCheckout.Tests.Architecture;
 
 /// <summary>
 /// Quality Phase 5: no thread blocks on a task (<c>.Result</c>, <c>.Wait()</c>, <c>GetAwaiter().GetResult()</c>) anywhere in UmbCheckout
-/// or its licensing, apart from the documented obsolete sync methods kept for compatibility. Scans every UmbCheckout and
-/// UmbHost.Licensing assembly this test project ships with (the file is also linked into the closed add-on tests).
+/// apart from the documented obsolete sync methods kept for compatibility. Scans every UmbCheckout assembly (and any named by the
+/// "NoSyncOverAsync.ScanAlso" assembly metadata of the test project) this test project ships with. The file may be linked into other test projects.
 /// </summary>
 public sealed class NoSyncOverAsyncTests
 {
@@ -20,10 +20,17 @@ public sealed class NoSyncOverAsyncTests
         "UmbCheckout.Stripe.Services.StripeSessionService.ClearSession",
     };
 
+    // Names from the test project's own assembly metadata, so a project that links this file can add assemblies without this file naming them.
+    private static string[] Metadata(string key)
+        => typeof(NoSyncOverAsyncTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Where(a => a.Key == key)
+            .SelectMany(a => (a.Value ?? string.Empty).Split(';', StringSplitOptions.RemoveEmptyEntries))
+            .ToArray();
+
     private static readonly Assembly[] Assemblies = Directory.GetFiles(AppContext.BaseDirectory, "*.dll")
         .Select(Path.GetFileNameWithoutExtension)
         .OfType<string>()
-        .Where(name => (name.StartsWith("UmbCheckout", StringComparison.Ordinal) || name.StartsWith("UmbHost.Licensing", StringComparison.Ordinal))
+        .Where(name => (name.StartsWith("UmbCheckout", StringComparison.Ordinal) || Metadata("NoSyncOverAsync.ScanAlso").Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal)))
                        && !name.Contains("Test", StringComparison.Ordinal))
         .Select(name => Assembly.Load(name))
         .ToArray();
@@ -48,7 +55,7 @@ public sealed class NoSyncOverAsyncTests
         var scanned = Assemblies.Select(a => a.GetName().Name).ToHashSet();
         var expected = typeof(NoSyncOverAsyncTests).Assembly.GetName().Name == "UmbCheckout.Tests"
             ? new HashSet<string?> { "UmbCheckout.Core", "UmbCheckout.Shared", "UmbCheckout.Stripe", "UmbCheckout.Stripe.Forms", "UmbCheckout.uSync", "UmbCheckout.Stripe.uSync" }
-            : new HashSet<string?> { "UmbCheckout.Core.Addons", "UmbCheckout.Stripe.Addons", "UmbCheckout.Stripe.Addons.uSync", "UmbHost.Licensing" }; // the add-on tests' copy
+            : Metadata("NoSyncOverAsync.Expect").Select(n => (string?)n).ToHashSet();
 
         Assert.Superset(expected, scanned);
     }

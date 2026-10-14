@@ -9,8 +9,11 @@ namespace UmbCheckout.Testing;
 /// </summary>
 public static class ProductionSource
 {
+    // A "!" straight after an identifier, ")", "]" or ">" is the null-forgiving operator whatever follows it (".", "(", "[", ";", an
+    // operator, ":", a line end...), except "!=" (not equal). A logical not is never directly after one of those characters.
+    // "null !" and "default !" are caught with a space too.
     private static readonly Regex NullForgivingOperator = new(
-        @"\b(?:null|default)\s*!|(?<=[\w\)\]>])!(?=[.;,)\]\[]|\?\.|\s*$|\s*\?\?|\s+(?:is|as|and|or)\b|\s*\})",
+        @"\b(?:null|default)\s*!(?!=)|(?<=[\w\)\]>])!(?!=)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private static readonly HashSet<string> SkippedDirectories = new(StringComparer.OrdinalIgnoreCase)
