@@ -49,9 +49,9 @@ namespace UmbCheckout.Tests.Controllers
 
             var money = body["fixedAmountMoney"];
             Assert.NotNull(money);
-            Assert.Equal(minorUnits, money!["minorUnits"]!.GetValue<long>());
-            Assert.Equal((decimal)major, money["amount"]!.GetValue<decimal>());
-            Assert.Equal(currency, money["currency"]!.GetValue<string>());
+            Assert.Equal(minorUnits, money.Required()["minorUnits"].Required().GetValue<long>());
+            Assert.Equal((decimal)major, money["amount"].Required().GetValue<decimal>());
+            Assert.Equal(currency, money["currency"].Required().GetValue<string>());
         }
 
         [Fact]
@@ -64,8 +64,8 @@ namespace UmbCheckout.Tests.Controllers
             var after = JsonResultAssert.Body(await Controller().GetStripeShippingRate("shr_1"));
 
             // Stripe.net 50 carries System.Text.Json names, so the existing fields are snake_case whatever the naming policy.
-            Assert.Equal(495, after["fixed_amount"]!["amount"]!.GetValue<long>());
-            Assert.Equal("Next day", after["display_name"]!.GetValue<string>());
+            Assert.Equal(495, after["fixed_amount"].Required()["amount"].Required().GetValue<long>());
+            Assert.Equal("Next day", after["display_name"].Required().GetValue<string>());
             JsonResultAssert.Additive(before, after, "fixedAmountMoney");
         }
 
@@ -78,9 +78,9 @@ namespace UmbCheckout.Tests.Controllers
 
             var after = JsonResultAssert.Body(await Controller().GetStripeShippingRates());
 
-            var data = after["data"]!.AsArray();
-            Assert.Equal(500m, data[0]!["fixedAmountMoney"]!["amount"]!.GetValue<decimal>());
-            Assert.Equal(4.95m, data[1]!["fixedAmountMoney"]!["amount"]!.GetValue<decimal>());
+            var data = after["data"].Required().AsArray();
+            Assert.Equal(500m, data[0].Required()["fixedAmountMoney"].Required()["amount"].Required().GetValue<decimal>());
+            Assert.Equal(4.95m, data[1].Required()["fixedAmountMoney"].Required()["amount"].Required().GetValue<decimal>());
             JsonResultAssert.Additive(before, after, "fixedAmountMoney");
         }
 

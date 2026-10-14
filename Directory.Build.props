@@ -15,4 +15,10 @@
 		<UmbHostLicensingPinnedVersion>$(UmbHostLicensingVersion)</UmbHostLicensingPinnedVersion>
 		<UmbHostLicensingVersion Condition="'$(UmbHostLicensingVersion)' == ''">1.5.0</UmbHostLicensingVersion>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- Possible nulls fail the build -->
+		<Nullable>enable</Nullable>
+		<WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
+	</PropertyGroup>
 </Project>

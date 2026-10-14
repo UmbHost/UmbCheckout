@@ -25,7 +25,7 @@ namespace UmbCheckout.Tests.Services
             });
             _page.Setup(p => p.Key).Returns(PageKey);
             _page.Setup(p => p.Cultures).Returns(urls.Where(u => u.Culture != null)
-                .ToDictionary(u => u.Culture!, u => new PublishedCultureInfo(u.Culture!, "Basket", null, DateTime.UtcNow)));
+                .ToDictionary(u => u.Culture.Required(), u => new PublishedCultureInfo(u.Culture.Required(), "Basket", null, DateTime.UtcNow)));
             var cache = new Mock<IPublishedContentCache>();
             cache.Setup(c => c.GetById(PageKey)).Returns(urls.Length > 0 ? _page.Object : null);
             var umbracoContext = Mock.Of<IUmbracoContext>(c => c.Content == cache.Object);

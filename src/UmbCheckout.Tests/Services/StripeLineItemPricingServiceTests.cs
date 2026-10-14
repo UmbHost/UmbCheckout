@@ -51,7 +51,7 @@ namespace UmbCheckout.Tests.Services
             var result = await Service().GetPriceAsync(Product(decimal.Parse(price, CultureInfo.InvariantCulture), currency));
 
             Assert.NotNull(result);
-            Assert.Equal(decimal.Parse(expected, CultureInfo.InvariantCulture), result!.Price);
+            Assert.Equal(decimal.Parse(expected, CultureInfo.InvariantCulture), result.Required().Price);
             Assert.Equal(currency, result.CurrencyCode);
         }
 
@@ -90,11 +90,11 @@ namespace UmbCheckout.Tests.Services
 
         [Fact]
         public async Task GetPriceAsync_TheCurrencyIsUpperCase()
-            => Assert.Equal("GBP", (await Service().GetPriceAsync(Product(1m, "gbp")))!.CurrencyCode);
+            => Assert.Equal("GBP", (await Service().GetPriceAsync(Product(1m, "gbp"))).Required().CurrencyCode);
 
         [Fact]
         public async Task GetPriceAsync_ATypedZeroIsAFreeProduct()
-            => Assert.Equal(0m, (await Service().GetPriceAsync(Product(0m, "GBP")))!.Price);
+            => Assert.Equal(0m, (await Service().GetPriceAsync(Product(0m, "GBP"))).Required().Price);
 
         [Fact]
         public async Task GetPriceAsync_EmptyPriceField_ReturnsNull()
@@ -143,6 +143,6 @@ namespace UmbCheckout.Tests.Services
         [InlineData(10.0)]
         [InlineData("10")]
         public async Task GetPriceAsync_ReadsOtherNumericEditors(object price)
-            => Assert.Equal(10m, (await Service().GetPriceAsync(Product(price, "GBP")))!.Price);
+            => Assert.Equal(10m, (await Service().GetPriceAsync(Product(price, "GBP"))).Required().Price);
     }
 }

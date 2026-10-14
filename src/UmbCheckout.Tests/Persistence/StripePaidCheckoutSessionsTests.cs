@@ -82,8 +82,8 @@ namespace UmbCheckout.Tests.Persistence
         {
             var plan = RunUmbCheckoutStripePaidSessionsMigration.CreatePlan();
 
-            Assert.Equal(typeof(AddUmbCheckoutStripePaidSessionsTable), plan.Transitions[string.Empty]!.MigrationType);
-            Assert.Equal(plan.Transitions[string.Empty]!.TargetState, plan.FinalState);
+            Assert.Equal(typeof(AddUmbCheckoutStripePaidSessionsTable), plan.Transitions[string.Empty].Required().MigrationType);
+            Assert.Equal(plan.Transitions[string.Empty].Required().TargetState, plan.FinalState);
         }
 
         [Fact]

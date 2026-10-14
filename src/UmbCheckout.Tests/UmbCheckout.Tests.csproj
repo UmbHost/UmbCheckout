@@ -38,4 +38,8 @@
       <ProjectReference Include="..\UmbCheckout.uSync\UmbCheckout.uSync.csproj" />
     </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="UmbCheckout.Testing.Nullability" />
+  </ItemGroup>
+
 </Project>

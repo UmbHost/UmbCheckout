@@ -30,7 +30,7 @@ public sealed class WebhookNotificationMappingTests
     [MemberData(nameof(Mappings))]
     public void Webhook_fires_on_its_own_notification(Type webhook, Type notification)
     {
-        var baseType = webhook.BaseType!;
+        var baseType = webhook.BaseType.Required();
         Assert.True(baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(WebhookEventBase<>), $"{webhook.Name} is not a WebhookEventBase<>");
         Assert.Equal(notification, baseType.GetGenericArguments()[0]);
     }

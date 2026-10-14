@@ -143,7 +143,7 @@ namespace UmbCheckout.Tests.Services
             _configuration.Setup(c => c.GetConfiguration()).ReturnsAsync(new UmbCheckoutConfiguration { CurrencyCode = "USD" });
 
             string? currency = "not called";
-            var exception = await Record.ExceptionAsync(async () => currency = await Service().GetCurrencyForContentAsync(null!));
+            var exception = await Record.ExceptionAsync(async () => currency = await Service().GetCurrencyForContentAsync(null));
 
             Assert.Null(exception);
             Assert.Null(currency);

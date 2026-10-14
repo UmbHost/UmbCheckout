@@ -295,7 +295,7 @@ namespace UmbCheckout.Tests.Controllers
 
         [Fact]
         public void BasketAdd_CurrencyCodeIsObsolete()
-            => Assert.NotNull(typeof(BasketAdd).GetProperty("CurrencyCode")!.GetCustomAttributes(typeof(ObsoleteAttribute), false).SingleOrDefault());
+            => Assert.NotNull(typeof(BasketAdd).GetProperty("CurrencyCode").Required().GetCustomAttributes(typeof(ObsoleteAttribute), false).SingleOrDefault());
 
         [Fact]
         public void DependencyInjection_UsesTheConstructorWithTheRepricing()

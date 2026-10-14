@@ -11,11 +11,7 @@ namespace UmbCheckout.Tests.Helpers
 
         public int Count(LogLevel level) => Entries.Count(entry => entry.Level == level);
 
-#if NET8_0_OR_GREATER
         public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
-#else
-        public IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
-#endif
 
         public bool IsEnabled(LogLevel logLevel) => true;
 

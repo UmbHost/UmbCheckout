@@ -48,7 +48,7 @@ public sealed class StripeSessionOptionsHookTests
     }
 
     /// <summary>StripeSessionService is internal in v13: created and called through reflection.</summary>
-    private static readonly Type ServiceType = typeof(IStripeSessionService).Assembly.GetType("UmbCheckout.Stripe.Services.StripeSessionService", throwOnError: true)!;
+    private static readonly Type ServiceType = typeof(IStripeSessionService).Assembly.GetType("UmbCheckout.Stripe.Services.StripeSessionService", throwOnError: true).Required();
 
     private object Service()
     {
@@ -68,7 +68,7 @@ public sealed class StripeSessionOptionsHookTests
         var dependencies = new object[]
         {
             snapshotAccessor.Object, new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object, _events.Object,
-            Activator.CreateInstance(typeof(NullLogger<>).MakeGenericType(ServiceType))!, Mock.Of<IConfigurationService>(), Mock.Of<IHttpContextAccessor>(),
+            Activator.CreateInstance(typeof(NullLogger<>).MakeGenericType(ServiceType)).Required(), Mock.Of<IConfigurationService>(), Mock.Of<IHttpContextAccessor>(),
             Mock.Of<IStripeShippingOptionsService>(), Mock.Of<IStripeSettingsService>(), new StripeSettings()
         };
         foreach (var field in ServiceType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
@@ -90,8 +90,8 @@ public sealed class StripeSessionOptionsHookTests
 
     private static async Task<SessionCreateOptions> BuildOptions(object service, Basket basket)
     {
-        var method = ServiceType.GetMethod("CreateSessionOptions", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(Basket), typeof(CancellationToken) }, null)!;
-        return (await (Task<SessionCreateOptions?>)method.Invoke(service, new object[] { basket, CancellationToken.None })!)!;
+        var method = ServiceType.GetMethod("CreateSessionOptions", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(Basket), typeof(CancellationToken) }, null).Required();
+        return (await (Task<SessionCreateOptions?>)method.Invoke(service, new object[] { basket, CancellationToken.None }).Required()).Required();
     }
 
     private void On<TNotification>(Action<TNotification> handler) where TNotification : INotification

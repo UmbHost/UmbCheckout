@@ -44,14 +44,14 @@ public sealed class ConfigurationLicenceRuleTests
             .Callback<object?>(p => mapped = (ConfigurationPoco?)p)
             .Returns<object?>(p => new UmbCheckoutConfiguration
             {
-                StoreBasketInCookie = ((ConfigurationPoco)p!).StoreBasketInCookie,
-                StoreBasketInDatabase = ((ConfigurationPoco)p!).StoreBasketInDatabase
+                StoreBasketInCookie = ((ConfigurationPoco)p.Required()).StoreBasketInCookie,
+                StoreBasketInDatabase = ((ConfigurationPoco)p.Required()).StoreBasketInDatabase
             });
 
-        var configuration = await service.GetConfiguration();
+        var configuration = (await service.GetConfiguration()).Required();
 
-        Assert.True(mapped!.StoreBasketInCookie);
-        Assert.True(configuration!.StoreBasketInCookie);
+        Assert.True(mapped.Required().StoreBasketInCookie);
+        Assert.True(configuration.StoreBasketInCookie);
         Assert.True(configuration.StoreBasketInDatabase);
     }
 
@@ -64,8 +64,8 @@ public sealed class ConfigurationLicenceRuleTests
             .Callback<object?>(c => given = (UmbCheckoutConfiguration?)c)
             .Returns<object?>(c => new ConfigurationPoco
             {
-                StoreBasketInCookie = ((UmbCheckoutConfiguration)c!).StoreBasketInCookie,
-                StoreBasketInDatabase = ((UmbCheckoutConfiguration)c!).StoreBasketInDatabase
+                StoreBasketInCookie = ((UmbCheckoutConfiguration)c.Required()).StoreBasketInCookie,
+                StoreBasketInDatabase = ((UmbCheckoutConfiguration)c.Required()).StoreBasketInDatabase
             });
         ConfigurationPoco? inserted = null;
         database.Setup(d => d.InsertAsync(It.IsAny<ConfigurationPoco>()))
@@ -75,9 +75,11 @@ public sealed class ConfigurationLicenceRuleTests
         var saved = await service.UpdateConfiguration(new UmbCheckoutConfiguration { StoreBasketInCookie = true, StoreBasketInDatabase = true, CurrencyCode = "GBP" });
 
         Assert.True(saved);
-        Assert.True(given!.StoreBasketInCookie);
+        Assert.NotNull(given);
+        Assert.True(given.StoreBasketInCookie);
         Assert.True(given.StoreBasketInDatabase);
-        Assert.True(inserted!.StoreBasketInCookie);
+        Assert.NotNull(inserted);
+        Assert.True(inserted.StoreBasketInCookie);
         Assert.True(inserted.StoreBasketInDatabase);
     }
 
@@ -93,7 +95,7 @@ public sealed class ConfigurationLicenceRuleTests
         configurationService.Setup(s => s.UpdateConfiguration(It.IsAny<UmbCheckoutConfiguration>()))
             .Callback<UmbCheckoutConfiguration>(c => given = c)
             .ReturnsAsync(true);
-        var controller = new ConfigurationApiController(configurationService.Object, NullLogger<ConfigurationApiController>.Instance, null!,
+        var controller = new ConfigurationApiController(configurationService.Object, NullLogger<ConfigurationApiController>.Instance, null,
             Mock.Of<ILocalizedTextService>(), Options.Create(new WebRoutingSettings()));
 
         await controller.UpdateConfiguration(new ConfigurationValue
@@ -104,7 +106,8 @@ public sealed class ConfigurationLicenceRuleTests
             CurrencyCode = "gbp"
         });
 
-        Assert.Equal(expectedCookie, given!.StoreBasketInCookie);
+        Assert.NotNull(given);
+        Assert.Equal(expectedCookie, given.StoreBasketInCookie);
         Assert.Equal(expectedDatabase, given.StoreBasketInDatabase);
         Assert.Equal("GBP", given.CurrencyCode);
     }
@@ -112,7 +115,11 @@ public sealed class ConfigurationLicenceRuleTests
     private static (ConfigurationService Service, Mock<IUmbracoMapper> Mapper, Mock<IUmbracoDatabase> Database) Arrange(ConfigurationPoco? stored)
     {
         var query = new Mock<IAsyncQueryProviderWithIncludes<ConfigurationPoco>>();
-        query.Setup(q => q.SingleOrDefault()).ReturnsAsync(stored!);
+        if (stored is not null)
+        {
+            // Left without a setup, Moq answers SingleOrDefault as the database does when there is no row: a finished task with no result.
+            query.Setup(q => q.SingleOrDefault()).ReturnsAsync(stored);
+        }
         var database = new Mock<IUmbracoDatabase>();
         database.Setup(d => d.QueryAsync<ConfigurationPoco>()).Returns(query.Object);
 
@@ -129,7 +136,7 @@ public sealed class ConfigurationLicenceRuleTests
             .Returns(scope.Object);
 
         var mapper = new Mock<IUmbracoMapper>();
-        var service = new ConfigurationService(scopeProvider.Object, NullLogger<ConfigurationService>.Instance, mapper.Object, coreScopeProvider.Object, null!, new UmbCheckout.Shared.Persistence.SettingsCache<ConfigurationPoco>());
+        var service = new ConfigurationService(scopeProvider.Object, NullLogger<ConfigurationService>.Instance, mapper.Object, coreScopeProvider.Object, null, new UmbCheckout.Shared.Persistence.SettingsCache<ConfigurationPoco>());
         return (service, mapper, database);
     }
 }

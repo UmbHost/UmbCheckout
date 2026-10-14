@@ -18,19 +18,19 @@ namespace UmbCheckout.Tests.Helpers
 
         [Fact]
         public void ForLine_AddsTheNodeKey()
-            => Assert.Equal(ProductKey.ToString(), ForLine(new Dictionary<string, string>(), null)!.GetValueOrDefault("nodeKey"));
+            => Assert.Equal(ProductKey.ToString(), ForLine(new Dictionary<string, string>(), null).Required().GetValueOrDefault("nodeKey"));
 
         [Fact]
         public void ForLine_AddsTheProductsMetadata()
-            => Assert.Equal("blue", ForLine(new Dictionary<string, string> { ["size"] = "L" }, new Dictionary<string, string> { ["colour"] = "blue" })!.GetValueOrDefault("colour"));
+            => Assert.Equal("blue", ForLine(new Dictionary<string, string> { ["size"] = "L" }, new Dictionary<string, string> { ["colour"] = "blue" }).Required().GetValueOrDefault("colour"));
 
         [Fact]
         public void ForLine_TheLinesOwnValueWinsWithoutThrowing()
-            => Assert.Equal("red", ForLine(new Dictionary<string, string> { ["colour"] = "red" }, new Dictionary<string, string> { ["colour"] = "blue" })!.GetValueOrDefault("colour"));
+            => Assert.Equal("red", ForLine(new Dictionary<string, string> { ["colour"] = "red" }, new Dictionary<string, string> { ["colour"] = "blue" }).Required().GetValueOrDefault("colour"));
 
         [Fact]
         public void ForLine_ALineThatAlreadyHasANodeKeyKeepsItWithoutThrowing()
-            => Assert.Equal("saved", ForLine(new Dictionary<string, string> { ["nodeKey"] = "saved" }, null)!.GetValueOrDefault("nodeKey"));
+            => Assert.Equal("saved", ForLine(new Dictionary<string, string> { ["nodeKey"] = "saved" }, null).Required().GetValueOrDefault("nodeKey"));
 
         [Fact]
         public void ForLine_LeavesTheLinesMetadataUnchanged()

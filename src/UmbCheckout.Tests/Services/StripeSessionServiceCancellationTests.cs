@@ -63,7 +63,7 @@ namespace UmbCheckout.Tests.Services
 
             return new StripeSessionService(Mock.Of<IPublishedSnapshotAccessor>(), scopes.Object, Mock.Of<IEventAggregator>(), _logger, configuration.Object,
                 Mock.Of<IHttpContextAccessor>(), Mock.Of<IStripeShippingOptionsService>(), Mock.Of<IOptionsMonitor<StripeSettings>>(o => o.CurrentValue == new StripeSettings()),
-                null!, stripeSettings.Object, factory.Object);
+                null, stripeSettings.Object, factory.Object);
         }
 
         [Fact]

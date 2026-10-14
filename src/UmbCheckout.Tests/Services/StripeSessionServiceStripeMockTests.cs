@@ -79,7 +79,7 @@ namespace UmbCheckout.Tests.Services
                 Mock.Of<IHttpContextAccessor>(),
                 _shippingOptions.Object,
                 Mock.Of<IOptionsMonitor<StripeSettings>>(o => o.CurrentValue == new StripeSettings()),
-                null!, // the licence service is only used for live sessions
+                null, // the licence service is only used for live sessions
                 stripeSettingsService.Object,
                 _factory.Object);
         }

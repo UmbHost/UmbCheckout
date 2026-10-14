@@ -36,7 +36,7 @@ namespace UmbCheckout.Tests.Services
             var httpContext = new DefaultHttpContext { Session = _session };
             var scopes = new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock };
             return new SessionService(new EphemeralDataProtectionProvider(), Mock.Of<IHttpContextAccessor>(a => a.HttpContext == httpContext),
-                NullLogger<SessionService>.Instance, Mock.Of<IEventAggregator>(), scopes.Object, Mock.Of<IConfigurationService>(), null!, _basketContext.Object);
+                NullLogger<SessionService>.Instance, Mock.Of<IEventAggregator>(), scopes.Object, Mock.Of<IConfigurationService>(), null, _basketContext.Object);
         }
 
         private static LineItem Line(string currency) => new() { Key = Guid.NewGuid(), CurrencyCode = currency, Price = 1m, Quantity = 1 };

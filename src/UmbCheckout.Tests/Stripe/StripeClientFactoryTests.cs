@@ -71,7 +71,7 @@ public sealed class StripeClientFactoryTests
         await service.GetShippingRates();
 
         var request = Assert.Single(handler.Requests);
-        Assert.Equal("Bearer sk_test_factory", request.Headers.Authorization!.ToString());
+        Assert.Equal("Bearer sk_test_factory", request.Headers.Authorization.Required().ToString());
     }
 
     [Fact]
@@ -131,11 +131,7 @@ public sealed class StripeClientFactoryTests
     {
         public List<(string Message, Exception? Exception)> Entries { get; } = new();
 
-#if NET8_0_OR_GREATER
         public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullDisposable.Instance;
-#else
-        public IDisposable BeginScope<TState>(TState state) => NullDisposable.Instance;
-#endif
 
         public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
 
@@ -162,9 +158,9 @@ public sealed class StripeClientFactoryTests
     [Fact]
     public void Problem_responses_use_the_camel_case_names_the_screens_read()
     {
-        var body = JsonResultAssert.Body(StripeApiErrorResult.For(new StripeNotConfiguredException(live: true), NullLogger.Instance)!);
+        var body = JsonResultAssert.Body(StripeApiErrorResult.For(new StripeNotConfiguredException(live: true), NullLogger.Instance).Required());
 
-        Assert.Equal(400, body["status"]!.GetValue<int>());
+        Assert.Equal(400, body["status"].Required().GetValue<int>());
         Assert.NotNull(body["title"]);
         Assert.NotNull(body["detail"]);
     }

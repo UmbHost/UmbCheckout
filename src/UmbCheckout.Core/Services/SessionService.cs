@@ -31,7 +31,7 @@ namespace UmbCheckout.Core.Services
         private readonly IPaidCheckoutSessions _paidCheckoutSessions;
 
         [Obsolete("Use the constructor that takes an IBasketContext and an IPaidCheckoutSessions. Scheduled for removal in 17.1.")]
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IUmbracoContextAccessor umbracoContextAccessor)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService? licenseService, IUmbracoContextAccessor umbracoContextAccessor)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService,
                 new UmbracoBasketContext(umbracoContextAccessor, StaticServiceProvider.Instance.GetRequiredService<ICurrencyService>(), configurationService),
                 PaidCheckoutSessionsOrNone())
@@ -39,14 +39,14 @@ namespace UmbCheckout.Core.Services
         }
 
         [Obsolete("Use the constructor that takes an IPaidCheckoutSessions. Scheduled for removal in 17.1.")]
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService? licenseService, IBasketContext basketContext)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
                 PaidCheckoutSessionsOrNone())
         {
         }
 
         [ActivatorUtilitiesConstructor]
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext,
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService? licenseService, IBasketContext basketContext,
             IPaidCheckoutSessions paidCheckoutSessions)
         {
             _dataProtectionProvider = dataProtectionProvider;

@@ -81,7 +81,8 @@ namespace UmbCheckout.Tests.Services
             var result = await Service().RepriceAsync(Basket(Line(10m, new LineItemPrice(12.50m, "GBP"))));
 
             var change = Assert.Single(result.Changes);
-            Assert.Equal((10m, 12.50m, false), (change.OldPrice, change.NewPrice!.Value, change.Removed));
+            Assert.NotNull(change.NewPrice);
+            Assert.Equal((10m, 12.50m, false), (change.OldPrice, change.NewPrice.Value, change.Removed));
             Assert.Equal(12.50m, Assert.Single(result.Basket.LineItems).Price);
         }
 

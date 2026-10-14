@@ -44,7 +44,7 @@ namespace UmbCheckout.Tests.Persistence
             Assert.Equal(StripeWebhookEventClaim.Claimed, claim.Claim);
             Assert.False(string.IsNullOrEmpty(claim.LeaseToken));
             Assert.Equal(StripeWebhookEventClaim.InProgress, (await store.TryClaimAsync("evt_1")).Claim);
-            await store.CompleteAsync("evt_1", claim.LeaseToken!);
+            await store.CompleteAsync("evt_1", claim.LeaseToken.Required());
             Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, (await store.TryClaimAsync("evt_1")).Claim);
         }
 
@@ -54,7 +54,7 @@ namespace UmbCheckout.Tests.Persistence
             var store = Store();
             var claim = await store.TryClaimAsync("evt_1");
 
-            await store.ForgetAsync("evt_1", claim.LeaseToken!);
+            await store.ForgetAsync("evt_1", claim.LeaseToken.Required());
 
             Assert.Equal(StripeWebhookEventClaim.Claimed, (await store.TryClaimAsync("evt_1")).Claim);
         }
@@ -74,7 +74,7 @@ namespace UmbCheckout.Tests.Persistence
         {
             var store = Store(TimeSpan.Zero);
             var claim = await store.TryClaimAsync("evt_1");
-            await store.CompleteAsync("evt_1", claim.LeaseToken!);
+            await store.CompleteAsync("evt_1", claim.LeaseToken.Required());
 
             Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, (await store.TryClaimAsync("evt_1")).Claim);
         }
@@ -91,7 +91,7 @@ namespace UmbCheckout.Tests.Persistence
             Assert.Equal(StripeWebhookEventClaim.Claimed, takeover.Claim);
             Assert.NotEqual(stale.LeaseToken, takeover.LeaseToken);
 
-            await store.ForgetAsync("evt_1", stale.LeaseToken!);
+            await store.ForgetAsync("evt_1", stale.LeaseToken.Required());
 
             Assert.Equal(1, Rows);
             Assert.Equal(takeover.LeaseToken, _database.Scalar<string>("SELECT LeaseToken FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
@@ -104,10 +104,10 @@ namespace UmbCheckout.Tests.Persistence
             var stale = await store.TryClaimAsync("evt_1");
             var takeover = await store.TryClaimAsync("evt_1");
 
-            await store.CompleteAsync("evt_1", stale.LeaseToken!);
+            await store.CompleteAsync("evt_1", stale.LeaseToken.Required());
 
             Assert.Equal(0, _database.Scalar<int>("SELECT Status FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
-            await store.CompleteAsync("evt_1", takeover.LeaseToken!);
+            await store.CompleteAsync("evt_1", takeover.LeaseToken.Required());
             Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, (await store.TryClaimAsync("evt_1")).Claim);
         }
 
@@ -118,7 +118,7 @@ namespace UmbCheckout.Tests.Persistence
             await store.TryClaimAsync("evt_1");
             var takeover = await store.TryClaimAsync("evt_1");
 
-            await store.ForgetAsync("evt_1", takeover.LeaseToken!);
+            await store.ForgetAsync("evt_1", takeover.LeaseToken.Required());
 
             Assert.Equal(0, Rows);
         }
@@ -149,7 +149,7 @@ namespace UmbCheckout.Tests.Persistence
         {
             var plan = RunUmbCheckoutStripeWebhookEventsMigration.CreatePlan();
 
-            Assert.Equal(typeof(AddUmbCheckoutStripeWebhookEventsTable), plan.Transitions[string.Empty]!.MigrationType);
+            Assert.Equal(typeof(AddUmbCheckoutStripeWebhookEventsTable), plan.Transitions[string.Empty].Required().MigrationType);
         }
 
         [Fact]
@@ -178,10 +178,10 @@ namespace UmbCheckout.Tests.Persistence
         public void The_lease_token_comes_from_the_open_plan_after_the_table()
         {
             var plan = RunUmbCheckoutStripeWebhookEventsMigration.CreatePlan();
-            var first = plan.Transitions[string.Empty]!.TargetState;
+            var first = plan.Transitions[string.Empty].Required().TargetState;
 
-            Assert.Equal(typeof(AddUmbCheckoutStripeWebhookEventLeaseToken), plan.Transitions[first]!.MigrationType);
-            Assert.Equal(plan.Transitions[first]!.TargetState, plan.FinalState);
+            Assert.Equal(typeof(AddUmbCheckoutStripeWebhookEventLeaseToken), plan.Transitions[first].Required().MigrationType);
+            Assert.Equal(plan.Transitions[first].Required().TargetState, plan.FinalState);
         }
     }
 

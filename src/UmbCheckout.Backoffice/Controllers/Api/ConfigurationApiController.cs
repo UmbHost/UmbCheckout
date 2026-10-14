@@ -32,7 +32,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         private readonly ILogger<ConfigurationApiController> _logger;
         private readonly WebRoutingSettings _umbracoWebRoutingSettings;
 
-        public ConfigurationApiController(IConfigurationService configuration, ILogger<ConfigurationApiController> logger, LicenseService licenseService, ILocalizedTextService localizedTextService, IOptions<WebRoutingSettings> umbracoWebRoutingSettings)
+        public ConfigurationApiController(IConfigurationService configuration, ILogger<ConfigurationApiController> logger, LicenseService? licenseService, ILocalizedTextService localizedTextService, IOptions<WebRoutingSettings> umbracoWebRoutingSettings)
         {
             _configuration = configuration;
             _logger = logger;

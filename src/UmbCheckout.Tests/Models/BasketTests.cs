@@ -17,7 +17,7 @@ namespace UmbCheckout.Tests.Models
             var basket = new Basket { LineItems = new List<LineItem> { new() { Price = 10m, Quantity = 1 } } };
             _ = basket.Total;
 
-            var restored = JsonSerializer.Deserialize<Basket>(JsonSerializer.Serialize(basket))!;
+            var restored = JsonSerializer.Deserialize<Basket>(JsonSerializer.Serialize(basket)).Required();
             restored.LineItems = restored.LineItems.Append(new LineItem { Price = 5m, Quantity = 2 }).ToList();
 
             Assert.Equal(20m, restored.Total);
@@ -43,17 +43,17 @@ namespace UmbCheckout.Tests.Models
         public void Total_AStoredTotalIsIgnoredWhenRead()
         {
             // Baskets saved before this change carry their old (possibly stale) total.
-            var restored = JsonSerializer.Deserialize<Basket>("{\"LineItems\":[{\"Price\":2,\"Quantity\":3}],\"Total\":99}")!;
+            var restored = JsonSerializer.Deserialize<Basket>("{\"LineItems\":[{\"Price\":2,\"Quantity\":3}],\"Total\":99}").Required();
 
             Assert.Equal(6m, restored.Total);
         }
 
         [Fact]
         public void CurrencyCode_RoundTrips()
-            => Assert.Equal("GBP", JsonSerializer.Deserialize<Basket>(JsonSerializer.Serialize(new Basket { CurrencyCode = "GBP" }))!.CurrencyCode);
+            => Assert.Equal("GBP", JsonSerializer.Deserialize<Basket>(JsonSerializer.Serialize(new Basket { CurrencyCode = "GBP" })).Required().CurrencyCode);
 
         [Fact]
         public void CurrencyCode_IsNullForABasketSavedBeforeBasketsWerePerCurrency()
-            => Assert.Null(JsonSerializer.Deserialize<Basket>("{\"LineItems\":[]}")!.CurrencyCode);
+            => Assert.Null(JsonSerializer.Deserialize<Basket>("{\"LineItems\":[]}").Required().CurrencyCode);
     }
 }
