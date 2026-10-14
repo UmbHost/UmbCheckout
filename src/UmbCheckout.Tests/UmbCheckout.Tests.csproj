@@ -17,12 +17,14 @@
       </PackageReference>
     </ItemGroup>
 
-    <!-- Real NPoco persistence tests run against in-memory SQLite (no Docker). -->
+    <!-- Real NPoco persistence tests run against in-memory SQLite (no Docker) and, as [Trait("Category", "Integration")], SQL Server in a container. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
       <PackageReference Include="Umbraco.Cms.Persistence.Sqlite" Version="[10.8.8, 11)" />
+      <PackageReference Include="Umbraco.Cms.Persistence.SqlServer" Version="[10.8.8, 11)" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
       <PackageReference Include="Umbraco.Cms.Persistence.Sqlite" Version="[13.5.3, 14)" />
+      <PackageReference Include="Umbraco.Cms.Persistence.SqlServer" Version="[13.5.3, 14)" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,6 +33,7 @@
       <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
       <ProjectReference Include="..\UmbCheckout.Stripe\UmbCheckout.Stripe.csproj" />
       <ProjectReference Include="..\UmbCheckout.Stripe.Forms\UmbCheckout.Stripe.Forms.csproj" />
+      <ProjectReference Include="..\UmbCheckout.Testing\UmbCheckout.Testing.csproj" />
       <ProjectReference Include="..\UmbCheckout.Stripe.uSync\UmbCheckout.Stripe.uSync.csproj" />
       <ProjectReference Include="..\UmbCheckout.uSync\UmbCheckout.uSync.csproj" />
     </ItemGroup>

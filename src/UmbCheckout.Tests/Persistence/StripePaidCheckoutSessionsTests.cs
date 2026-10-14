@@ -1,6 +1,7 @@
 using UmbCheckout.Stripe.Migrations;
 using UmbCheckout.Stripe.NotificationHandlers;
 using UmbCheckout.Stripe.Services;
+using UmbCheckout.Testing;
 using UmbCheckout.Tests.Infrastructure;
 using Xunit;
 
@@ -11,11 +12,19 @@ namespace UmbCheckout.Tests.Persistence
     /// for without returning to the success page. Kept 30 days, like handled webhook events. Real NPoco on SQLite, table made by
     /// its migration.
     /// </summary>
-    public sealed class StripePaidCheckoutSessionsTests : IDisposable
+    public class StripePaidCheckoutSessionsTests : IDisposable
     {
-        private readonly SqliteTestDatabase _database = new();
+        private readonly NPocoTestDatabase _database;
 
-        public StripePaidCheckoutSessionsTests() => _database.Migrate(c => new AddUmbCheckoutStripePaidSessionsTable(c));
+        public StripePaidCheckoutSessionsTests() : this(new NPocoTestDatabase())
+        {
+        }
+
+        protected StripePaidCheckoutSessionsTests(NPocoTestDatabase database)
+        {
+            _database = database;
+            _database.Migrate(c => new AddUmbCheckoutStripePaidSessionsTable(c));
+        }
 
         public void Dispose() => _database.Dispose();
 
@@ -83,6 +92,16 @@ namespace UmbCheckout.Tests.Persistence
             _database.Migrate(c => new AddUmbCheckoutStripePaidSessionsTable(c));
 
             Assert.Equal(0, Rows);
+        }
+    }
+
+    /// <summary>The same cases against SQL Server in a container (needs Docker).</summary>
+    [Trait("Category", "Integration")]
+    [Collection(DatabaseCollection.Name)]
+    public sealed class StripePaidCheckoutSessionsSqlServerTests : StripePaidCheckoutSessionsTests
+    {
+        public StripePaidCheckoutSessionsSqlServerTests(SqlServerContainerFixture sqlServer) : base(NPocoTestDatabase.SqlServer(sqlServer))
+        {
         }
     }
 }

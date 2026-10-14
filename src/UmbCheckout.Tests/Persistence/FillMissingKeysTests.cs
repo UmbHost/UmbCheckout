@@ -3,6 +3,7 @@ using Moq;
 using UmbCheckout.Stripe.Composers;
 using UmbCheckout.Stripe.Migrations;
 using UmbCheckout.Stripe.Services;
+using UmbCheckout.Testing;
 using UmbCheckout.Tests.Infrastructure;
 using Umbraco.Cms.Core.Mapping;
 using Umbraco.Cms.Core.Scoping;
@@ -14,9 +15,15 @@ namespace UmbCheckout.Tests.Persistence
     /// Shipping rates created before the Key column existed have a NULL Key, which the backoffice can't look up (it finds rates by Key).
     /// A migration step gives each its own key. Real NPoco on SQLite.
     /// </summary>
-    public sealed class FillMissingKeysTests : IDisposable
+    public class FillMissingKeysTests : IDisposable
     {
-        private readonly SqliteTestDatabase _database = new();
+        private readonly NPocoTestDatabase _database;
+
+        public FillMissingKeysTests() : this(new NPocoTestDatabase())
+        {
+        }
+
+        protected FillMissingKeysTests(NPocoTestDatabase database) => _database = database;
 
         public void Dispose() => _database.Dispose();
 
@@ -44,11 +51,21 @@ namespace UmbCheckout.Tests.Persistence
             _database.Migrate(c => new AddUmbCheckoutStripeShippingTable(c), c => new AddStripeShippingKey(c));
             var key = Guid.NewGuid();
             _database.Execute("INSERT INTO UmbCheckoutStripeShipping (Name, Value, \"Key\") VALUES ('Standard', 'shr_1', @0)", key);
-            var before = _database.Scalar<string>("SELECT \"Key\" FROM UmbCheckoutStripeShipping");
+            var before = _database.Scalar<string>("SELECT CAST(\"Key\" AS VARCHAR(50)) FROM UmbCheckoutStripeShipping");
 
             _database.Migrate(c => new FillMissingShippingKeys(c));
 
-            Assert.Equal(before, _database.Scalar<string>("SELECT \"Key\" FROM UmbCheckoutStripeShipping"));
+            Assert.Equal(before, _database.Scalar<string>("SELECT CAST(\"Key\" AS VARCHAR(50)) FROM UmbCheckoutStripeShipping"));
+        }
+    }
+
+    /// <summary>The same cases against SQL Server in a container (needs Docker).</summary>
+    [Trait("Category", "Integration")]
+    [Collection(DatabaseCollection.Name)]
+    public sealed class FillMissingKeysSqlServerTests : FillMissingKeysTests
+    {
+        public FillMissingKeysSqlServerTests(SqlServerContainerFixture sqlServer) : base(NPocoTestDatabase.SqlServer(sqlServer))
+        {
         }
     }
 }
