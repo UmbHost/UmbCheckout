@@ -53,7 +53,7 @@ public sealed class StripeShippingRateJsonNamesTests
             Mock.Of<IStripeShippingRateDatabaseService>(), api.Object, Mock.Of<ILocalizedTextService>());
 
         var list = JsonResultAssert.Body(await controller.GetStripeShippingRates());
-        Has(list["data"]![0], "id", "display_name");
+        Has(list["data"].Required()[0], "id", "display_name");
 
         var rate = JsonResultAssert.Body(await controller.GetStripeShippingRate("shr_1"));
         Has(rate, "id", "display_name", "livemode", "fixed_amount.amount", "fixed_amount.currency", "fixedAmountMoney.amount",

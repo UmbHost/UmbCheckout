@@ -33,7 +33,7 @@ namespace UmbCheckout.Core.Interfaces
         /// </remarks>
         /// <returns>The upper-case ISO code, or null when no currency is configured (or <paramref name="content"/> is null).</returns>
         [Obsolete("Use GetCurrencyForContentAsync(IPublishedContent, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
-        async Task<string?> GetCurrencyForContentAsync(IPublishedContent content)
+        async Task<string?> GetCurrencyForContentAsync(IPublishedContent? content)
         {
 #pragma warning disable CS0618 // the old default implementation, kept for implementations written before the token overload
             var code = (await GetCurrencyAsync())?.Trim();
@@ -46,7 +46,7 @@ namespace UmbCheckout.Core.Interfaces
         /// <summary>As <see cref="GetCurrencyForContentAsync(IPublishedContent)"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
         /// <remarks>Implementations written before the token overloads existed ignore the token.</remarks>
 #pragma warning disable CS0618 // forwards to the old overload so implementations written before the token overload keep working
-        Task<string?> GetCurrencyForContentAsync(IPublishedContent content, CancellationToken cancellationToken) => GetCurrencyForContentAsync(content);
+        Task<string?> GetCurrencyForContentAsync(IPublishedContent? content, CancellationToken cancellationToken) => GetCurrencyForContentAsync(content);
 #pragma warning restore CS0618
     }
 }

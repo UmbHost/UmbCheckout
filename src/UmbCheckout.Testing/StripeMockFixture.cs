@@ -16,9 +16,10 @@ public sealed class StripeMockFixture : IAsyncLifetime
     public const string Image = "stripe/stripe-mock@sha256:6a3fbbb37639a15525f8df5ae6995a9da21d5e827b897898a47a88e2b6e3790b";
 
     private const int StripeMockPort = 12111;
-    private IContainer _container = default!;
+    private IContainer? _container;
+    private string? _baseUrl;
 
-    public string BaseUrl { get; private set; } = default!;
+    public string BaseUrl => _baseUrl ?? throw new InvalidOperationException("The stripe-mock container has not started: the fixture is initialised by xUnit before the tests run.");
 
     public IStripeClient CreateClient(HttpMessageHandler? handler = null) => new StripeClient(
         "sk_test_123",
@@ -33,10 +34,16 @@ public sealed class StripeMockFixture : IAsyncLifetime
             .Build();
 
         await _container.StartAsync();
-        BaseUrl = $"http://{_container.Hostname}:{_container.GetMappedPublicPort(StripeMockPort)}";
+        _baseUrl = $"http://{_container.Hostname}:{_container.GetMappedPublicPort(StripeMockPort)}";
     }
 
-    public async Task DisposeAsync() => await _container.DisposeAsync();
+    public async Task DisposeAsync()
+    {
+        if (_container is not null)
+        {
+            await _container.DisposeAsync();
+        }
+    }
 }
 
 /// <summary>Records the URL, headers and form body Stripe.net sends, since stripe-mock answers with canned fixtures.</summary>
@@ -58,7 +65,7 @@ public sealed class CapturingHandler : DelegatingHandler
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        RequestUris.Add(Uri.UnescapeDataString(request.RequestUri!.ToString()));
+        RequestUris.Add(Uri.UnescapeDataString(request.RequestUri?.ToString() ?? string.Empty));
         RequestHeaders.Add(request.Headers.ToDictionary(h => h.Key, h => string.Join(",", h.Value), StringComparer.OrdinalIgnoreCase));
         if (request.Content != null)
         {

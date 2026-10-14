@@ -64,13 +64,16 @@ namespace UmbCheckout.Tests.Persistence
 
             public Mock<ICoreScopeProvider> CoreScopeProvider { get; } = new();
 
+            /// <summary>What SingleOrDefault gives when there is no row: Moq answers a query nobody set up with a finished task with no result.</summary>
+            private static readonly Task<TPoco> NoRow = new Mock<IAsyncQueryProviderWithIncludes<TPoco>>().Object.SingleOrDefault();
+
             public FakeStore()
             {
                 var query = new Mock<IAsyncQueryProviderWithIncludes<TPoco>>();
-                query.Setup(q => q.SingleOrDefault()).ReturnsAsync(() =>
+                query.Setup(q => q.SingleOrDefault()).Returns(() =>
                 {
                     Reads++;
-                    return Row!;
+                    return Row is { } row ? Task.FromResult(row) : NoRow;
                 });
                 Database.Setup(d => d.QueryAsync<TPoco>()).Returns(query.Object);
                 Database.Setup(d => d.UpdateAsync(It.IsAny<TPoco>())).Callback<object>(p => Row = (TPoco)p).ReturnsAsync(1);
@@ -107,7 +110,7 @@ namespace UmbCheckout.Tests.Persistence
         {
             var store = new FakeStore<ConfigurationPoco> { Row = new ConfigurationPoco { Id = 1, CurrencyCode = currency } };
             var cache = new SettingsCache<ConfigurationPoco>();
-            var service = new ConfigurationService(store.ScopeProvider.Object, NullLogger<ConfigurationService>.Instance, ConfigurationMapper(), store.CoreScopeProvider.Object, null!, cache, store.ScopeAccessor.Object);
+            var service = new ConfigurationService(store.ScopeProvider.Object, NullLogger<ConfigurationService>.Instance, ConfigurationMapper(), store.CoreScopeProvider.Object, null, cache, store.ScopeAccessor.Object);
             return (service, store, cache);
         }
 
@@ -130,7 +133,7 @@ namespace UmbCheckout.Tests.Persistence
                 Mock.Of<ICoreScopeProvider>(), NullLogger<UmbracoMapper>.Instance);
             var cache = new SettingsCache<StripeSettingsPoco>();
             var scopeAccessor = new Mock<IScopeAccessor>();
-            var service = new StripeSettingsService(database.ScopeProvider, NullLogger<StripeSettingsService>.Instance, mapper, database.ScopeProvider, null!, cache, scopeAccessor.Object);
+            var service = new StripeSettingsService(database.ScopeProvider, NullLogger<StripeSettingsService>.Instance, mapper, database.ScopeProvider, null, cache, scopeAccessor.Object);
             return (service, database, cache, scopeAccessor);
         }
 
@@ -155,7 +158,7 @@ namespace UmbCheckout.Tests.Persistence
             await service.GetStripeSettings();
             DeleteTheRow(database);
 
-            Assert.True((await service.GetStripeSettings())!.UseLiveApiDetails);
+            Assert.True((await service.GetStripeSettings()).Required().UseLiveApiDetails);
         }
 
         [Fact]
@@ -164,10 +167,10 @@ namespace UmbCheckout.Tests.Persistence
             var (service, _, _) = Configuration("GBP");
 
             var first = await service.GetConfiguration();
-            first!.CurrencyCode = "XXX";
+            first.Required().CurrencyCode = "XXX";
 
             Assert.NotSame(first, await service.GetConfiguration());
-            Assert.Equal("GBP", (await service.GetConfiguration())!.CurrencyCode);
+            Assert.Equal("GBP", (await service.GetConfiguration()).Required().CurrencyCode);
         }
 
         [Fact]
@@ -176,9 +179,9 @@ namespace UmbCheckout.Tests.Persistence
             var (service, _, _, _) = StripeSettings(live: false);
 
             var first = await service.GetStripeSettings();
-            first!.UseLiveApiDetails = true;
+            first.Required().UseLiveApiDetails = true;
 
-            Assert.False((await service.GetStripeSettings())!.UseLiveApiDetails);
+            Assert.False((await service.GetStripeSettings()).Required().UseLiveApiDetails);
         }
 
         [Fact]
@@ -189,7 +192,7 @@ namespace UmbCheckout.Tests.Persistence
 
             Assert.True(await service.UpdateConfiguration(new ConfigurationModel { CurrencyCode = "EUR" }));
 
-            Assert.Equal("EUR", (await service.GetConfiguration())!.CurrencyCode);
+            Assert.Equal("EUR", (await service.GetConfiguration()).Required().CurrencyCode);
         }
 
         [Fact]
@@ -200,7 +203,7 @@ namespace UmbCheckout.Tests.Persistence
 
             Assert.True(await service.UpdateStripeSettings(new StripeSettingsModel { UseLiveApiDetails = true }));
 
-            Assert.True((await service.GetStripeSettings())!.UseLiveApiDetails);
+            Assert.True((await service.GetStripeSettings()).Required().UseLiveApiDetails);
         }
 
         [Fact]
@@ -211,7 +214,7 @@ namespace UmbCheckout.Tests.Persistence
 
             await service.UpdateConfiguration(new ConfigurationModel { CurrencyCode = "EUR" });
 
-            Assert.Equal("EUR", Assert.Single(store.Published.OfType<OnConfigurationSavedNotification>()).Configuration!.CurrencyCode);
+            Assert.Equal("EUR", Assert.Single(store.Published.OfType<OnConfigurationSavedNotification>()).Configuration.Required().CurrencyCode);
         }
 
         [Fact]
@@ -222,7 +225,7 @@ namespace UmbCheckout.Tests.Persistence
 
             await service.UpdateStripeSettings(new StripeSettingsModel { UseLiveApiDetails = true });
 
-            Assert.True(Assert.Single(database.Published.OfType<OnStripeSettingsSavedNotification>()).StripeSettings!.UseLiveApiDetails);
+            Assert.True(Assert.Single(database.Published.OfType<OnStripeSettingsSavedNotification>()).StripeSettings.Required().UseLiveApiDetails);
         }
 
         [Fact]
@@ -237,7 +240,7 @@ namespace UmbCheckout.Tests.Persistence
             await stripeSettings.UpdateStripeSettings(new StripeSettingsModel { UseLiveApiDetails = true });
 
             Assert.Single(configurationStore.Published.OfType<OnConfigurationSavedNotification>());
-            Assert.True(Assert.Single(database.Published.OfType<OnStripeSettingsSavedNotification>()).StripeSettings!.UseLiveApiDetails);
+            Assert.True(Assert.Single(database.Published.OfType<OnStripeSettingsSavedNotification>()).StripeSettings.Required().UseLiveApiDetails);
             Assert.Equal(1, database.Scalar<int>("SELECT COUNT(*) FROM UmbCheckoutStripeSettings"));
         }
 
@@ -324,7 +327,7 @@ namespace UmbCheckout.Tests.Persistence
             await configuration.GetConfiguration();
 
             Assert.Equal(2, configurationStore.Reads);
-            Assert.True((await stripeSettings.GetStripeSettings())!.UseLiveApiDetails);
+            Assert.True((await stripeSettings.GetStripeSettings()).Required().UseLiveApiDetails);
         }
 
         [Fact]

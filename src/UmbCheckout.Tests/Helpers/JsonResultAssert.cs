@@ -13,7 +13,7 @@ namespace UmbCheckout.Tests.Helpers
         {
             var json = Assert.IsType<JsonResult>(result);
             var options = Assert.IsType<JsonSerializerOptions>(json.SerializerSettings);
-            return JsonNode.Parse(JsonSerializer.Serialize(json.Value, json.Value?.GetType() ?? typeof(object), options))!;
+            return JsonNode.Parse(JsonSerializer.Serialize(json.Value, json.Value?.GetType() ?? typeof(object), options)).Required();
         }
 
         /// <summary>

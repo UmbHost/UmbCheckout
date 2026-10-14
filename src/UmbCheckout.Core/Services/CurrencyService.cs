@@ -41,10 +41,10 @@ namespace UmbCheckout.Core.Services
 
         /// <inheritdoc />
         [Obsolete("Use GetCurrencyForContentAsync(IPublishedContent, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
-        public Task<string?> GetCurrencyForContentAsync(IPublishedContent content) => GetCurrencyForContentAsync(content, CancellationToken.None);
+        public Task<string?> GetCurrencyForContentAsync(IPublishedContent? content) => GetCurrencyForContentAsync(content, CancellationToken.None);
 
         /// <inheritdoc />
-        public async Task<string?> GetCurrencyForContentAsync(IPublishedContent content, CancellationToken cancellationToken)
+        public async Task<string?> GetCurrencyForContentAsync(IPublishedContent? content, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (content is null)
@@ -140,13 +140,11 @@ namespace UmbCheckout.Core.Services
                     }
                 }
                 else if (_umbracoContextAccessor.TryGetUmbracoContext(out var umbracoContext)
-                    && umbracoContext.PublishedRequest != null
-                    && umbracoContext.PublishedRequest.PublishedContent != null
-                    && umbracoContext.PublishedRequest.PublishedContent.Root() != null
-                    && umbracoContext.PublishedRequest.PublishedContent.Root()!.HasProperty(Consts.PropertyAlias.CurrencyCode)
-                    && umbracoContext.PublishedRequest.PublishedContent.Root()!.HasValue(Consts.PropertyAlias.CurrencyCode))
+                    && umbracoContext.PublishedRequest?.PublishedContent?.Root() is { } requestRoot
+                    && requestRoot.HasProperty(Consts.PropertyAlias.CurrencyCode)
+                    && requestRoot.HasValue(Consts.PropertyAlias.CurrencyCode))
                 {
-                    stringBuilder.Append(umbracoContext.PublishedRequest.PublishedContent.Root()!.Value<string>(Consts.PropertyAlias.CurrencyCode)?.ToUpper());
+                    stringBuilder.Append(requestRoot.Value<string>(Consts.PropertyAlias.CurrencyCode)?.ToUpper());
                 }
                 else if (configuration != null && !string.IsNullOrEmpty(configuration.CurrencyCode))
                 {

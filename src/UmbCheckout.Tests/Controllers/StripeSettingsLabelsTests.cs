@@ -41,11 +41,11 @@ public sealed class StripeSettingsLabelsTests
         var keys = new Dictionary<(string, string), string>();
         foreach (var file in files)
         {
-            foreach (var area in XDocument.Load(file).Root!.Elements("area"))
+            foreach (var area in XDocument.Load(file).Root.Required().Elements("area"))
             {
                 foreach (var key in area.Elements("key"))
                 {
-                    keys[(area.Attribute("alias")!.Value, key.Attribute("alias")!.Value)] = key.Value;
+                    keys[(area.Attribute("alias").Required().Value, key.Attribute("alias").Required().Value)] = key.Value;
                 }
             }
         }
@@ -62,15 +62,16 @@ public sealed class StripeSettingsLabelsTests
         text.Setup(t => t.Localize(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CultureInfo?>(), It.IsAny<IDictionary<string, string?>?>()))
             .Returns<string?, string?, CultureInfo?, IDictionary<string, string?>?>((area, key, _, _) =>
                 keys.TryGetValue((area ?? string.Empty, key ?? string.Empty), out var value) ? value : "[" + key + "]");
-        var controller = new StripeSettingsApiController(NullLogger<StripeSettingsApiController>.Instance, null!, text.Object, Mock.Of<IStripeSettingsService>());
+        var controller = new StripeSettingsApiController(NullLogger<StripeSettingsApiController>.Instance, null, text.Object, Mock.Of<IStripeSettingsService>());
 
         var properties = JsonResultAssert.Body(await controller.GetStripeSettings()).AsArray();
 
         Assert.NotEmpty(properties);
         Assert.All(properties, property =>
         {
-            Assert.DoesNotContain("[", property!["label"]!.GetValue<string>());
-            Assert.DoesNotContain("[", property["description"]!.GetValue<string>());
+            var node = property.Required();
+            Assert.DoesNotContain("[", node["label"].Required().GetValue<string>());
+            Assert.DoesNotContain("[", node["description"].Required().GetValue<string>());
         });
     }
 }

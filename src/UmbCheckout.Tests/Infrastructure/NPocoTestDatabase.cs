@@ -5,11 +5,13 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using NPoco;
+using Umbraco.Cms.Core.Configuration;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Scoping;
 using Umbraco.Cms.Infrastructure.Migrations;
+using Umbraco.Cms.Infrastructure.Migrations.Install;
 using Umbraco.Cms.Infrastructure.Persistence;
 using Umbraco.Cms.Infrastructure.Persistence.Mappers;
 using Umbraco.Cms.Persistence.Sqlite.Services;
@@ -57,7 +59,7 @@ namespace UmbCheckout.Tests.Infrastructure
             }
             else
             {
-                _connectionString = sqlServerConnectionString!;
+                _connectionString = sqlServerConnectionString.Required();
                 _factory = SqlClientFactory.Instance;
                 var syntax = new SqlServerSyntaxProvider(Options.Create(new GlobalSettings()));
                 SqlContext = new SqlContext(syntax, DatabaseType.SqlServer2012, new PocoDataFactory(new NPoco.MapperCollection()), new Umbraco.Cms.Infrastructure.Persistence.Mappers.MapperCollection(() => Enumerable.Empty<BaseMapper>()));
@@ -99,7 +101,9 @@ namespace UmbCheckout.Tests.Infrastructure
 
         /// <summary>A new database connection (each scope gets its own, as on a site).</summary>
         public IUmbracoDatabase Open()
-            => new UmbracoDatabase(_connectionString, SqlContext, _factory, NullLogger<UmbracoDatabase>.Instance, null, null!);
+            => new UmbracoDatabase(_connectionString, SqlContext, _factory, NullLogger<UmbracoDatabase>.Instance, null,
+                new DatabaseSchemaCreatorFactory(NullLogger<DatabaseSchemaCreator>.Instance, NullLoggerFactory.Instance, Mock.Of<IUmbracoVersion>(),
+                    Mock.Of<IEventAggregator>(), Mock.Of<IOptionsMonitor<InstallDefaultDataSettings>>()));
 
         /// <summary>Runs migration steps (as a plan would, without the plan's state table).</summary>
         public void Migrate(params Func<IMigrationContext, MigrationBase>[] steps)

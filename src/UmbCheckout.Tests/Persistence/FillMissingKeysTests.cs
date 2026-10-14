@@ -42,7 +42,7 @@ namespace UmbCheckout.Tests.Persistence
             var service = new StripeShippingRateDatabaseService(_database.ScopeProvider, mapper, NullLogger<StripeShippingRateDatabaseService>.Instance);
             var rates = (await service.GetShippingRates()).ToList();
             Assert.All(rates, r => Assert.NotEqual(Guid.Empty, r.Key));
-            Assert.Equal("shr_1", (await service.GetShippingRate(rates.Single(r => r.Name == "Standard").Key))!.Value);
+            Assert.Equal("shr_1", (await service.GetShippingRate(rates.Single(r => r.Name == "Standard").Key)).Required().Value);
         }
 
         [Fact]

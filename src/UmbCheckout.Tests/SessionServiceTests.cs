@@ -58,7 +58,7 @@ namespace UmbCheckout.Tests
                 _events.Object,
                 Scopes(),
                 Mock.Of<IConfigurationService>(),
-                null!,
+                null,
                 _basketContext.Object,
                 _paid.Object);
         }
@@ -428,7 +428,7 @@ namespace UmbCheckout.Tests
         {
 #pragma warning disable CS0618 // the obsolete constructor is the subject
             var service = new SessionService(new EphemeralDataProtectionProvider(), Mock.Of<IHttpContextAccessor>(a => a.HttpContext == _httpContext),
-                NullLogger<SessionService>.Instance, _events.Object, Scopes(), Mock.Of<IConfigurationService>(), null!, _basketContext.Object);
+                NullLogger<SessionService>.Instance, _events.Object, Scopes(), Mock.Of<IConfigurationService>(), null, _basketContext.Object);
             await service.Update(new Basket { CurrencyCode = "GBP", LineItems = new[] { Line("GBP") }, CheckoutSessionId = "cs_test_paid" });
 
             Assert.Single((await service.Get("GBP")).Basket.LineItems);

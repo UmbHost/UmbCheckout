@@ -41,7 +41,7 @@ namespace UmbCheckout.Tests.ViewComponents
             => _basketService.Setup(b => b.Get(It.IsAny<CancellationToken>())).ReturnsAsync(new Basket { LineItems = currencies.Select(c => new LineItem { Key = Guid.NewGuid(), Price = 1m, Quantity = 1, CurrencyCode = c }).ToList() });
 
         private static TModel Model<TModel>(IViewComponentResult result)
-            => Assert.IsType<TModel>(Assert.IsType<ViewViewComponentResult>(result).ViewData!.Model);
+            => Assert.IsType<TModel>(Assert.IsType<ViewViewComponentResult>(result).ViewData.Required().Model);
 
         [Fact]
         public async Task StripeBasket_SubtotalIsInTheBasketsOwnCurrency()
@@ -149,10 +149,10 @@ namespace UmbCheckout.Tests.ViewComponents
         {
             // The partial renders nothing for a null product, as before; the currency service is never handed null.
             IViewComponentResult? result = null;
-            var exception = await Record.ExceptionAsync(async () => result = await Button().InvokeAsync(null!));
+            var exception = await Record.ExceptionAsync(async () => result = await Button().InvokeAsync(null));
 
             Assert.Null(exception);
-            var model = Model<StripeAddToBasketButtonViewModel>(result!);
+            var model = Model<StripeAddToBasketButtonViewModel>(result.Required());
             Assert.Null(model.Product);
             Assert.Null(model.CurrencyCode);
             _currencyService.Verify(c => c.GetCurrencyForContentAsync(It.IsAny<IPublishedContent>(), It.IsAny<CancellationToken>()), Times.Never);

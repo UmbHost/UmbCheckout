@@ -47,7 +47,8 @@ namespace UmbCheckout.Core.Services
             ValidateNewLine(item);
 
             // A basket holds one currency: the line goes to its own currency's basket.
-            var currencyCode = item.CurrencyCode!.Trim().ToUpperInvariant();
+            var currencyCode = item.CurrencyCode?.Trim().ToUpperInvariant()
+                ?? throw new ArgumentException("A basket line needs a currency.", nameof(item));
             var basket = (await _sessionService.Get(currencyCode, cancellationToken)).Basket;
 
             using var scope = _coreScopeProvider.CreateCoreScope(autoComplete: true);
@@ -71,7 +72,7 @@ namespace UmbCheckout.Core.Services
         {
             var newLines = items.ToList();
             newLines.ForEach(ValidateNewLine);
-            var currencies = newLines.Select(item => item.CurrencyCode!.Trim().ToUpperInvariant()).Distinct().ToList();
+            var currencies = newLines.Select(item => item.CurrencyCode?.Trim().ToUpperInvariant()).OfType<string>().Distinct().ToList();
             if (currencies.Count != 1)
             {
                 throw new ArgumentException("Items added together must share one currency (a basket belongs to one currency).", nameof(items));
