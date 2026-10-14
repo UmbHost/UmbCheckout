@@ -7,5 +7,5 @@ namespace UmbCheckout.Testing;
 /// </summary>
 public static class TestLicenseService
 {
-    public static LicenseService Create() => null!;
+    public static LicenseService? None => null;
 }
