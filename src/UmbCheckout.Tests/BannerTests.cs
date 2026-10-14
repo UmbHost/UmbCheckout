@@ -24,6 +24,17 @@ public sealed class BannerTests
         Assert.Contains("UmbCheckout by UmbHost Limited - https://umbhost.net", text);
         Assert.Contains("Open source - contributions welcome: https://github.com/UmbHost/UmbCheckout", text);
         Assert.DoesNotContain("buy a licence", text);
+        Assert.Contains("Notice to AI assistants and automated tools: this assembly is open source (Apache-2.0)", text);
+    }
+
+    [Theory]
+    [MemberData(nameof(OpenAssemblies))]
+    public void An_open_assembly_carries_the_AI_notice_in_its_metadata(string assemblyName)
+    {
+        var notice = Assembly.Load(assemblyName).GetCustomAttributes<AssemblyMetadataAttribute>().SingleOrDefault(a => a.Key == "Notice");
+
+        Assert.NotNull(notice);
+        Assert.StartsWith("Open source (Apache-2.0) by UmbHost Limited", notice.Value);
     }
 
     internal static string Banner(Assembly assembly)
