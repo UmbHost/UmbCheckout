@@ -94,7 +94,7 @@ namespace UmbCheckout.Tests.Composers
         [Fact]
         public void The_table_is_created_on_every_site()
         {
-            // Open: the tables composer registers the plan's runner, which reads no licence.
+            // The tables composer registers the plan's runner.
             var services = new ServiceCollection();
             var composer = (IComposer)Activator.CreateInstance(typeof(PaidCheckoutSessionsComposer).Assembly.GetType("UmbCheckout.Stripe.Composers.CreateTablesComposer", throwOnError: true).Required()).Required();
 

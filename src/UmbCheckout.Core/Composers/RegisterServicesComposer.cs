@@ -32,10 +32,8 @@ namespace UmbCheckout.Core.Composers
             builder.Services.TryAddSingleton<IPaidCheckoutSessions, NoPaidCheckoutSessions>();
             builder.Services.AddTransient<IBasketService, BasketService>();
             builder.Services.AddTransient<IConfigurationService, ConfigurationService>();
-            builder.Services.AddTransient<IDatabaseService, DatabaseService>();
             builder.Services.AddTransient<ICurrencyService, CurrencyService>();
             builder.Services.AddTransient<IBasketContext, UmbracoBasketContext>();
-            builder.Services.AddTransient<IDatabaseMapperService, DatabaseMapperService>();
         }
 
         /// <summary>Creates the session service through its <see cref="ActivatorUtilitiesConstructorAttribute"/> constructor.</summary>
