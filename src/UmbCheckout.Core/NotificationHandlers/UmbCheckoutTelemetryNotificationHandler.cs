@@ -62,7 +62,7 @@ namespace UmbCheckout.Core.NotificationHandlers
         {
         }
 
-        // The licence check awaits these handlers: start the post and return, so telemetry never delays licensing or Refresh.
+        // Publishers await these handlers: start the post and return, so telemetry never delays the caller or the backoffice Refresh.
         public Task HandleAsync(OnConfigurationSavedNotification notification, CancellationToken cancellationToken)
         {
             PingTelemetryServer();

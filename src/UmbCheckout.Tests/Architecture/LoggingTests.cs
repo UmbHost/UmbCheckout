@@ -6,7 +6,7 @@ namespace UmbCheckout.Tests.Architecture;
 /// <summary>
 /// Quality Phase 6: log calls use a constant template that says what failed, with named values. An exception's message as the
 /// template gives a different "template" per failure (log search and grouping can't see them as one event) and can carry braces.
-/// Scans the source of the nearest solution above the test (the open repo here; the whole checkout from the closed copy that links this file).
+/// Scans the source of the nearest solution above the test (the repo here; the whole checkout from a project that links this file).
 /// </summary>
 public sealed partial class LoggingTests
 {
