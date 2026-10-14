@@ -21,6 +21,16 @@ namespace UmbCheckout.Tests.Helpers
             => Assert.Equal("red", CheckoutMetadata.ForLine(new Dictionary<string, string> { ["colour"] = "red" }, new Dictionary<string, string> { ["colour"] = "blue" }, ProductKey)["colour"]);
 
         [Fact]
+        public void ForLine_TheRealNodeKeyBeatsAnyNodeKeyInTheMetadata()
+        {
+            var fromLine = CheckoutMetadata.ForLine(new Dictionary<string, string> { ["nodeKey"] = "forged" }, null, ProductKey);
+            var fromProduct = CheckoutMetadata.ForLine(new Dictionary<string, string>(), new Dictionary<string, string> { ["nodeKey"] = "forged" }, ProductKey);
+
+            Assert.Equal(ProductKey.ToString(), fromLine["nodeKey"]);
+            Assert.Equal(ProductKey.ToString(), fromProduct["nodeKey"]);
+        }
+
+        [Fact]
         public void ForLine_LeavesTheLinesMetadataUnchanged()
         {
             var line = new Dictionary<string, string> { ["size"] = "L" };

@@ -41,12 +41,12 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
     protected abstract IEnumerable<MigrationPlan> LegacyPlans { get; }
 
     /// <summary>
-    /// Whether this context's tables belong on this site. Paid add-ons override it with a licence check; it runs when the
-    /// handler runs (never in a constructor, which runs before the licensing table is migrated).
+    /// Whether this context's tables belong on this site. A derived migrator can override it to skip the tables; it runs when the
+    /// handler runs (never in a constructor).
     /// </summary>
     protected virtual bool ShouldMigrate() => true;
 
-    /// <summary>Asynchronous form of <see cref="ShouldMigrate"/>, for decisions that need I/O (e.g. evaluating the licence at boot).</summary>
+    /// <summary>Asynchronous form of <see cref="ShouldMigrate"/>, for decisions that need I/O (e.g. a lookup that must complete before the tables are created).</summary>
     protected virtual Task<bool> ShouldMigrateAsync(CancellationToken cancellationToken) => Task.FromResult(ShouldMigrate());
 
     public async Task HandleAsync(UmbracoApplicationStartingNotification notification, CancellationToken cancellationToken)
@@ -64,9 +64,9 @@ public abstract class EfCoreDatabaseMigrator<TContext> : INotificationAsyncHandl
         }
         catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
         {
-            // Boot must not fail on the decision (e.g. a database error evaluating the licence): no tables now, as on an unlicensed
-            // site. A licensed site that missed them gets them on its first licensed request (DeferredAddonTables) or at the next boot.
-            _logger.LogError(ex, "Deciding whether to migrate the {DbContext} tables failed (e.g. the licence could not be evaluated), so they are not migrated now", typeof(TContext).Name);
+            // Boot must not fail on the decision (e.g. a database error): no tables now.
+            // The next boot tries again.
+            _logger.LogError(ex, "Deciding whether to migrate the {DbContext} tables failed, so they are not migrated now", typeof(TContext).Name);
             return;
         }
 

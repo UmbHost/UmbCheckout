@@ -17,7 +17,7 @@ using Xunit;
 namespace UmbCheckout.Tests.NotificationHandlers;
 
 /// <summary>
-/// Quality Phase 6: telemetry must never delay licensing or the backoffice Refresh button. The licence check awaits this handler,
+/// Quality Phase 6: telemetry must never delay the backoffice Refresh button. Publishers await this handler,
 /// so it starts the post and returns; a slow or failing telemetry server is logged at Debug and nothing else.
 /// </summary>
 public sealed class TelemetryNotificationHandlerTests
