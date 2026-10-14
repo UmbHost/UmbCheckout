@@ -78,7 +78,7 @@ namespace UmbCheckout.Tests.Api
 
             Assert.IsType<OkResult>(result);
             Assert.NotNull(saved);
-            Assert.Equal("GBP", saved!.CurrencyCode);
+            Assert.Equal("GBP", saved.Required().CurrencyCode);
             Assert.True(saved.StoreBasketInCookie);
             Assert.True(saved.StoreBasketInDatabase);
             var picker = Assert.Single(saved.SuccessPageUrl);

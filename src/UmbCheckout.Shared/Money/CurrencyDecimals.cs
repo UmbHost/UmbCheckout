@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace UmbCheckout.Shared.Money
 {
     /// <summary>
@@ -33,7 +35,7 @@ namespace UmbCheckout.Shared.Money
 
         /// <summary>The number of decimal places in the currency's minor unit as Stripe's API represents it (JPY 0, GBP 2, KWD 3, ISK 2).</summary>
         /// <exception cref="ArgumentException">The code is null, empty or white space.</exception>
-        public static int MinorUnitDigits(string currency)
+        public static int MinorUnitDigits([NotNull] string? currency)
         {
             if (string.IsNullOrWhiteSpace(currency))
             {
@@ -48,7 +50,7 @@ namespace UmbCheckout.Shared.Money
 
         /// <summary>The number of decimal places an amount in <paramref name="currency"/> is charged and displayed with (JPY 0, GBP 2, KWD 3, ISK 0).</summary>
         /// <exception cref="ArgumentException">The code is null, empty or white space.</exception>
-        public static int ChargeableDigits(string currency)
+        public static int ChargeableDigits([NotNull] string? currency)
         {
             var digits = MinorUnitDigits(currency);
             return WholeUnitsOnly.Contains(currency.Trim()) ? 0 : digits;

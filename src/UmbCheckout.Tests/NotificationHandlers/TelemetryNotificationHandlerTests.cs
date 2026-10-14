@@ -97,7 +97,7 @@ public sealed class TelemetryNotificationHandlerTests
         var body = new TaskCompletionSource<string>();
         var handler = Handler(new Server(async (request, _) =>
         {
-            var base64 = await request.Content!.ReadAsStringAsync();
+            var base64 = await request.Content.Required().ReadAsStringAsync();
             body.TrySetResult(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64)));
             return new HttpResponseMessage();
         }));

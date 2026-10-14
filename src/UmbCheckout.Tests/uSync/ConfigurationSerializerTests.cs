@@ -29,8 +29,8 @@ public sealed class ConfigurationSerializerTests
             CancelPageUrl = [new MultiUrlPicker { Udi = "umb://document/76df5ca5ee7044e0be5d61b5a8ae5f9f", Name = "Cancel", Url = "/cancel/" }]
         };
 
-        var node = (await serializer.SerializeAsync(exported, new SyncSerializerOptions())).Item!;
-        var imported = (await serializer.DeserializeAsync(node, new SyncSerializerOptions())).Item!;
+        var node = (await serializer.SerializeAsync(exported, new SyncSerializerOptions())).Item.Required();
+        var imported = (await serializer.DeserializeAsync(node, new SyncSerializerOptions())).Item.Required();
 
         Assert.Equal("GBP", imported.CurrencyCode);
         Assert.True(imported.StoreBasketInCookie);

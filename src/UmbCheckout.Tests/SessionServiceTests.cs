@@ -30,7 +30,7 @@ namespace UmbCheckout.Tests
         {
             var httpContext = new DefaultHttpContext { Session = _session };
             _basketContext.Setup(b => b.SiteRootCulture).Returns("en-GB");
-            var licenseService = UmbCheckout.Testing.TestLicenseService.Create();
+            var licenseService = UmbCheckout.Testing.TestLicenseService.None;
 
             return new SessionService(
                 new EphemeralDataProtectionProvider(),
@@ -125,7 +125,7 @@ namespace UmbCheckout.Tests
             await service.Update(new Basket { CurrencyCode = spelling, LineItems = [Line("GBP")] });
 
             var stored = _session.GetObjectFromJson<UmbCheckoutSession>(BasketKeys.Session("en-GB", "GBP"));
-            Assert.Equal("GBP", stored!.Basket.CurrencyCode);
+            Assert.Equal("GBP", stored.Required().Basket.CurrencyCode);
             Assert.Single((await service.Get(spelling)).Basket.LineItems);
 
             await service.Clear(spelling);

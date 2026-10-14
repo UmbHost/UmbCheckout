@@ -71,17 +71,18 @@ public sealed class TestEfCoreScope<TContext> : IEfCoreScope<TContext> where TCo
             return;
         }
 
+        var transaction = _transaction ?? throw new InvalidOperationException("A root scope always has a transaction.");
         var commit = _completed && !_childFailed;
         if (commit)
         {
-            _transaction!.Commit();
+            transaction.Commit();
         }
         else
         {
-            _transaction!.Rollback();
+            transaction.Rollback();
         }
 
-        _transaction.Dispose();
+        transaction.Dispose();
         _context.Dispose();
         _provider.Notifications.ScopeExit(commit);
     }

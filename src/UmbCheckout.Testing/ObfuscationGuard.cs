@@ -25,7 +25,7 @@ public static class ObfuscationGuard
         return types
             .Where(t => IsPersistenceType(t) || entities.Contains(t))
             .Where(t => !t.GetCustomAttributes<ObfuscationAttribute>(inherit: false).Any(a => a.Exclude))
-            .Select(t => t.FullName!)
+            .Select(t => t.FullName ?? t.Name)
             .OrderBy(n => n, StringComparer.Ordinal)
             .ToList();
     }

@@ -7,10 +7,10 @@ namespace UmbCheckout.Testing;
 
 public static class TestDatabase
 {
-    /// <summary>A fresh, empty database for one test: SQLite in memory or in a shared-cache file, or a new database on the shared SQL Server container.</summary>
+    /// <summary>A fresh, empty database for one test: SQLite in memory or in a shared-cache file, or a new database on the shared SQL Server container (<paramref name="sqlServer"/> is only needed for SQL Server).</summary>
     public static async Task<TestDatabase<TContext>> CreateAsync<TContext>(
         TestProvider provider,
-        SqlServerContainerFixture sqlServer,
+        SqlServerContainerFixture? sqlServer,
         Func<DbContextOptions<TContext>, TContext> factory,
         string historyTable)
         where TContext : DbContext
@@ -31,7 +31,7 @@ public static class TestDatabase
                 options.UseUmbCheckoutProvider("Microsoft.Data.Sqlite", connectionString, historyTable);
                 break;
             default:
-                connection = new Microsoft.Data.SqlClient.SqlConnection(await sqlServer.CreateDatabaseAsync());
+                connection = new Microsoft.Data.SqlClient.SqlConnection(await (sqlServer ?? throw new ArgumentNullException(nameof(sqlServer), "A SQL Server fixture is needed to create a SQL Server test database.")).CreateDatabaseAsync());
                 options.UseUmbCheckoutProvider(connection, historyTable);
                 break;
         }

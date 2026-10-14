@@ -46,7 +46,7 @@ namespace UmbCheckout.Tests.Services
             stripeSettings.Setup(s => s.GetStripeSettingsAsync(It.IsAny<CancellationToken>())).Callback(() => _calls.Add("stripe settings")).ReturnsAsync((UmbCheckoutStripeSettings?)null);
 
             return new StripeSessionService(Mock.Of<IPublishedContentCache>(), scopes.Object, Mock.Of<IEventAggregator>(), _logger, configuration.Object,
-                Mock.Of<IHttpContextAccessor>(), Mock.Of<IStripeShippingOptionsService>(), UmbCheckout.Testing.TestLicenseService.Create(), stripeSettings.Object,
+                Mock.Of<IHttpContextAccessor>(), Mock.Of<IStripeShippingOptionsService>(), UmbCheckout.Testing.TestLicenseService.None, stripeSettings.Object,
                 _factory.Object);
         }
 
