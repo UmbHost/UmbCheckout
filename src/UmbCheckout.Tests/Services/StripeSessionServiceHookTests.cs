@@ -37,7 +37,7 @@ public sealed class StripeSessionServiceHookTests
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             order.Add("stripe");
-            Bodies.Add(Uri.UnescapeDataString(await request.Content!.ReadAsStringAsync(cancellationToken)));
+            Bodies.Add(Uri.UnescapeDataString(await request.Content.Required().ReadAsStringAsync(cancellationToken)));
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("{\"id\":\"cs_test_1\",\"object\":\"checkout.session\",\"livemode\":false,\"url\":\"https://checkout.stripe.com/c/pay/cs_test_1\"}",
@@ -62,7 +62,7 @@ public sealed class StripeSessionServiceHookTests
 
         return new StripeSessionService(contentCache.Object, new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object, _events.Object,
             NullLogger<StripeSessionService>.Instance, Mock.Of<IConfigurationService>(), Mock.Of<IHttpContextAccessor>(), Mock.Of<IStripeShippingOptionsService>(),
-            UmbCheckout.Testing.TestLicenseService.Create(), stripeSettings.Object, factory.Object);
+            UmbCheckout.Testing.TestLicenseService.None, stripeSettings.Object, factory.Object);
     }
 
     private Basket Basket() => new()

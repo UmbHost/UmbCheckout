@@ -67,7 +67,7 @@ public sealed class BasketHookTests
         basketContext.Setup(c => c.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("GBP");
 
         _sessions = new SessionService(new EphemeralDataProtectionProvider(), Mock.Of<IHttpContextAccessor>(a => a.HttpContext == _http), NullLogger<SessionService>.Instance,
-            _events, scopes.Object, Mock.Of<IConfigurationService>(), TestLicenseService.Create(), basketContext.Object, _messages);
+            _events, scopes.Object, Mock.Of<IConfigurationService>(), TestLicenseService.None, basketContext.Object, _messages);
         _baskets = new BasketService(_sessions, NullLogger<BasketService>.Instance, _events, scopes.Object, _messages);
     }
 
@@ -161,7 +161,7 @@ public sealed class BasketHookTests
 
         Assert.IsType<RedirectResult>(await Checkout(stripe).Checkout());
 
-        var line = Assert.Single(charged!.LineItems);
+        var line = Assert.Single(charged.Required().LineItems);
         Assert.Equal(10m, line.Price);
         Assert.Equal(2, line.Quantity);
     }

@@ -11,13 +11,18 @@ namespace UmbCheckout.Shared
 
             AssemblyVersion = assembly.GetName().Version;
 
-            AssemblyFileVersion = Version.Parse(assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
+            var fileVersion = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version
+                ?? throw new InvalidOperationException($"{assembly.GetName().Name} has no assembly file version.");
+            var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                ?? throw new InvalidOperationException($"{assembly.GetName().Name} has no informational version.");
 
-            SemanticVersion = SemVersion.Parse(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion);
+            AssemblyFileVersion = Version.Parse(fileVersion);
+
+            SemanticVersion = SemVersion.Parse(informationalVersion);
 
             Version = new Version(SemanticVersion.Major, SemanticVersion.Minor, SemanticVersion.Patch);
 
-            PackageVersion = ToPackageVersion(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion);
+            PackageVersion = ToPackageVersion(informationalVersion);
         }
 
         /// <summary>

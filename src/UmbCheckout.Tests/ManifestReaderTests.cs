@@ -14,7 +14,7 @@ namespace UmbCheckout.Tests
             var bundle = JsonSerializer.SerializeToElement(Assert.Single(manifest.Extensions));
             Assert.Equal("bundle", bundle.GetProperty("type").GetString());
             Assert.Equal("/App_Plugins/UmbCheckout/umbcheckout.js", bundle.GetProperty("js").GetString());
-            Assert.Equal("/App_Plugins/UmbCheckout/umbcheckout-core.js", manifest.Importmap!.Imports["@umbcheckout/core"]);
+            Assert.Equal("/App_Plugins/UmbCheckout/umbcheckout-core.js", manifest.Importmap.Required().Imports["@umbcheckout/core"]);
         }
 
         // Umbraco 17.6+ cache-busts /App_Plugins URLs with the manifest version (?umb__rnd=<version>), so pre-releases

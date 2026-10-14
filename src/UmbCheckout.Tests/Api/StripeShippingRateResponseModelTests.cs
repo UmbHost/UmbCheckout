@@ -24,11 +24,12 @@ namespace UmbCheckout.Tests.Api
         [Fact]
         public void Amount_IsMoneyInMajorUnits()
         {
-            var model = StripeShippingRateResponseModel.From(Rate());
+            var model = StripeShippingRateResponseModel.From(Rate()).Required();
 
-            Assert.Equal(495, model.Amount!.MinorUnits);
-            Assert.Equal(4.95m, model.Amount.Amount);
-            Assert.Equal("gbp", model.Amount.Currency);
+            var amount = model.Amount.Required();
+            Assert.Equal(495, amount.MinorUnits);
+            Assert.Equal(4.95m, amount.Amount);
+            Assert.Equal("gbp", amount.Currency);
         }
 
         [Fact]
@@ -38,11 +39,12 @@ namespace UmbCheckout.Tests.Api
         [Fact]
         public void DeliveryEstimate_IsMapped()
         {
-            var model = StripeShippingRateResponseModel.From(Rate());
+            var model = StripeShippingRateResponseModel.From(Rate()).Required();
 
-            Assert.Equal(1, model.DeliveryEstimateMinimum!.Value);
-            Assert.Equal("business_day", model.DeliveryEstimateMinimum.Unit);
-            Assert.Equal(2, model.DeliveryEstimateMaximum!.Value);
+            var minimum = model.DeliveryEstimateMinimum.Required();
+            Assert.Equal(1, minimum.Value);
+            Assert.Equal("business_day", minimum.Unit);
+            Assert.Equal(2, model.DeliveryEstimateMaximum.Required().Value);
         }
 
         [Theory]

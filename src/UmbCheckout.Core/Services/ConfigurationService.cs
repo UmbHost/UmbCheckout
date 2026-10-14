@@ -27,7 +27,7 @@ namespace UmbCheckout.Core.Services
         private readonly SettingsCache<UmbCheckoutConfiguration> _cache;
         private readonly IScopeAccessor? _scopeAccessor;
 
-        public ConfigurationService(IEFCoreScopeProvider<UmbCheckoutDbContext> scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, LicenseService licenseService,
+        public ConfigurationService(IEFCoreScopeProvider<UmbCheckoutDbContext> scopeProvider, ILogger<ConfigurationService> logger, IUmbracoMapper mapper, LicenseService? licenseService,
             IEventAggregator eventAggregator, IEventMessagesFactory eventMessagesFactory, SettingsCache<UmbCheckoutConfiguration> cache, IScopeAccessor? scopeAccessor = null)
         {
             _cache = cache;

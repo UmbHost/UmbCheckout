@@ -19,15 +19,15 @@ public sealed class StripeSettingsSerializerTests
         private readonly StripeSettingsSerializer _serializer = new(NullLogger<SyncSerializerRoot<UmbCheckoutStripeSettings>>.Instance, service);
 
         public async Task<XElement> Serialize(UmbCheckoutStripeSettings item)
-            => (await Invoke<XElement>("SerializeCoreAsync", item, new SyncSerializerOptions())).Item!;
+            => (await Invoke<XElement>("SerializeCoreAsync", item, new SyncSerializerOptions())).Item.Required();
 
         public async Task<UmbCheckoutStripeSettings> Deserialize(XElement node)
-            => (await Invoke<UmbCheckoutStripeSettings>("DeserializeCoreAsync", node, new SyncSerializerOptions())).Item!;
+            => (await Invoke<UmbCheckoutStripeSettings>("DeserializeCoreAsync", node, new SyncSerializerOptions())).Item.Required();
 
         public Task SaveItemAsync(UmbCheckoutStripeSettings item) => _serializer.SaveItemAsync(item);
 
         private Task<global::uSync.Core.Models.SyncAttempt<T>> Invoke<T>(string method, params object[] args)
-            => (Task<global::uSync.Core.Models.SyncAttempt<T>>)typeof(StripeSettingsSerializer).GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(_serializer, args)!;
+            => (Task<global::uSync.Core.Models.SyncAttempt<T>>)typeof(StripeSettingsSerializer).GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Required().Invoke(_serializer, args).Required();
     }
 
     private static readonly PropertyInfo[] Settings = typeof(UmbCheckoutStripeSettings).GetProperties()

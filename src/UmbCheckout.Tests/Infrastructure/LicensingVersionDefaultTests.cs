@@ -26,7 +26,7 @@ namespace UmbCheckout.Tests.Infrastructure
             var props = Find("Directory.Build.props");
             Assert.NotNull(props);
 
-            var match = Regex.Match(File.ReadAllText(props!), @"<UmbHostLicensingVersion Condition=""[^""]*"">([^<]+)</UmbHostLicensingVersion>");
+            var match = Regex.Match(File.ReadAllText(props.Required()), @"<UmbHostLicensingVersion Condition=""[^""]*"">([^<]+)</UmbHostLicensingVersion>");
 
             Assert.True(match.Success);
             Assert.StartsWith("2.", match.Groups[1].Value, StringComparison.Ordinal);

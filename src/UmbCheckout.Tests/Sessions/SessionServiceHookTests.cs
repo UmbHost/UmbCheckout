@@ -28,7 +28,7 @@ public sealed class SessionServiceHookTests
         basketContext.Setup(c => c.SiteRootCulture).Returns("en-GB");
         basketContext.Setup(c => c.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("GBP");
         return new SessionService(new EphemeralDataProtectionProvider(), Mock.Of<IHttpContextAccessor>(a => a.HttpContext == _http), NullLogger<SessionService>.Instance,
-            _events, new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object, Mock.Of<IConfigurationService>(), TestLicenseService.Create(),
+            _events, new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object, Mock.Of<IConfigurationService>(), TestLicenseService.None,
             basketContext.Object, _messages);
     }
 
@@ -123,7 +123,7 @@ public sealed class SessionServiceHookTests
         var basketContext = new Mock<IBasketContext>();
         basketContext.Setup(c => c.SiteRootCulture).Returns("en-GB");
         var service = new SessionService(new EphemeralDataProtectionProvider(), Mock.Of<IHttpContextAccessor>(a => a.HttpContext == _http), NullLogger<SessionService>.Instance,
-            _events, scopes.Object, Mock.Of<IConfigurationService>(), TestLicenseService.Create(), basketContext.Object, _messages);
+            _events, scopes.Object, Mock.Of<IConfigurationService>(), TestLicenseService.None, basketContext.Object, _messages);
         string? seen = null;
         _events.On<OnSessionLoadedNotification>(n => seen = n.Target.Basket.LineItems.SingleOrDefault()?.Name);
 

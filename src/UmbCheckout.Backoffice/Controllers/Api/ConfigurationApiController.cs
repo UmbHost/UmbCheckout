@@ -38,7 +38,7 @@ namespace UmbCheckout.Backoffice.Controllers.Api
         private readonly Func<bool> _isLicensed;
 
         [ActivatorUtilitiesConstructor]
-        public ConfigurationApiController(IConfigurationService configurationService, IPublishedContentCache contentCache, IPublishedUrlProvider urlProvider, IOptions<WebRoutingSettings> webRoutingSettings, UmbHost.Licensing.Services.LicenseService licenseService)
+        public ConfigurationApiController(IConfigurationService configurationService, IPublishedContentCache contentCache, IPublishedUrlProvider urlProvider, IOptions<WebRoutingSettings> webRoutingSettings, UmbHost.Licensing.Services.LicenseService? licenseService)
             : this(configurationService, contentCache, urlProvider, webRoutingSettings, () => UmbCheckoutSettings.IsLicensed)
         {
         }

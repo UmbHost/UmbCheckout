@@ -5,6 +5,7 @@
 
 	<PropertyGroup>
 		<!-- Possible nulls fail the build -->
+		<Nullable>enable</Nullable>
 		<WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
 
 		<!-- Obsolete APIs fail the build (Quality Phase 6). Test projects call obsolete members on purpose to keep them working. -->

@@ -39,8 +39,8 @@ public sealed class BannerTests
 
     internal static string Banner(Assembly assembly)
     {
-        var type = assembly.GetType("UmbHost.UmbHostBanner", throwOnError: true)!;
-        var field = type.GetField("Text", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
-        return (string)field.GetRawConstantValue()!;
+        var type = assembly.GetType("UmbHost.UmbHostBanner", throwOnError: true).Required();
+        var field = type.GetField("Text", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static).Required();
+        return (string)field.GetRawConstantValue().Required();
     }
 }

@@ -29,9 +29,10 @@ public sealed class NoSyncOverAsyncTests
 
     private static readonly Assembly[] Assemblies = Directory.GetFiles(AppContext.BaseDirectory, "*.dll")
         .Select(Path.GetFileNameWithoutExtension)
-        .Where(name => (name!.StartsWith("UmbCheckout", StringComparison.Ordinal) || Metadata("NoSyncOverAsync.ScanAlso").Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal)))
+        .OfType<string>()
+        .Where(name => (name.StartsWith("UmbCheckout", StringComparison.Ordinal) || Metadata("NoSyncOverAsync.ScanAlso").Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal)))
                        && !name.Contains("Test", StringComparison.Ordinal))
-        .Select(name => Assembly.Load(name!))
+        .Select(name => Assembly.Load(name))
         .ToArray();
 
     [Fact]
@@ -87,7 +88,7 @@ public sealed class NoSyncOverAsyncTests
         }
         catch (ReflectionTypeLoadException ex)
         {
-            return ex.Types.Where(t => t is not null)!;
+            return ex.Types.OfType<Type>();
         }
     }
 
@@ -111,7 +112,7 @@ public sealed class NoSyncOverAsyncTests
     private static string SourceName(Type stateMachine)
     {
         var method = System.Text.RegularExpressions.Regex.Match(stateMachine.Name, "^<+([^>]+)>").Groups[1].Value;
-        var owner = stateMachine.DeclaringType!;
+        var owner = stateMachine.DeclaringType.Required();
         while (owner.Name.StartsWith('<') && owner.DeclaringType != null)
         {
             owner = owner.DeclaringType;

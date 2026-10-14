@@ -28,7 +28,7 @@ public sealed class SettingsCacheTests
         cache.TrySet(new Row("current"), cache.Generation);
 
         Assert.True(cache.TryGet(out var row));
-        Assert.Equal("current", row!.Value);
+        Assert.Equal("current", row.Required().Value);
     }
 
     [Fact]

@@ -17,7 +17,7 @@ namespace UmbCheckout.Tests.Models
             var basket = new Basket { LineItems = [new LineItem { Price = 10m, Quantity = 1 }] };
             _ = basket.Total;
 
-            var restored = JsonSerializer.Deserialize<Basket>(JsonSerializer.Serialize(basket))!;
+            var restored = JsonSerializer.Deserialize<Basket>(JsonSerializer.Serialize(basket)).Required();
             restored.LineItems = restored.LineItems.Append(new LineItem { Price = 5m, Quantity = 2 }).ToList();
 
             Assert.Equal(20m, restored.Total);
@@ -34,6 +34,6 @@ namespace UmbCheckout.Tests.Models
 
         [Fact]
         public void CurrencyCode_RoundTrips()
-            => Assert.Equal("GBP", JsonSerializer.Deserialize<Basket>(JsonSerializer.Serialize(new Basket { CurrencyCode = "GBP" }))!.CurrencyCode);
+            => Assert.Equal("GBP", JsonSerializer.Deserialize<Basket>(JsonSerializer.Serialize(new Basket { CurrencyCode = "GBP" })).Required().CurrencyCode);
     }
 }
