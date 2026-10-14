@@ -38,6 +38,16 @@ public sealed class NoNullForgivingTests
     [InlineData("var length = name!.Length;")]
     [InlineData("var item = null !;")]
     [InlineData("return value!;")]
+    [InlineData("var f = x => y!.Z;")]
+    [InlineData("var s = $\"{x!.Y}\";")]
+    [InlineData("var s = $\"Hello {name!}\";")]
+    [InlineData("var s = $@\"C:\\{folder!.Name}\";")]
+    [InlineData("var s = @$\"C:\\{folder!.Name}\";")]
+    [InlineData("var s = $\"{a} and {b!.C:N2} and {d}\";")]
+    [InlineData("var s = $\"{Format(y!)}\";")]
+    [InlineData("var s = $\"{(ready ? value! : \"none\")}\";")]
+    [InlineData("var s = $\"\"\"{x!.Y}\"\"\";")]
+    [InlineData("var s = $$\"\"\"{{x!.Y}}\"\"\";")]
     public void The_scan_finds_a_null_forgiving_operator(string line)
         => Assert.Single(ProductionSource.NullForgivingIn(line));
 
@@ -55,6 +65,18 @@ public sealed class NoNullForgivingTests
     [InlineData("var path = @\"C:\\a!\";")]
     [InlineData("var message = $\"Hello {name}!\";")]
     [InlineData("var c = '!';")]
+    [InlineData("var f = x=>!y;")]
+    [InlineData("var f = x => !y;")]
+    [InlineData("items.Where(x=>!x.Ready);")]
+    [InlineData("items.Any(x=>!string.IsNullOrEmpty(x));")]
+    [InlineData("var s = $\"Hello {name}!\";")]
+    [InlineData("var s = $\"{a}!{b}!\";")]
+    [InlineData("var s = $\"{{x!}}\";")]
+    [InlineData("var s = $\"{value:N2}!\";")]
+    [InlineData("var s = $\"{(ready ? \"yes!\" : \"no!\")}\";")]
+    [InlineData("var s = $@\"C:\\{folder}!\";")]
+    [InlineData("var s = $\"\"\"Hello!\"\"\";")]
+    [InlineData("var s = $\"{(!ready ? 1 : 2)}\";")]
     public void The_scan_ignores_comments_strings_and_other_uses_of_the_exclamation_mark(string line)
         => Assert.Empty(ProductionSource.NullForgivingIn(line));
 
