@@ -23,7 +23,10 @@
                                             <localize ng-if="vm.LicenseState.Valid" key="umbcheckout_support_ticket"></localize><br />
                                         </p>
 
-                                        <p class="red bold" ng-if="!vm.LicenseState.Valid" ng-bind-html="vm.LicenseState.Message">
+                                        <p class="red bold" ng-if="!vm.LicenseState.Valid && vm.LicenseState.AddOnsInstalled" ng-bind-html="vm.LicenseState.Message">
+                                        </p>
+
+                                        <p class="alert alert-info" ng-if="!vm.LicenseState.Valid && !vm.LicenseState.AddOnsInstalled" ng-bind-html="vm.LicenseState.Message">
                                         </p>
 
                                     </umb-box-content>

@@ -30,6 +30,9 @@ function UmbCheckout($scope, editorService, umbCheckoutResources, $routeParams, 
         .then(function (response) {
             vm.LicenseState.Status = response.data;
 
+            // A paid add-on installed: unlicensed shows the red warning; without one, an info bar.
+            vm.LicenseState.AddOnsInstalled = response.data.addOnsInstalled === true;
+
             // The licence's comma-separated domain list, readable.
             vm.LicenseState.ValidDomains = (response.data.validDomains || "")
                 .split(",")
