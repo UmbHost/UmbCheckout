@@ -9,9 +9,15 @@ export const UmbCheckoutAlertStyles = css`
     border: 1px solid var(--uui-color-danger-standalone);
     border-left-width: 4px;
     border-radius: var(--uui-border-radius);
-    background-color: var(--uui-color-danger-emphasis, #fbe6e6);
-    color: var(--uui-color-danger-standalone);
+    background-color: var(--uui-color-danger);
+    color: var(--uui-color-danger-contrast);
     font-weight: 700;
+  }
+  .umbcheckout-alert--info {
+    border-color: var(--uui-color-default);
+    background-color: var(--uui-color-default);
+    color: var(--uui-color-default-contrast);
+    font-weight: 400;
   }
   .umbcheckout-alert a {
     color: inherit;

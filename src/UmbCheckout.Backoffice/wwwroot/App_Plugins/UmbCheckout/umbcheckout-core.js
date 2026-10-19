@@ -1,7 +1,7 @@
 import { c as B, w as R } from "./api-client-DCzFYg7y.js";
 import { a as H, b as L, U as v, c as K, d as q } from "./constants-BP4MpHU2.js";
 import { U as X } from "./license.context-token-4gXpqREX.js";
-import { U as F, a as P } from "./unlicensed-alert.element-BxElw7Mq.js";
+import { U as F, a as P } from "./unlicensed-alert.element-BFU93TIj.js";
 import { U as V } from "./made-by.element-BHDU3_qS.js";
 import { UMB_ACTION_EVENT_CONTEXT as l } from "@umbraco-cms/backoffice/action";
 import { UmbEntityActionBase as E, UmbRequestReloadStructureForEntityEvent as h, UmbEntityDeletedEvent as C } from "@umbraco-cms/backoffice/entity-action";

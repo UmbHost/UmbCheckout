@@ -7,7 +7,7 @@ import { C as M } from "./sdk.gen-bktVcCtQ.js";
 import { c as K } from "./client.gen-CGf2xBln.js";
 import { w as q } from "./api-client-DCzFYg7y.js";
 import { U as V } from "./license.context-token-4gXpqREX.js";
-import { U as H } from "./unlicensed-alert.element-BxElw7Mq.js";
+import { U as H } from "./unlicensed-alert.element-BFU93TIj.js";
 var X = Object.defineProperty, F = Object.getOwnPropertyDescriptor, w = (e) => {
   throw TypeError(e);
 }, k = (e, t, i, c) => {
@@ -208,4 +208,4 @@ export {
   n as UmbCheckoutConfigurationWorkspaceViewElement,
   oe as default
 };
-//# sourceMappingURL=configuration-workspace-view.element-w_j2ZrL1.js.map
+//# sourceMappingURL=configuration-workspace-view.element-Bqhut1sc.js.map

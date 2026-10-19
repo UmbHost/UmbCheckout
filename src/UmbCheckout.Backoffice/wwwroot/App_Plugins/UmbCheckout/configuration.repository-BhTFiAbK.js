@@ -3,7 +3,7 @@ import { UMB_NOTIFICATION_CONTEXT as n } from "@umbraco-cms/backoffice/notificat
 import { UmbDetailRepositoryBase as c } from "@umbraco-cms/backoffice/repository";
 import { tryExecute as r } from "@umbraco-cms/backoffice/resources";
 import { C as s } from "./sdk.gen-bktVcCtQ.js";
-import { U as u, a as p } from "./bundle.manifests-BTymGh7T.js";
+import { U as u, a as p } from "./bundle.manifests-B_5DVvgD.js";
 import { UMBCHECKOUT_CONFIGURATION_STORE_CONTEXT as y } from "./configuration.store-BlabXKVF.js";
 class C {
   #e;
@@ -81,4 +81,4 @@ export {
   d as UmbCheckoutConfigurationRepository,
   d as api
 };
-//# sourceMappingURL=configuration.repository-DwB0cwfH.js.map
+//# sourceMappingURL=configuration.repository-BhTFiAbK.js.map
