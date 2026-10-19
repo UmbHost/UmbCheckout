@@ -54,7 +54,7 @@ namespace UmbCheckout.Tests.Services
                 Mock.Of<IEventAggregator>(),
                 new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object,
                 configuration.Object,
-                UmbCheckout.Testing.TestLicenseService.Create(),
+                UmbCheckout.Testing.TestLicenseService.None,
                 basketContext.Object,
                 new UmbCheckout.Testing.TestEventMessagesFactory(),
                 Mock.Of<IPaidCheckoutSessions>());

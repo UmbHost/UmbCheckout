@@ -36,8 +36,8 @@ namespace UmbCheckout.Tests.Helpers
         [InlineData("  ")]
         public void ADecimalsLookupNeedsACode(string? currency)
         {
-            Assert.ThrowsAny<ArgumentException>(() => CurrencyDecimals.ChargeableDigits(currency!));
-            Assert.ThrowsAny<ArgumentException>(() => CurrencyDecimals.MinorUnitDigits(currency!));
+            Assert.ThrowsAny<ArgumentException>(() => CurrencyDecimals.ChargeableDigits(currency));
+            Assert.ThrowsAny<ArgumentException>(() => CurrencyDecimals.MinorUnitDigits(currency));
         }
 
         [Fact]

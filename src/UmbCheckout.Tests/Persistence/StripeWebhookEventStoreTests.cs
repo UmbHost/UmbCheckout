@@ -39,7 +39,7 @@ public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlSe
         var claim = await store.ClaimAsync("evt_1");
         Assert.Equal(StripeWebhookEventClaim.Claimed, claim.Claim);
         Assert.False(string.IsNullOrEmpty(claim.LeaseToken));
-        await store.CompleteAsync("evt_1", claim.LeaseToken!);
+        await store.CompleteAsync("evt_1", claim.LeaseToken.Required());
 
         Assert.Equal(StripeWebhookEventClaim.AlreadyHandled, (await store.ClaimAsync("evt_1")).Claim);
     }
@@ -77,7 +77,7 @@ public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlSe
         await using var _ = database;
 
         var claim = await store.ClaimAsync("evt_1");
-        await store.ForgetAsync("evt_1", claim.LeaseToken!);
+        await store.ForgetAsync("evt_1", claim.LeaseToken.Required());
 
         Assert.Equal(StripeWebhookEventClaim.Claimed, (await store.ClaimAsync("evt_1")).Claim);
     }
@@ -119,7 +119,7 @@ public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlSe
         Assert.Equal(StripeWebhookEventClaim.Claimed, takeover.Claim);
         Assert.NotEqual(stale.LeaseToken, takeover.LeaseToken);
 
-        await store.ForgetAsync("evt_1", stale.LeaseToken!);
+        await store.ForgetAsync("evt_1", stale.LeaseToken.Required());
 
         Assert.Equal(1, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutStripeWebhookEvents"));
         Assert.Equal(takeover.LeaseToken, await database.ScalarAsync<string>("SELECT LeaseToken FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
@@ -134,10 +134,10 @@ public sealed class StripeWebhookEventStoreTests(SqlServerContainerFixture sqlSe
         var stale = await store.ClaimAsync("evt_1");
         var takeover = await store.ClaimAsync("evt_1");
 
-        await store.CompleteAsync("evt_1", stale.LeaseToken!);
+        await store.CompleteAsync("evt_1", stale.LeaseToken.Required());
 
         Assert.Equal(0, await database.ScalarAsync<int>("SELECT Status FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
-        await store.CompleteAsync("evt_1", takeover.LeaseToken!);
+        await store.CompleteAsync("evt_1", takeover.LeaseToken.Required());
         Assert.Equal(1, await database.ScalarAsync<int>("SELECT Status FROM UmbCheckoutStripeWebhookEvents WHERE EventId = 'evt_1'"));
     }
 }

@@ -41,7 +41,7 @@ public sealed class ProviderMigrationsAssembly : IMigrationsAssembly
             if (!_modelSnapshotLoaded)
             {
                 var type = Assembly.DefinedTypes.FirstOrDefault(t => t.IsSubclassOf(typeof(ModelSnapshot)) && IsForThisContextAndProvider(t));
-                _modelSnapshot = type is null ? null : (ModelSnapshot)Activator.CreateInstance(type.AsType())!;
+                _modelSnapshot = type is null ? null : CreateInstance<ModelSnapshot>(type);
                 _modelSnapshotLoaded = true;
             }
 
@@ -62,10 +62,14 @@ public sealed class ProviderMigrationsAssembly : IMigrationsAssembly
 
     public Migration CreateMigration(TypeInfo migrationClass, string activeProvider)
     {
-        var migration = (Migration)Activator.CreateInstance(migrationClass.AsType())!;
+        var migration = CreateInstance<Migration>(migrationClass);
         migration.ActiveProvider = activeProvider;
         return migration;
     }
+
+    private static T CreateInstance<T>(TypeInfo type) where T : class
+        => Activator.CreateInstance(type.AsType()) as T
+           ?? throw new InvalidOperationException($"Could not create an instance of {type.FullName} as {typeof(T).Name}.");
 
     private IReadOnlyDictionary<string, TypeInfo> LoadMigrations()
     {

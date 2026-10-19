@@ -31,7 +31,7 @@ namespace UmbCheckout.Core.Services
         private readonly IEventMessagesFactory _eventMessagesFactory;
         private readonly IPaidCheckoutSessions _paidCheckoutSessions;
 
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext,
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService? licenseService, IBasketContext basketContext,
             IEventMessagesFactory eventMessagesFactory, IPaidCheckoutSessions paidCheckoutSessions)
         {
             _eventMessagesFactory = eventMessagesFactory;
@@ -46,7 +46,7 @@ namespace UmbCheckout.Core.Services
         }
 
         [Obsolete("Use the constructor that takes an IPaidCheckoutSessions. Scheduled for removal in 17.1.")]
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext,
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService? licenseService, IBasketContext basketContext,
             IEventMessagesFactory eventMessagesFactory)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
                 eventMessagesFactory, PaidCheckoutSessionsOrNone())
@@ -54,7 +54,7 @@ namespace UmbCheckout.Core.Services
         }
 
         [Obsolete("Use the constructor that takes an IEventMessagesFactory and an IPaidCheckoutSessions. Scheduled for removal in 17.1.")]
-        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService licenseService, IBasketContext basketContext)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, IHttpContextAccessor contextAccessor, ILogger<SessionService> logger, IEventAggregator eventAggregator, ICoreScopeProvider coreScopeProvider, IConfigurationService configurationService, LicenseService? licenseService, IBasketContext basketContext)
             : this(dataProtectionProvider, contextAccessor, logger, eventAggregator, coreScopeProvider, configurationService, licenseService, basketContext,
                 StaticServiceProvider.Instance.GetRequiredService<IEventMessagesFactory>(), PaidCheckoutSessionsOrNone())
         {

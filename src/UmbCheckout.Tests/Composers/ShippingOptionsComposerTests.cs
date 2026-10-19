@@ -40,7 +40,7 @@ public sealed class ShippingOptionsComposerTests
             services.AddTransient<IStripeShippingOptionsService, SitesOwn>();
         }
 
-        return services.Last(d => d.ServiceType == typeof(IStripeShippingOptionsService)).ImplementationType!;
+        return services.Last(d => d.ServiceType == typeof(IStripeShippingOptionsService)).ImplementationType.Required();
     }
 
     [Theory]

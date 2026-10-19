@@ -37,7 +37,7 @@ public sealed class HandlerAsyncTests
         builder.SetupGet(b => b.Services).Returns(services);
         foreach (var composer in handler.Assembly.GetTypes().Where(t => typeof(Umbraco.Cms.Core.Composing.IComposer).IsAssignableFrom(t) && !t.IsAbstract))
         {
-            ((Umbraco.Cms.Core.Composing.IComposer)Activator.CreateInstance(composer)!).Compose(builder.Object);
+            ((Umbraco.Cms.Core.Composing.IComposer)Activator.CreateInstance(composer).Required()).Compose(builder.Object);
         }
 
         var handled = handler.GetInterfaces()

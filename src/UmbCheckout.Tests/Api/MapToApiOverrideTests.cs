@@ -14,7 +14,7 @@ namespace UmbCheckout.Tests.Api
             var attribute = typeof(ConfigurationApiController).GetCustomAttribute<MapToApiAttribute>(inherit: true);
 
             Assert.NotNull(attribute);
-            Assert.Equal("umbcheckout", attribute!.ApiName);
+            Assert.Equal("umbcheckout", attribute.Required().ApiName);
         }
     }
 }

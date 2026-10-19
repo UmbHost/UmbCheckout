@@ -40,14 +40,14 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
 
         var created = await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" });
         Assert.NotNull(created);
-        Assert.NotEqual(Guid.Empty, created!.Key);
+        Assert.NotEqual(Guid.Empty, created.Required().Key);
         Assert.Null(await service.CreateShippingRateAsync(new ShippingRate { Name = "Dup", Value = "shr_1" }));
 
-        var updated = await service.UpdateShippingRateAsync(new ShippingRate { Name = "Standard UK", Value = "shr_1" });
-        Assert.Equal("Standard UK", updated!.Name);
+        var updated = (await service.UpdateShippingRateAsync(new ShippingRate { Name = "Standard UK", Value = "shr_1" })).Required();
+        Assert.Equal("Standard UK", updated.Name);
         Assert.Equal(created.Key, updated.Key);
-        Assert.Equal("Standard UK", (await service.GetShippingRateAsync(created.Key))!.Name);
-        Assert.Equal("Standard UK", (await service.GetShippingRateAsync("shr_1"))!.Name);
+        Assert.Equal("Standard UK", (await service.GetShippingRateAsync(created.Key)).Required().Name);
+        Assert.Equal("Standard UK", (await service.GetShippingRateAsync("shr_1")).Required().Name);
 
         Assert.True(await service.DeleteShippingRateAsync(created.Key));
         Assert.False(await service.DeleteShippingRateAsync(created.Key));
@@ -65,7 +65,7 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
 
         var result = await service.UpdateShippingRateAsync(new ShippingRate { Name = "New", Value = "shr_new" });
 
-        Assert.Equal("shr_new", result!.Value);
+        Assert.Equal("shr_new", result.Required().Value);
         Assert.Single(await service.GetShippingRatesAsync());
     }
 
@@ -77,10 +77,10 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
         await using var _ = database;
         await database.ExecuteSqlAsync("INSERT INTO UmbCheckoutStripeShipping (Name, Value, \"Key\") VALUES ('Old', 'shr_old', NULL)");
 
-        Assert.Equal(Guid.Empty, (await service.GetShippingRateAsync("shr_old"))!.Key);
+        Assert.Equal(Guid.Empty, (await service.GetShippingRateAsync("shr_old")).Required().Key);
         var updated = await service.UpdateShippingRateAsync(new ShippingRate { Name = "Old", Value = "shr_old" });
 
-        Assert.NotEqual(Guid.Empty, updated!.Key);
+        Assert.NotEqual(Guid.Empty, updated.Required().Key);
     }
 
     [Theory]
@@ -89,12 +89,12 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
     {
         var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
-        var created = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_old" }))!;
+        var created = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_old" })).Required();
 
         var updated = await service.UpdateShippingRateAsync(new ShippingRate { Key = created.Key, Name = "Standard", Value = "shr_new" });
 
         Assert.NotNull(updated);
-        Assert.Equal("shr_new", updated!.Value);
+        Assert.Equal("shr_new", updated.Required().Value);
         Assert.Equal(created.Key, updated.Key);
         Assert.Equal(1, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutStripeShipping"));
     }
@@ -105,11 +105,11 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
     {
         var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
-        var first = (await service.CreateShippingRateAsync(new ShippingRate { Name = "One", Value = "shr_1" }))!;
+        var first = (await service.CreateShippingRateAsync(new ShippingRate { Name = "One", Value = "shr_1" })).Required();
         await service.CreateShippingRateAsync(new ShippingRate { Name = "Two", Value = "shr_2" });
 
         Assert.Null(await service.UpdateShippingRateAsync(new ShippingRate { Key = first.Key, Name = "One", Value = "shr_2" }));
-        Assert.Equal("shr_1", (await service.GetShippingRateAsync(first.Key))!.Value);
+        Assert.Equal("shr_1", (await service.GetShippingRateAsync(first.Key)).Required().Value);
     }
 
     [Theory]
@@ -118,17 +118,17 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
     {
         var (database, service, _, _) = await Arrange(provider);
         await using var _ = database;
-        var existing = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Old name", Value = "shr_1" }))!;
+        var existing = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Old name", Value = "shr_1" })).Required();
 
         // Another environment's key for the same Stripe rate: adopt the row by Stripe ID, keep its key.
-        var adopted = await service.UpdateShippingRateAsync(new ShippingRate { Key = Guid.NewGuid(), Name = "New name", Value = "shr_1" });
+        var adopted = (await service.UpdateShippingRateAsync(new ShippingRate { Key = Guid.NewGuid(), Name = "New name", Value = "shr_1" })).Required();
         // A rate this site doesn't have yet: inserted with the imported key.
         var importedKey = Guid.NewGuid();
         var inserted = await service.UpdateShippingRateAsync(new ShippingRate { Key = importedKey, Name = "Express", Value = "shr_2" });
 
-        Assert.Equal(existing.Key, adopted!.Key);
+        Assert.Equal(existing.Key, adopted.Key);
         Assert.Equal("New name", adopted.Name);
-        Assert.Equal(importedKey, inserted!.Key);
+        Assert.Equal(importedKey, inserted.Required().Key);
         Assert.Equal(2, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutStripeShipping"));
     }
 
@@ -140,11 +140,11 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
         await using var _db = database;
         events.On<OnShippingRateSavingNotification>(n => n.Target.Name = n.Target.Name.ToUpperInvariant());
 
-        var created = await service.CreateShippingRateAsync(new ShippingRate { Name = "standard", Value = "shr_1" });
-        var updated = await service.UpdateShippingRateAsync(new ShippingRate { Key = created!.Key, Name = "express", Value = "shr_1" });
+        var created = (await service.CreateShippingRateAsync(new ShippingRate { Name = "standard", Value = "shr_1" })).Required();
+        var updated = await service.UpdateShippingRateAsync(new ShippingRate { Key = created.Key, Name = "express", Value = "shr_1" });
 
         Assert.Equal("STANDARD", created.Name);
-        Assert.Equal("EXPRESS", updated!.Name);
+        Assert.Equal("EXPRESS", updated.Required().Name);
     }
 
     [Theory]
@@ -153,7 +153,7 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
     {
         var (database, service, events, messages) = await Arrange(provider);
         await using var _db = database;
-        var created = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" }))!;
+        var created = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" })).Required();
         events.On<OnShippingRateSavingNotification>(n => n.CancelOperation(new EventMessage("Shipping", "Rates are locked", EventMessageType.Error)))
               .On<OnShippingRateDeletingNotification>(n => n.CancelOperation(new EventMessage("Shipping", "Rates are locked", EventMessageType.Error)));
 
@@ -161,7 +161,7 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
         Assert.Null(await service.UpdateShippingRateAsync(new ShippingRate { Key = created.Key, Name = "Changed", Value = "shr_1" }));
         Assert.False(await service.DeleteShippingRateAsync(created.Key));
 
-        Assert.Equal("Standard", (await service.GetShippingRateAsync(created.Key))!.Name);
+        Assert.Equal("Standard", (await service.GetShippingRateAsync(created.Key)).Required().Name);
         Assert.Equal(1, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutStripeShipping"));
         Assert.Single(database.ScopeProvider.Notifications.Published.OfType<OnShippingRateSavedNotification>()); // the first create only
         Assert.Empty(database.ScopeProvider.Notifications.Published.OfType<OnShippingRateDeletedNotification>());
@@ -174,7 +174,7 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
     {
         var (database, service, events, _) = await Arrange(provider);
         await using var _db = database;
-        var created = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" }))!;
+        var created = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" })).Required();
         string? before = null;
         events.On<OnShippingRateSavingNotification>(n => before = n.Existing?.Value);
 
@@ -189,11 +189,11 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
     {
         var (database, service, events, _) = await Arrange(provider);
         await using var _db = database;
-        var stored = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" }))!;
+        var stored = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" })).Required();
         events.On<OnShippingRatesLoadedNotification>(n => n.Items.Add(new ShippingRate { Key = Guid.NewGuid(), Name = "Virtual", Value = "shr_virtual" }));
 
-        Assert.Equal("Standard", (await service.GetShippingRateAsync(stored.Key))!.Name);
-        Assert.Equal("Standard", (await service.GetShippingRateAsync("shr_1"))!.Name);
+        Assert.Equal("Standard", (await service.GetShippingRateAsync(stored.Key)).Required().Name);
+        Assert.Equal("Standard", (await service.GetShippingRateAsync("shr_1")).Required().Name);
         Assert.Equal(2, (await service.GetShippingRatesAsync()).Count());
     }
 
@@ -203,7 +203,7 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
     {
         var (database, service, events, _) = await Arrange(provider);
         await using var _db = database;
-        var stored = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" }))!;
+        var stored = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" })).Required();
         events.On<OnShippingRatesLoadedNotification>(n => n.Items.Clear());
 
         using (UmbCheckoutHooks.SuppressLoaded())
@@ -221,7 +221,7 @@ public sealed class ShippingRateDatabaseServiceTests(SqlServerContainerFixture s
     {
         var (database, service, events, _) = await Arrange(provider);
         await using var _db = database;
-        var hidden = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Internal", Value = "shr_internal" }))!;
+        var hidden = (await service.CreateShippingRateAsync(new ShippingRate { Name = "Internal", Value = "shr_internal" })).Required();
         await service.CreateShippingRateAsync(new ShippingRate { Name = "Standard", Value = "shr_1" });
         events.On<OnShippingRatesLoadedNotification>(n => n.Items.RemoveAll(r => r.Value == "shr_internal"));
 

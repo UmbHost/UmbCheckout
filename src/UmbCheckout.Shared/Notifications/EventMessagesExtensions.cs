@@ -46,10 +46,15 @@ namespace UmbCheckout.Shared.Notifications
         /// <summary>As <see cref="CancellationMessage"/>, and clears the cancel once read, so a later failure in the same request isn't reported as cancelled.</summary>
         public static string? TakeCancellationMessage(this EventMessages? messages)
         {
+            if (messages is null)
+            {
+                return null;
+            }
+
             var message = messages.CancellationMessage();
             if (message is not null)
             {
-                messages!.Add(new EventMessage(CancellationReadCategory, string.Empty, EventMessageType.Info));
+                messages.Add(new EventMessage(CancellationReadCategory, string.Empty, EventMessageType.Info));
             }
 
             return message;

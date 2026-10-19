@@ -32,7 +32,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         var events = new TestEventAggregator();
         var messages = new TestEventMessagesFactory();
         var service = new ConfigurationService(database.ScopeProvider, NullLogger<ConfigurationService>.Instance,
-            TestMapper.Create(new UmbCheckout.Core.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages, _cache, scopeAccessor: database.ScopeProvider.ScopeAccessor);
+            TestMapper.Create(new UmbCheckout.Core.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.None, events, messages, _cache, scopeAccessor: database.ScopeProvider.ScopeAccessor);
         return (database, service, events, messages);
     }
 
@@ -48,7 +48,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         using (database.ScopeProvider.CreateScope())
         {
             await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" });
-            Assert.Equal("GBP", (await service.GetConfigurationAsync())!.CurrencyCode);
+            Assert.Equal("GBP", (await service.GetConfigurationAsync()).Required().CurrencyCode);
         } // not completed: rolled back
 
         Assert.Null(await service.GetConfigurationAsync());
@@ -79,8 +79,8 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         Assert.True(await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP", StoreBasketInDatabase = true }));
         Assert.True(await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/c"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP", StoreBasketInDatabase = true }));
 
-        var saved = await service.GetConfigurationAsync();
-        Assert.Equal("/c", saved!.SuccessPageUrl.Single().Url);
+        var saved = (await service.GetConfigurationAsync()).Required();
+        Assert.Equal("/c", saved.SuccessPageUrl.Single().Url);
         Assert.NotEqual(Guid.Empty, saved.Key);
         Assert.True(saved.StoreBasketInDatabase);
         Assert.Equal(1, await database.ScalarAsync<int>("SELECT COUNT(*) FROM UmbCheckoutConfiguration"));
@@ -95,12 +95,12 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         await using var _ = database;
         await database.ExecuteSqlAsync("INSERT INTO UmbCheckoutConfiguration (SuccessPageUrl, CancelPageUrl, StoreBasketInCookie, StoreBasketInDatabase, BasketInDatabaseExpiry, BasketInCookieExpiry, EnableShipping, \"Key\", CurrencyCode) VALUES ('[]', '[]', 0, 0, 30, 30, 0, NULL, NULL)");
 
-        var legacy = await service.GetConfigurationAsync();
-        Assert.Equal(Guid.Empty, legacy!.Key);
+        var legacy = (await service.GetConfigurationAsync()).Required();
+        Assert.Equal(Guid.Empty, legacy.Key);
         Assert.Equal(string.Empty, legacy.CurrencyCode);
 
         await service.UpdateConfigurationAsync(legacy);
-        Assert.NotEqual(Guid.Empty, (await service.GetConfigurationAsync())!.Key);
+        Assert.NotEqual(Guid.Empty, (await service.GetConfigurationAsync()).Required().Key);
     }
 
     [Theory]
@@ -113,8 +113,8 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
 
         await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), StoreBasketInCookie = true, StoreBasketInDatabase = true });
 
-        var saved = await service.GetConfigurationAsync();
-        Assert.True(saved!.StoreBasketInCookie);
+        var saved = (await service.GetConfigurationAsync()).Required();
+        Assert.True(saved.StoreBasketInCookie);
         Assert.True(saved.StoreBasketInDatabase);
         await using var db = database.CreateContext();
         var row = await db.Configurations.SingleAsync();
@@ -132,7 +132,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
 
         Assert.True(await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" }));
 
-        Assert.Equal("EUR", (await service.GetConfigurationAsync())!.CurrencyCode);
+        Assert.Equal("EUR", (await service.GetConfigurationAsync()).Required().CurrencyCode);
     }
 
     [Theory]
@@ -194,7 +194,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
 
         var loaded = await service.GetConfigurationAsync();
 
-        Assert.Equal("JPY", loaded!.CurrencyCode);
+        Assert.Equal("JPY", loaded.Required().CurrencyCode);
         Assert.Single(events.Published.OfType<OnConfigurationLoadedNotification>());
     }
 
@@ -220,7 +220,7 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         await service.GetConfigurationAsync();
         await database.ExecuteSqlAsync("UPDATE UmbCheckoutConfiguration SET CurrencyCode = 'USD'");
 
-        Assert.Equal("GBP", (await service.GetConfigurationAsync())!.CurrencyCode);
+        Assert.Equal("GBP", (await service.GetConfigurationAsync()).Required().CurrencyCode);
     }
 
     [Theory]
@@ -231,13 +231,13 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
         await using var _db = database;
         await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "GBP" });
         var first = await service.GetConfigurationAsync();
-        first!.CurrencyCode = "mutated by a caller";
+        first.Required().CurrencyCode = "mutated by a caller";
 
         await service.UpdateConfigurationAsync(new ConfigurationModel { SuccessPageUrl = Page("/a"), CancelPageUrl = Page("/b"), CurrencyCode = "EUR" });
         var second = await service.GetConfigurationAsync();
         var third = await service.GetConfigurationAsync();
 
-        Assert.Equal("EUR", second!.CurrencyCode);
+        Assert.Equal("EUR", second.Required().CurrencyCode);
         Assert.NotSame(second, third);
         Assert.Equal(3, events.Published.OfType<OnConfigurationLoadedNotification>().Count()); // Loaded still runs on every read
     }
@@ -255,6 +255,6 @@ public sealed class ConfigurationServiceTests(SqlServerContainerFixture sqlServe
 
         new UmbCheckout.Core.Cache.UmbCheckoutConfigurationCacheRefresher(_cache).RefreshAll();
 
-        Assert.Equal("USD", (await service.GetConfigurationAsync())!.CurrencyCode);
+        Assert.Equal("USD", (await service.GetConfigurationAsync()).Required().CurrencyCode);
     }
 }

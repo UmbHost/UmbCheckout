@@ -37,4 +37,8 @@
       <None Update="Persistence\Fixtures\*.sql" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="UmbCheckout.Testing.Nullability" />
+  </ItemGroup>
+
 </Project>

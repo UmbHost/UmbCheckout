@@ -31,7 +31,7 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
         var events = new TestEventAggregator();
         var messages = new TestEventMessagesFactory();
         var service = new StripeSettingsService(database.ScopeProvider, NullLogger<StripeSettingsService>.Instance,
-            TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.Create(), events, messages, _cache, scopeAccessor: database.ScopeProvider.ScopeAccessor);
+            TestMapper.Create(new UmbCheckout.Stripe.Composers.UmbCheckoutConfigurationMappingDefinition()), TestLicenseService.None, events, messages, _cache, scopeAccessor: database.ScopeProvider.ScopeAccessor);
         return (database, service, events, messages);
     }
 
@@ -46,7 +46,7 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
         using (database.ScopeProvider.CreateScope())
         {
             await service.UpdateStripeSettingsAsync(new SettingsModel { UseLiveApiDetails = true });
-            Assert.True((await service.GetStripeSettingsAsync())!.UseLiveApiDetails);
+            Assert.True((await service.GetStripeSettingsAsync()).Required().UseLiveApiDetails);
         } // not completed: rolled back
 
         Assert.Null(await service.GetStripeSettingsAsync());
@@ -74,8 +74,8 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
         Assert.True(await service.UpdateStripeSettingsAsync(new SettingsModel { CollectPhoneNumber = true, ShippingAllowedCountries = "GB" }));
         Assert.True(await service.UpdateStripeSettingsAsync(new SettingsModel { CollectPhoneNumber = false, ShippingAllowedCountries = "GB,US", AllowPromotionalCodes = true }));
 
-        var saved = await service.GetStripeSettingsAsync();
-        Assert.False(saved!.CollectPhoneNumber);
+        var saved = (await service.GetStripeSettingsAsync()).Required();
+        Assert.False(saved.CollectPhoneNumber);
         Assert.True(saved.AllowPromotionalCodes);
         Assert.Equal("GB,US", saved.ShippingAllowedCountries);
         Assert.NotEqual(Guid.Empty, saved.Key);
@@ -91,11 +91,11 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
         await using var _ = database;
         await database.ExecuteSqlAsync("INSERT INTO UmbCheckoutStripeSettings (\"Key\", UseLiveApiDetails, ShippingAllowedCountries, CollectPhoneNumber, CollectPromotionalConsent, AllowPromotionalCodes, EnableAbandonedCartRecovery, AllowPromotionalCodesOnRecoveredCarts) VALUES (NULL, 0, NULL, 0, 0, 0, 0, 0)");
 
-        var legacy = await service.GetStripeSettingsAsync();
-        Assert.Equal(Guid.Empty, legacy!.Key);
+        var legacy = (await service.GetStripeSettingsAsync()).Required();
+        Assert.Equal(Guid.Empty, legacy.Key);
 
         await service.UpdateStripeSettingsAsync(legacy);
-        Assert.NotEqual(Guid.Empty, (await service.GetStripeSettingsAsync())!.Key);
+        Assert.NotEqual(Guid.Empty, (await service.GetStripeSettingsAsync()).Required().Key);
     }
 
     [Theory]
@@ -108,7 +108,7 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
 
         Assert.True(await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "GB,US" }));
 
-        Assert.Equal("GB", (await service.GetStripeSettingsAsync())!.ShippingAllowedCountries);
+        Assert.Equal("GB", (await service.GetStripeSettingsAsync()).Required().ShippingAllowedCountries);
     }
 
     [Theory]
@@ -150,7 +150,7 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
         await service.UpdateStripeSettingsAsync(new SettingsModel { CollectPhoneNumber = false });
         events.On<OnStripeSettingsLoadedNotification>(n => n.Target.CollectPhoneNumber = true);
 
-        Assert.True((await service.GetStripeSettingsAsync())!.CollectPhoneNumber);
+        Assert.True((await service.GetStripeSettingsAsync()).Required().CollectPhoneNumber);
         Assert.Single(events.Published.OfType<OnStripeSettingsLoadedNotification>());
     }
 
@@ -165,7 +165,7 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
         await service.GetStripeSettingsAsync();
         await database.ExecuteSqlAsync("UPDATE UmbCheckoutStripeSettings SET ShippingAllowedCountries = 'US'");
 
-        Assert.Equal("GB", (await service.GetStripeSettingsAsync())!.ShippingAllowedCountries);
+        Assert.Equal("GB", (await service.GetStripeSettingsAsync()).Required().ShippingAllowedCountries);
     }
 
     [Theory]
@@ -175,13 +175,13 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
         var (database, service, events, _) = await Arrange(provider);
         await using var _db = database;
         await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "GB" });
-        (await service.GetStripeSettingsAsync())!.ShippingAllowedCountries = "mutated by a caller";
+        (await service.GetStripeSettingsAsync()).Required().ShippingAllowedCountries = "mutated by a caller";
 
         await service.UpdateStripeSettingsAsync(new SettingsModel { ShippingAllowedCountries = "FR" });
         var second = await service.GetStripeSettingsAsync();
         var third = await service.GetStripeSettingsAsync();
 
-        Assert.Equal("FR", second!.ShippingAllowedCountries);
+        Assert.Equal("FR", second.Required().ShippingAllowedCountries);
         Assert.NotSame(second, third);
         Assert.Equal(3, events.Published.OfType<OnStripeSettingsLoadedNotification>().Count());
     }
@@ -198,6 +198,6 @@ public sealed class StripeSettingsServiceTests(SqlServerContainerFixture sqlServ
 
         new UmbCheckout.Stripe.Cache.UmbCheckoutStripeSettingsCacheRefresher(_cache).RefreshAll();
 
-        Assert.Equal("US", (await service.GetStripeSettingsAsync())!.ShippingAllowedCountries);
+        Assert.Equal("US", (await service.GetStripeSettingsAsync()).Required().ShippingAllowedCountries);
     }
 }

@@ -85,7 +85,7 @@ namespace UmbCheckout.Core.Services
         {
             var newLines = items.ToList();
             newLines.ForEach(ValidateNewLine);
-            var currencies = newLines.Select(item => item.CurrencyCode!.Trim().ToUpperInvariant()).Distinct().ToList();
+            var currencies = newLines.Select(item => item.CurrencyCode?.Trim().ToUpperInvariant()).OfType<string>().Distinct().ToList();
             if (currencies.Count != 1)
             {
                 throw new ArgumentException("Items added together must share one currency (a basket belongs to one currency).", nameof(items));
