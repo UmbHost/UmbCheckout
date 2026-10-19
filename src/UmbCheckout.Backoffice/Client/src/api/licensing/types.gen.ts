@@ -26,6 +26,7 @@ export type LicenseStatusResponseModel = {
     regDate: string;
     validPaths: string;
     addons: Array<LicenseAddonResponseModel>;
+    addOnsInstalled: boolean;
 };
 
 export type NotificationHeaderModel = {

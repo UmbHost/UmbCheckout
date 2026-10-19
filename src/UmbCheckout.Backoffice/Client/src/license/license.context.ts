@@ -18,6 +18,8 @@ export type UmbCheckoutLicenseStatus = {
   validDomains: string;
   validPaths: string;
   addons: Array<UmbCheckoutLicenseAddon>;
+  /** A paid add-on is installed: unlicensed shows the red banner, otherwise an info bar. */
+  addOnsInstalled: boolean;
 };
 
 /** Result of a re-check request: accepted, or refused with the seconds to wait before retrying. */
@@ -47,6 +49,7 @@ export class UmbCheckoutLicenseContext extends UmbContextBase {
         validDomains: data.validDomains,
         validPaths: data.validPaths,
         addons: (data.addons ?? []).map((a) => ({ name: a.name, status: a.status, nextDueDate: a.nextDueDate })),
+        addOnsInstalled: data.addOnsInstalled,
       });
     }
   }

@@ -1,5 +1,5 @@
-import { UmbContextBase as r } from "@umbraco-cms/backoffice/class-api";
-import { UmbObjectState as n } from "@umbraco-cms/backoffice/observable-api";
+import { UmbContextBase as n } from "@umbraco-cms/backoffice/class-api";
+import { UmbObjectState as r } from "@umbraco-cms/backoffice/observable-api";
 import { tryExecute as a } from "@umbraco-cms/backoffice/resources";
 import { c as s } from "./client.gen-C2rnZBGa.js";
 import { w as m } from "./api-client-DCzFYg7y.js";
@@ -30,9 +30,9 @@ class i {
     });
   }
 }
-class v extends r {
+class v extends n {
   constructor(e) {
-    super(e, o), this.#e = new n(void 0), this.status = this.#e.asObservable(), this.isLicensed = this.#e.asObservablePart((t) => t?.isValid === !0), this.#t();
+    super(e, o), this.#e = new r(void 0), this.status = this.#e.asObservable(), this.isLicensed = this.#e.asObservablePart((t) => t?.isValid === !0), this.#t();
   }
   #e;
   async #t() {
@@ -46,7 +46,8 @@ class v extends r {
       expiryDateTime: e.expiryDateTime,
       validDomains: e.validDomains,
       validPaths: e.validPaths,
-      addons: (e.addons ?? []).map((t) => ({ name: t.name, status: t.status, nextDueDate: t.nextDueDate }))
+      addons: (e.addons ?? []).map((t) => ({ name: t.name, status: t.status, nextDueDate: t.nextDueDate })),
+      addOnsInstalled: e.addOnsInstalled
     });
   }
   /** Asks the licence server to re-check, then reloads the status when the check was accepted. */
@@ -59,4 +60,4 @@ export {
   v as UmbCheckoutLicenseContext,
   v as api
 };
-//# sourceMappingURL=license.context-BJZfb2-5.js.map
+//# sourceMappingURL=license.context-BEXJTVvj.js.map
