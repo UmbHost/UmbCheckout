@@ -1,112 +1,239 @@
-﻿//using System.Data;
-//using Microsoft.AspNetCore.DataProtection;
-//using Microsoft.Extensions.Logging;
-//using Moq;
-//using UmbCheckout.Core.Interfaces;
-//using UmbCheckout.Core.Services;
-//using UmbCheckout.Shared.Models;
-//using UmbHost.Licensing.Services;
-//using Umbraco.Cms.Core.Events;
-//using Umbraco.Cms.Core.Scoping;
-//using Xunit;
-//using HttpContextAccessor = UmbCheckout.Tests.Helpers.HttpContextAccessor;
-//using IScope = Umbraco.Cms.Infrastructure.Scoping.IScope;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Moq;
+using UmbCheckout.Core.Interfaces;
+using UmbCheckout.Core.Services;
+using UmbCheckout.Shared.Helpers;
+using UmbCheckout.Shared.Models;
+using UmbCheckout.Tests.Infrastructure;
+using UmbHost.Licensing.Services;
+using Umbraco.Cms.Core.Configuration.Models;
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Scoping;
+using Umbraco.Cms.Core.Services;
+using Xunit;
 
-//namespace UmbCheckout.Tests;
+namespace UmbCheckout.Tests
+{
+    /// <summary>A basket belongs to exactly one currency: one session basket per site root culture and currency.</summary>
+    public class SessionServiceTests
+    {
+        private readonly InMemorySession _session = new();
+        private readonly Mock<IBasketContext> _basketContext = new();
 
-//public class SessionServiceTests
-//{
-//    private readonly ISessionService _sessionService;
+        private readonly Mock<IEventAggregator> _events = new();
+        private readonly Mock<IPaidCheckoutSessions> _paid = new();
 
-//    private readonly Microsoft.AspNetCore.Http.HttpContextAccessor _httpContextAccessor =
-//        HttpContextAccessor.GetHttpContext("/testpage", "test.com");
+        private SessionService Service()
+        {
+            var httpContext = new DefaultHttpContext { Session = _session };
+            _basketContext.Setup(b => b.SiteRootCulture).Returns("en-GB");
+            var licenseService = UmbCheckout.Testing.TestLicenseService.None;
 
-//    public SessionServiceTests()
-//    {
-//        var logger = new Mock<ILogger<SessionService>>();
-//        var eventAggregator = new Mock<IEventAggregator>();
-//        var coreScopeProvider = new Mock<ICoreScopeProvider>();
-//        var dataProtectionProvider = new EphemeralDataProtectionProvider();
-//        var databaseService = new Mock<IDatabaseService>();
-//        var licenseService = new Mock<LicenseService>();
+            return new SessionService(
+                new EphemeralDataProtectionProvider(),
+                Mock.Of<IHttpContextAccessor>(a => a.HttpContext == httpContext),
+                NullLogger<SessionService>.Instance,
+                _events.Object,
+                new Mock<ICoreScopeProvider> { DefaultValue = DefaultValue.Mock }.Object,
+                Mock.Of<IConfigurationService>(),
+                licenseService,
+                _basketContext.Object,
+                new UmbCheckout.Testing.TestEventMessagesFactory(),
+                _paid.Object);
+        }
 
-//        var mockScope = new Mock<IScope>();
-//        mockScope.Setup(x => x.Notifications).Returns(new Mock<IScopedNotificationPublisher>().Object);
-//        coreScopeProvider.Setup(x => x.CreateCoreScope(IsolationLevel.Unspecified, RepositoryCacheMode.Unspecified, null, null, null, false, true))
-//            .Returns(mockScope.Object);
+        // Sub-project B: a customer who paid and never came back to the success page keeps the paid basket; the webhook records
+        // the paid checkout session, and the next basket read clears it.
+        private async Task<SessionService> WithCheckedOutBasket(string checkoutSessionId)
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [Line("GBP")], CheckoutSessionId = checkoutSessionId });
+            return service;
+        }
 
-//        var mockConfiguration = new Mock<IConfigurationService>();
-//        var umbCheckoutConfiguration = new UmbCheckoutConfiguration
-//        {
-//            EnableShipping = true,
-//            Id = 1,
-//            CancelPageUrl = new List<MultiUrlPicker>
-//            {
-//                new()
-//                {
-//                    Icon = "icon-document", Name = "Checkout Cancelled", Url = "/checkout-cancelled/",
-//                    Udi = "umb://document/52ec9b32732240d4acf75d570e2753f0", Published = true, Trashed = false
-//                }
-//            },
-//            SuccessPageUrl = new List<MultiUrlPicker>
-//            {
-//                new()
-//                {
-//                    Icon = "icon-document", Name = "Checkout Success", Url = "/checkout-success/",
-//                    Udi = "umb://document/ce8d58448cca4ff7af0f6313f2b93cee", Published = true, Trashed = false
-//                }
-//            }
-//        };
-//        mockConfiguration.Setup(x => x.GetConfiguration().Result).Returns(umbCheckoutConfiguration);
+        [Fact]
+        public async Task The_paid_basket_cleared_notification_is_published_with_a_token_that_cannot_be_cancelled()
+        {
+            // The basket is already cleared when this is published: a shopper who left must not lose the notification.
+            _paid.Setup(p => p.IsPaidAsync("cs_test_paid", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            var service = await WithCheckedOutBasket("cs_test_paid");
+            using var cts = new CancellationTokenSource();
 
-//        _sessionService = new SessionService(dataProtectionProvider, _httpContextAccessor, logger.Object, eventAggregator.Object, coreScopeProvider.Object, mockConfiguration.Object, databaseService.Object, licenseService.Object);
-//    }
+            await service.Get("GBP", cts.Token);
 
-//    [Fact]
-//    public async void CreateSession()
-//    {
-//        // Arrange
+            _events.Verify(e => e.PublishAsync(It.IsAny<UmbCheckout.Shared.Notifications.Session.OnPaidBasketClearedNotification>(),
+                It.Is<CancellationToken>(t => !t.CanBeCanceled)), Times.Once);
+        }
 
-//        // Act
-//        var result = await _sessionService.Get();
+        [Fact]
+        public async Task A_basket_whose_checkout_session_was_paid_is_cleared_on_the_next_read()
+        {
+            _paid.Setup(p => p.IsPaidAsync("cs_test_paid", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            var service = await WithCheckedOutBasket("cs_test_paid");
 
-//        // Assert
-//        Assert.NotNull(result);
-//        Assert.NotNull(result.Basket);
-//        Assert.False(string.IsNullOrEmpty(result.Basket.SessionId));
-//    }
+            var session = await service.Get("GBP");
 
-//    [Fact]
-//    public async void UpdateSession()
-//    {
-//        var session = await _sessionService.Get();
-        
-//        Assert.NotNull(session);
-//        Assert.False(string.IsNullOrEmpty(session.Basket.SessionId));
+            Assert.Empty(session.Basket.LineItems);
+            Assert.Null(session.Basket.CheckoutSessionId);
+            Assert.Empty(_session.GetObjectFromJson<UmbCheckoutSession>(BasketKeys.Session("en-GB", "GBP"))?.Basket.LineItems ?? []);
+            _events.Verify(e => e.PublishAsync(It.Is<UmbCheckout.Shared.Notifications.Session.OnPaidBasketClearedNotification>(n =>
+                n.CheckoutSessionId == "cs_test_paid" && n.Basket.LineItems.Count() == 1), It.IsAny<CancellationToken>()), Times.Once);
+        }
 
-//        // Arrange
-//        var basket = new Basket
-//        {
-//            Id = session.Basket.Id,
-//            SessionId = session.Basket.SessionId,
-//            Total = session.Basket.Total,
-//            LineItems = new List<LineItem>
-//            {
-//                new()
-//                {
-//                    Id = Guid.NewGuid(),
-//                    Quantity = 1,
-//                    Name = "Test Product",
-//                    Price = 10.00m
-//                }
-//            }
-//        };
-//        // Act
-//        var result = await _sessionService.Update(basket);
+        [Fact]
+        public async Task A_basket_whose_checkout_session_is_not_paid_stays()
+        {
+            var service = await WithCheckedOutBasket("cs_test_open");
 
-//        // Assert
-//        Assert.NotNull(result);
-//        Assert.True(session.Basket.SessionId == basket.SessionId);
-//        Assert.True(result.Basket == basket);
-//    }
-//}
+            Assert.Single((await service.Get("GBP")).Basket.LineItems);
+        }
+
+        [Fact]
+        public async Task A_basket_that_never_reached_checkout_makes_no_lookup()
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [Line("GBP")] });
+
+            await service.Get("GBP");
+
+            _paid.Verify(p => p.IsPaidAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task An_unpaid_checkout_session_is_looked_up_once_per_request()
+        {
+            // Review: every basket read (page, partials) of a basket left at checkout made a database lookup.
+            var service = await WithCheckedOutBasket("cs_test_open");
+
+            await service.Get("GBP");
+            await service.Get("GBP");
+            await service.Get("GBP");
+
+            _paid.Verify(p => p.IsPaidAsync("cs_test_open", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(" gbp ")]
+        [InlineData("gbp")]
+        [InlineData("GBP ")]
+        public async Task The_currency_is_trimmed_and_upper_cased_for_every_read_update_and_clear(string spelling)
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = spelling, LineItems = [Line("GBP")] });
+
+            var stored = _session.GetObjectFromJson<UmbCheckoutSession>(BasketKeys.Session("en-GB", "GBP"));
+            Assert.Equal("GBP", stored.Required().Basket.CurrencyCode);
+            Assert.Single((await service.Get(spelling)).Basket.LineItems);
+
+            await service.Clear(spelling);
+
+            Assert.Null(_session.GetObjectFromJson<UmbCheckoutSession>(BasketKeys.Session("en-GB", "GBP")));
+        }
+
+        [Fact]
+        public async Task Changing_the_lines_after_checkout_forgets_the_checkout_session()
+        {
+            // Review: a delayed payment (Bacs, SEPA) recorded days later cleared lines added after checkout. A changed basket isn't
+            // the one that was paid for, so neither the webhook nor the success page clears it.
+            var service = await WithCheckedOutBasket("cs_test_delayed");
+            var basket = (await service.Get("GBP")).Basket;
+
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [.. basket.LineItems, Line("GBP")], CheckoutSessionId = basket.CheckoutSessionId });
+
+            Assert.Null((await service.Get("GBP")).Basket.CheckoutSessionId);
+        }
+
+        [Fact]
+        public async Task Recording_the_checkout_session_on_an_unchanged_basket_keeps_it()
+        {
+            var service = Service();
+            var line = Line("GBP");
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [line] });
+
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [line], CheckoutSessionId = "cs_test_new" });
+
+            Assert.Equal("cs_test_new", (await service.Get("GBP")).Basket.CheckoutSessionId);
+        }
+
+        [Fact]
+        public async Task A_failed_lookup_keeps_the_basket_and_does_not_fail_the_read()
+        {
+            _paid.Setup(p => p.IsPaidAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("database down"));
+            var service = await WithCheckedOutBasket("cs_test_paid");
+
+            Assert.Single((await service.Get("GBP")).Basket.LineItems);
+        }
+
+        private static LineItem Line(string currency) => new() { Key = Guid.NewGuid(), CurrencyCode = currency, Price = 1m, Quantity = 1 };
+
+        [Fact]
+        public async Task Get_KeepsASeparateBasketPerCurrency()
+        {
+            var service = Service();
+            var gbp = Line("GBP");
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [gbp] });
+
+            var usd = await service.Get("USD");
+            var pounds = await service.Get("GBP");
+
+            Assert.Empty(usd.Basket.LineItems);
+            Assert.Equal("USD", usd.Basket.CurrencyCode);
+            Assert.Equal(gbp.Key, Assert.Single(pounds.Basket.LineItems).Key);
+        }
+
+        [Fact]
+        public async Task Get_UsesTheRequestsCurrencyByDefault()
+        {
+            _basketContext.Setup(b => b.GetCurrencyAsync(It.IsAny<CancellationToken>())).ReturnsAsync("EUR");
+
+            Assert.Equal("EUR", (await Service().Get()).Basket.CurrencyCode);
+        }
+
+        [Fact]
+        public async Task Get_SplitsALegacyBasketByCurrency()
+        {
+            var gbp = Line("GBP");
+            var usd = Line("USD");
+            _session.SetObjectAsJson(BasketKeys.LegacySession("en-GB"), new UmbCheckoutSession
+            {
+                SiteRootCulture = "en-GB",
+                Basket = new Basket { SiteRootCulture = "en-GB", LineItems = [gbp, usd, Line("")] }
+            });
+            var service = Service();
+
+            Assert.Equal(gbp.Key, Assert.Single((await service.Get("GBP")).Basket.LineItems).Key);
+            Assert.Equal(usd.Key, Assert.Single((await service.Get("USD")).Basket.LineItems).Key);
+            Assert.DoesNotContain(BasketKeys.LegacySession("en-GB"), _session.Keys);
+        }
+
+        [Fact]
+        public async Task Clear_RemovesOnlyThatCurrencysBasket()
+        {
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [Line("GBP")] });
+            await service.Update(new Basket { CurrencyCode = "USD", LineItems = [Line("USD")] });
+
+            await service.Clear("GBP");
+
+            Assert.Empty((await service.Get("GBP")).Basket.LineItems);
+            Assert.Single((await service.Get("USD")).Basket.LineItems);
+        }
+
+        [Fact]
+        public async Task Clear_WithAnExplicitCultureWorksWhileThePageIsUnknown()
+        {
+            // The success handler runs while routing: the request's culture is not known yet.
+            var service = Service();
+            await service.Update(new Basket { CurrencyCode = "GBP", LineItems = [Line("GBP")] });
+            _basketContext.Setup(b => b.SiteRootCulture).Returns((string?)null);
+
+            await service.Clear("en-GB", "GBP");
+
+            _basketContext.Setup(b => b.SiteRootCulture).Returns("en-GB");
+            Assert.Empty((await service.Get("GBP")).Basket.LineItems);
+        }
+    }
+}

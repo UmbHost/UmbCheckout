@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using UmbCheckout.Core.Extensions;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
+using Umbraco.Cms.Web.Common.ApplicationBuilder;
 
 namespace UmbCheckout.Core.Composers
 {
@@ -17,6 +19,13 @@ namespace UmbCheckout.Core.Composers
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            // Sites don't need app.UseSession() in Program.cs: the session middleware joins Umbraco's pipeline here, before
+            // routing, because the success handler clears the paid basket while Umbraco routes the request.
+            builder.Services.Configure<UmbracoPipelineOptions>(options => options.AddFilter(new UmbracoPipelineFilter("UmbCheckout")
+            {
+                PreRouting = app => app.UseUmbCheckoutSession(),
+            }));
         }
     }
 }

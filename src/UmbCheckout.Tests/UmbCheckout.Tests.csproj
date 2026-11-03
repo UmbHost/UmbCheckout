@@ -1,15 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-	    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+	    <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 	    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.10" />
+      <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10"><PrivateAssets>all</PrivateAssets><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets></PackageReference>
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
       <PackageReference Include="Moq" Version="4.18.4" />
+      <PackageReference Include="Testcontainers" Version="4.15.0" />
       <PackageReference Include="xunit" Version="2.4.2" />
       <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
         <PrivateAssets>all</PrivateAssets>
@@ -22,6 +26,19 @@
       <ProjectReference Include="..\UmbCheckout.Core\UmbCheckout.Core.csproj" />
       <ProjectReference Include="..\UmbCheckout.Shared\UmbCheckout.Shared.csproj" />
       <ProjectReference Include="..\UmbCheckout.Stripe\UmbCheckout.Stripe.csproj" />
+      <ProjectReference Include="..\UmbCheckout\UmbCheckout.csproj" />
+      <ProjectReference Include="..\UmbCheckout.Testing\UmbCheckout.Testing.csproj" />
+    <ProjectReference Include="..\UmbCheckout.uSync\UmbCheckout.uSync.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Stripe.uSync\UmbCheckout.Stripe.uSync.csproj" />
+    <ProjectReference Include="..\UmbCheckout.Stripe.Forms\UmbCheckout.Stripe.Forms.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Persistence\Fixtures\*.sql" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="UmbCheckout.Testing.Nullability" />
+  </ItemGroup>
 
 </Project>

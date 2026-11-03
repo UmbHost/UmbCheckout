@@ -1,4 +1,4 @@
-﻿using Schema.NET;
+using Schema.NET;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Strings;
@@ -10,39 +10,58 @@ namespace UmbCheckout.Core.Extensions
     {
         public static HtmlEncodedString ToProductSchema(this IPublishedContent content, string currencyCode, string? nameAlias = null, string? descriptionAlias = null, string? imageAlias = null, string? skuAlias = null, string? mpnAlias = null, string? brandAlias = null)
         {
-            var productSchema = new Product
+            var productSchema = new Product();
+
+            var name = !string.IsNullOrEmpty(nameAlias) ? content.Value<string>(nameAlias) : content.Name;
+            if (name is not null)
             {
-                Name = (!string.IsNullOrEmpty(nameAlias) ? content.Value<string>(nameAlias) : content.Name)!,
-                Sku = (!string.IsNullOrEmpty(skuAlias) ? content.Value<string>(skuAlias) : content.Value<string>(Shared.Consts.PropertyAlias.Sku))!,
-                Mpn = (!string.IsNullOrEmpty(mpnAlias) ? content.Value<string>(mpnAlias) : content.Value<string>(Shared.Consts.PropertyAlias.Mpn))!
-            };
+                productSchema.Name = name;
+            }
+
+            var sku = !string.IsNullOrEmpty(skuAlias) ? content.Value<string>(skuAlias) : content.Value<string>(Shared.Consts.PropertyAlias.Sku);
+            if (sku is not null)
+            {
+                productSchema.Sku = sku;
+            }
+
+            var mpn = !string.IsNullOrEmpty(mpnAlias) ? content.Value<string>(mpnAlias) : content.Value<string>(Shared.Consts.PropertyAlias.Mpn);
+            if (mpn is not null)
+            {
+                productSchema.Mpn = mpn;
+            }
 
             if (!string.IsNullOrEmpty(imageAlias) && content.HasValue(imageAlias))
             {
-                productSchema.Image = new Uri(content.Value<MediaWithCrops>(imageAlias)!.Url(mode: UrlMode.Absolute));
+                var image = content.Value<MediaWithCrops>(imageAlias);
+                if (image is not null)
+                {
+                    productSchema.Image = new Uri(image.Url(mode: UrlMode.Absolute));
+                }
             }
 
-            if (!string.IsNullOrEmpty(descriptionAlias))
+            var description = !string.IsNullOrEmpty(descriptionAlias)
+                ? content.Value<string>(descriptionAlias)
+                : content.HasValue(Shared.Consts.PropertyAlias.DescriptionAlias)
+                    ? content.Value<string>(Shared.Consts.PropertyAlias.DescriptionAlias)
+                    : content.HasValue(Shared.Consts.PropertyAlias.FallbackDescriptionAlias)
+                        ? content.Value<string>(Shared.Consts.PropertyAlias.FallbackDescriptionAlias)
+                        : null;
+            if (description is not null)
             {
-                productSchema.Description = content.Value<string>(descriptionAlias)!;
-            }
-            else if (content.HasValue(Shared.Consts.PropertyAlias.DescriptionAlias))
-            {
-                productSchema.Description = content.Value<string>(Shared.Consts.PropertyAlias.DescriptionAlias)!;
-            }
-            else if (content.HasValue(Shared.Consts.PropertyAlias.FallbackDescriptionAlias))
-            {
-                productSchema.Description = content.Value<string>(Shared.Consts.PropertyAlias.FallbackDescriptionAlias)!;
+                productSchema.Description = description;
             }
 
             if (!string.IsNullOrEmpty(brandAlias))
             {
-                productSchema.Brand = new Brand
+                var brandName = content.Value<string>(brandAlias);
+                if (brandName is not null)
                 {
-                    Name = content.Value<string>(brandAlias)!
-                };
+                    productSchema.Brand = new Brand
+                    {
+                        Name = brandName
+                    };
+                }
             }
-
             productSchema.Offers = new Offer
             {
                 Url = new Uri(content.Url(mode: UrlMode.Absolute)),

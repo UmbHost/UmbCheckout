@@ -1,6 +1,7 @@
-﻿using UmbCheckout.Backoffice.ValueConverters;
+using System.Text.Json;
+using UmbCheckout.Backoffice.ValueConverters;
+using Moq;
 using Xunit;
-using Umbraco.Cms.Infrastructure.Serialization;
 using UmbCheckout.Backoffice.Models;
 
 namespace UmbCheckout.Tests
@@ -31,7 +32,7 @@ namespace UmbCheckout.Tests
 ]";
 
             //Act
-            var converter = new MetaDataValueConverter(new JsonNetSerializer());
+            var converter = new MetaDataValueConverter();
             var result = converter.ConvertSourceToIntermediate(null, null, jsonString, false);
 
             // Assert
@@ -62,16 +63,34 @@ namespace UmbCheckout.Tests
                 { "Dictionary Key 2", "Dictionary Value 2" }
             };
 
-            var jsonSerializer = new JsonNetSerializer();
-            var jsonString = jsonSerializer.Serialize(metaData);
+            var jsonString = JsonSerializer.Serialize(metaData);
 
             //Act
-            var converter = new MetaDataValueConverter(new JsonNetSerializer());
+            var converter = new MetaDataValueConverter();
             var result = converter.ConvertSourceToIntermediate(null, null, jsonString, false);
 
             // Assert
             Assert.Equal(metaDataDictionary, result);
         }
+
+        [Fact]
+        public void ConvertsJsonNodeSource()
+        {
+            var node = System.Text.Json.Nodes.JsonNode.Parse("[{\"name\":\"k\",\"value\":\"v\"}]");
+            var result = new MetaDataValueConverter().ConvertSourceToIntermediate(null, null, node, false);
+            Assert.Equal(new Dictionary<string, string> { ["k"] = "v" }, result);
+        }
+
+        [Fact]
+        public void DuplicateNames_LastWins()
+        {
+            var result = new MetaDataValueConverter().ConvertSourceToIntermediate(null, null, "[{\"name\":\"k\",\"value\":\"1\"},{\"name\":\"k\",\"value\":\"2\"}]", false);
+            Assert.Equal(new Dictionary<string, string> { ["k"] = "2" }, result);
+        }
+
+        [Fact]
+        public void DeclaresDictionaryType()
+            => Assert.Equal(typeof(Dictionary<string, string>), new MetaDataValueConverter().GetPropertyValueType(Mock.Of<Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType>()));
     }
 
 }

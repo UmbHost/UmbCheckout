@@ -11,6 +11,12 @@
 
         public const string SessionBasketKey = SessionKey + "_Basket";
 
+        /// <summary>The most of one product a basket line may hold: Stripe's documented quantity ceiling (adjustable_quantity.maximum).</summary>
+        public const long MaxLineQuantity = 999_999;
+
+        /// <summary>The most products one basket may hold: Stripe Checkout accepts at most 100 line items in payment mode.</summary>
+        public const int MaxLineItems = 100;
+
         public const string SessionMode = "payment";
 
         public const string TreeAlias = "umbCheckout";
@@ -47,6 +53,13 @@
             public const string UmbCheckoutEmptyBasket = "UmbCheckout_EmptyBasket";
 
             public const string UmbCheckoutAddedToBasket = "UmbCheckout_Added_To_Basket";
+
+            public const string UmbCheckoutAddToBasketFailed = "UmbCheckout_Add_To_Basket_Failed";
+
+            public const string UmbCheckoutBasketRepriced = "UmbCheckout_Basket_Repriced";
+
+            /// <summary>A notification handler cancelled the basket change; the value is its message, for the shopper.</summary>
+            public const string UmbCheckoutBasketChangeCancelled = "UmbCheckout_Basket_Change_Cancelled";
         }
 
         public static class LocalizationKeys
