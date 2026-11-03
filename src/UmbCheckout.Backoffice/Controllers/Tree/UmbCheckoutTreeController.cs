@@ -29,7 +29,6 @@ namespace UmbCheckout.Backoffice.Controllers.Tree
         {
             _localizedTextService = localizedTextService;
             _menuItemCollectionFactory = menuItemCollectionFactory ?? throw new ArgumentNullException(nameof(menuItemCollectionFactory));
-            licenseService.RunLicenseCheck();
         }
 
         protected override ActionResult<TreeNodeCollection> GetTreeNodes(string id, FormCollection queryStrings)

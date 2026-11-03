@@ -11,6 +11,12 @@
 
         public const string SessionBasketKey = SessionKey + "_Basket";
 
+        /// <summary>The most of one product a basket line may hold: Stripe's documented quantity ceiling (adjustable_quantity.maximum).</summary>
+        public const long MaxLineQuantity = 999_999;
+
+        /// <summary>The most products one basket may hold: Stripe Checkout accepts at most 100 line items in payment mode.</summary>
+        public const int MaxLineItems = 100;
+
         public const string SessionMode = "payment";
 
         public const string TreeAlias = "umbCheckout";
@@ -22,6 +28,8 @@
         public static class PropertyAlias
         {
             public const string PriceAlias = "umbCheckoutPrice";
+
+            public const string CurrencyCode = "umbCheckoutCurrencyCode";
 
             public const string DescriptionAlias = "umbCheckoutDescription";
 
@@ -45,6 +53,11 @@
             public const string UmbCheckoutEmptyBasket = "UmbCheckout_EmptyBasket";
 
             public const string UmbCheckoutAddedToBasket = "UmbCheckout_Added_To_Basket";
+
+            public const string UmbCheckoutAddToBasketFailed = "UmbCheckout_Add_To_Basket_Failed";
+
+            /// <summary>The names of the products whose price changed, or that were removed, when checkout re-priced the basket.</summary>
+            public const string UmbCheckoutBasketRepriced = "UmbCheckout_Basket_Repriced";
         }
 
         public static class LocalizationKeys
@@ -95,6 +108,14 @@
             public const string ShippingAllowedCountriesLabel = "allowed_shipping_countries_label";
             public const string CollectPhoneNumber = "collect_phone_number";
             public const string CollectPhoneNumberLabel = "collect_phone_number_label";
+            public const string CollectPromotionalEmailsConsent = "collect_promotional_emails_consent";
+            public const string CollectPromotionalEmailsConsentLabel = "collect_promotional_emails_consent_label";
+            public const string AllowPromotionalCodes = "allow_promotional_codes";
+            public const string AllowPromotionalCodesLabel = "allow_promotional_codes_label";
+            public const string EnableAbandonedCartRecoveryLabel = "enable_abandoned_cart_recovery_label";
+            public const string EnableAbandonedCartRecovery = "enable_abandoned_cart_recovery";
+            public const string AllowPromotionalCodesOnRecoveredCarts = "allow_promotional_codes_on_recovered_carts";
+            public const string AllowPromotionalCodesOnRecoveredCartsLabel = "allow_promotional_codes_on_recovered_carts_label";
             public const string FirstPage = "first_page";
             public const string NextPage = "next_page";
         }

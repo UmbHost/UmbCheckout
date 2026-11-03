@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Shared test fixtures that start Docker containers through Testcontainers (as v17). Not packed, not a test project. -->
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.MsSql" Version="4.15.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.6" />
+    <PackageReference Include="xunit.extensibility.core" Version="2.4.2" />
+    <!-- StripeMockFixture; same range as UmbCheckout.Stripe -->
+    <PackageReference Include="Stripe.net" Version="[50.3.0, 51)" />
+  </ItemGroup>
+
+</Project>

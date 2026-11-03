@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-	  <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <ReferenceUmbHostLicensing>true</ReferenceUmbHostLicensing>
+	  <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
 	  <StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
 	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <Nullable>enable</Nullable>
@@ -34,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="UmbHost.Licensing" Version="1.4.0" />
+    <!-- UmbHost.Licensing: see Directory.Build.targets -->
   </ItemGroup>
 
 	<ItemGroup>
@@ -43,20 +44,14 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[6.0.21, 7)" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="[10.8.1, 11)" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.1, 11)" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[7.0.0, 8)" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="[12.3.4, 13)" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[12.3.4, 13)" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[10.8.8, 11)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.8, 11)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0, 9)" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="[13.0.0, 14)" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0, 14)" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[13.5.3, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.5.3, 14)" />
 	</ItemGroup>
 
   <ItemGroup>

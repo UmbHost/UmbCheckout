@@ -5,6 +5,7 @@
     /// </summary>
     public class UmbCheckoutSession
     {
+        public string? SiteRootCulture { get; set; }
         public Basket Basket { get; set; } = new();
     }
 }
