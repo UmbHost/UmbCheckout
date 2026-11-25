@@ -49,14 +49,14 @@ namespace UmbCheckout.Core.NotificationHandlers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        [Obsolete("Use the constructor that takes an IPackagingService and an ILogger. Scheduled for removal in 17.1.")]
+        [Obsolete("Use the constructor that takes an IPackagingService and an ILogger. Scheduled for removal in 17.3.")]
         public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IWebHostEnvironment webHostEnvironment,
             ILogger<UmbCheckoutTelemetryNotificationHandler> logger)
             : this(umbCheckoutConfiguration, globalSettings, httpClientFactory, umbracoVersion, webHostEnvironment, StaticServiceProvider.Instance.GetRequiredService<IPackagingService>(), logger)
         {
         }
 
-        [Obsolete("Use the constructor that takes an IPackagingService and an ILogger. Scheduled for removal in 17.1.")]
+        [Obsolete("Use the constructor that takes an IPackagingService and an ILogger. Scheduled for removal in 17.3.")]
         public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IWebHostEnvironment webHostEnvironment)
             : this(umbCheckoutConfiguration, globalSettings, httpClientFactory, umbracoVersion, webHostEnvironment, StaticServiceProvider.Instance.GetRequiredService<IPackagingService>(), NullLogger<UmbCheckoutTelemetryNotificationHandler>.Instance)
         {
