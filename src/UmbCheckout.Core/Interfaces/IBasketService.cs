@@ -11,7 +11,7 @@ namespace UmbCheckout.Core.Interfaces
         /// Gets the Basket
         /// </summary>
         /// <returns>The Basket</returns>
-        [Obsolete("Use Get(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
+        [Obsolete("Use Get(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.3.")]
         Task<Basket> Get();
 
         /// <summary>As <see cref="Get()"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
@@ -26,7 +26,7 @@ namespace UmbCheckout.Core.Interfaces
         /// <param name="item">Item to be added to the Basket</param>
         /// <exception cref="ArgumentException">A line has no currency or a quantity outside 1 to <see cref="Shared.Consts.MaxLineQuantity"/> (also once added to the line already in the basket), it would be a product beyond <see cref="Shared.Consts.MaxLineItems"/>, or (for several items) there are none or they are in more than one currency. The basket is left unchanged.</exception>
         /// <returns>The updated Basket</returns>
-        [Obsolete("Use Add(LineItem, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
+        [Obsolete("Use Add(LineItem, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.3.")]
         Task<Basket> Add(LineItem item);
 
         /// <summary>As <see cref="Add(LineItem)"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the add before the basket is stored, never part-way through.</summary>
@@ -41,7 +41,7 @@ namespace UmbCheckout.Core.Interfaces
         /// <param name="items">Items to be added to the Basket</param>
         /// <exception cref="ArgumentException">A line has no currency or a quantity outside 1 to <see cref="Shared.Consts.MaxLineQuantity"/> (also once added to the line already in the basket), it would be a product beyond <see cref="Shared.Consts.MaxLineItems"/>, or (for several items) there are none or they are in more than one currency. The basket is left unchanged.</exception>
         /// <returns>The updated Basket</returns>
-        [Obsolete("Use Add(IEnumerable<LineItem>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
+        [Obsolete("Use Add(IEnumerable<LineItem>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.3.")]
         Task<Basket> Add(IEnumerable<LineItem> items);
 
         /// <summary>As <see cref="Add(IEnumerable{LineItem})"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the add before the basket is stored, never part-way through.</summary>
@@ -55,7 +55,7 @@ namespace UmbCheckout.Core.Interfaces
         /// </summary>
         /// <param name="key">Item to be reduced in the Basket</param>
         /// <returns>The updated Basket</returns>
-        [Obsolete("Use Reduce(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
+        [Obsolete("Use Reduce(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.3.")]
         Task<Basket> Reduce(Guid key);
 
         /// <summary>As <see cref="Reduce(Guid)"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the change before the basket is stored, never part-way through.</summary>
@@ -69,7 +69,7 @@ namespace UmbCheckout.Core.Interfaces
         /// </summary>
         /// <param name="key">Item to be removed from the Basket</param>
         /// <returns>The updated Basket</returns>
-        [Obsolete("Use Remove(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
+        [Obsolete("Use Remove(Guid, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.3.")]
         Task<Basket> Remove(Guid key);
 
         /// <summary>As <see cref="Remove(Guid)"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the change before the basket is stored, never part-way through.</summary>
@@ -83,7 +83,7 @@ namespace UmbCheckout.Core.Interfaces
         /// </summary>
         /// <param name="keys">Items to be removed from the Basket</param>
         /// <returns>The updated Basket</returns>
-        [Obsolete("Use Remove(IEnumerable<Guid>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
+        [Obsolete("Use Remove(IEnumerable<Guid>, CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.3.")]
         Task<Basket> Remove(IEnumerable<Guid> keys);
 
         /// <summary>As <see cref="Remove(IEnumerable{Guid})"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the change before the basket is stored, never part-way through.</summary>
@@ -96,7 +96,7 @@ namespace UmbCheckout.Core.Interfaces
         /// Removes items from the Basket and clears any Basket cookies
         /// </summary>
         /// <returns>The updated Basket</returns>
-        [Obsolete("Use Clear(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
+        [Obsolete("Use Clear(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.3.")]
         Task<Basket> Clear();
 
         /// <summary>As <see cref="Clear()"/>, stopping when <paramref name="cancellationToken"/> is cancelled. The token stops the clear before the basket is stored, never part-way through.</summary>
@@ -109,7 +109,7 @@ namespace UmbCheckout.Core.Interfaces
         /// Gets the total items held within the Basket
         /// </summary>
         /// <returns>Count of items in the Basket</returns>
-        [Obsolete("Use TotalItems(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
+        [Obsolete("Use TotalItems(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.3.")]
         Task<long> TotalItems();
 
         /// <summary>As <see cref="TotalItems()"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>
@@ -122,7 +122,7 @@ namespace UmbCheckout.Core.Interfaces
         /// Gets the sub total of the Basket
         /// </summary>
         /// <returns>The sub total of the Basket</returns>
-        [Obsolete("Use SubTotal(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.1.")]
+        [Obsolete("Use SubTotal(CancellationToken) (the overload with a CancellationToken). Scheduled for removal in 17.3.")]
         Task<decimal> SubTotal();
 
         /// <summary>As <see cref="SubTotal()"/>, stopping when <paramref name="cancellationToken"/> is cancelled.</summary>

@@ -35,7 +35,7 @@ namespace UmbCheckout.Core.NotificationHandlers
 
         internal static void ConfigureClient(HttpClient client) => client.Timeout = TimeSpan.FromSeconds(5);
 
-        [Obsolete("Use the constructor that takes an ILogger. Scheduled for removal in 17.1.")]
+        [Obsolete("Use the constructor that takes an ILogger. Scheduled for removal in 17.3.")]
         public UmbCheckoutTelemetryNotificationHandler(IOptions<UmbCheckoutAppSettings> umbCheckoutConfiguration, IOptions<GlobalSettings> globalSettings, IHttpClientFactory httpClientFactory, IUmbracoVersion umbracoVersion, IPackagingService packagingService, IWebHostEnvironment webHostEnvironment)
             : this(umbCheckoutConfiguration, globalSettings, httpClientFactory, umbracoVersion, packagingService, webHostEnvironment, NullLogger<UmbCheckoutTelemetryNotificationHandler>.Instance)
         {
