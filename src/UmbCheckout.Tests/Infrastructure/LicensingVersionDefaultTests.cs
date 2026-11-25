@@ -3,7 +3,7 @@ using Xunit;
 
 namespace UmbCheckout.Tests.Infrastructure
 {
-    /// <summary>The UmbHost.Licensing version a package build falls back to is the 2.x line UmbCheckout 17 uses, not the 1.x line of v13.</summary>
+    /// <summary>The UmbHost.Licensing version a package build falls back to is the 3.x line UmbCheckout 17 uses, not the 1.x line of v13.</summary>
     public class LicensingVersionDefaultTests
     {
         private static string? Find(string fileName)
@@ -21,7 +21,7 @@ namespace UmbCheckout.Tests.Infrastructure
         }
 
         [Fact]
-        public void The_default_licensing_version_is_a_2x_version()
+        public void The_default_licensing_version_is_a_3x_version()
         {
             var props = Find("Directory.Build.props");
             Assert.NotNull(props);
@@ -29,7 +29,7 @@ namespace UmbCheckout.Tests.Infrastructure
             var match = Regex.Match(File.ReadAllText(props.Required()), @"<UmbHostLicensingVersion Condition=""[^""]*"">([^<]+)</UmbHostLicensingVersion>");
 
             Assert.True(match.Success);
-            Assert.StartsWith("2.", match.Groups[1].Value, StringComparison.Ordinal);
+            Assert.StartsWith("3.", match.Groups[1].Value, StringComparison.Ordinal);
         }
     }
 }
