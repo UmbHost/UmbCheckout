@@ -33,10 +33,10 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms.Core" Version="[17.6.0, 18)" />
-		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="[17.6.0, 18)" />
-		<PackageReference Include="Umbraco.Cms.Persistence.EFCore" Version="[17.6.0, 18)" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[17.6.0, 18)" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[17.8.0, 18)" />
+		<PackageReference Include="Umbraco.Cms.Infrastructure" Version="[17.8.0, 18)" />
+		<PackageReference Include="Umbraco.Cms.Persistence.EFCore" Version="[17.8.0, 18)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[17.8.0, 18)" />
 	</ItemGroup>
 
 </Project>
