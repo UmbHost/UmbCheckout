@@ -13,7 +13,7 @@
 		<UseUmbLicensingProject Condition="'$(UseUmbLicensingProject)' == '' And Exists('$(UmbLicensingProject)')">true</UseUmbLicensingProject>
 		<!-- Set only when the build is given a version (CI passes the one built from the UmbLicensing submodule). -->
 		<UmbHostLicensingPinnedVersion>$(UmbHostLicensingVersion)</UmbHostLicensingPinnedVersion>
-		<UmbHostLicensingVersion Condition="'$(UmbHostLicensingVersion)' == ''">1.5.0</UmbHostLicensingVersion>
+		<UmbHostLicensingVersion Condition="'$(UmbHostLicensingVersion)' == ''">1.5.1</UmbHostLicensingVersion>
 	</PropertyGroup>
 
 	<PropertyGroup>
